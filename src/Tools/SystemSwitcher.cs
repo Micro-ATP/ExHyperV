@@ -7,6 +7,9 @@ namespace ExHyperV.Tools
 {
     public static class SystemSwitcher
     {
+        [DllImport("advapi32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern int RegDeleteValue(IntPtr hKey, string lpValueName);
+
         [DllImport("advapi32.dll", SetLastError = true)]
         static extern bool OpenProcessToken(IntPtr ProcessHandle, uint DesiredAccess, out IntPtr TokenHandle);
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -138,39 +141,47 @@ namespace ExHyperV.Tools
         private static bool PatchHiveOffline(string hivePath, string targetType)
         {
             string tempKeyName = "TEMP_OFFLINE_SYS_MOD";
+            // 先尝试卸载一次，防止残留
+            RegUnLoadKey(HKEY_LOCAL_MACHINE, tempKeyName);
 
             if (RegLoadKey(HKEY_LOCAL_MACHINE, tempKeyName, hivePath) != 0) return false;
 
             try
             {
+                // 1. 定位 ControlSet
                 int currentSet = 1;
                 string selectPath = tempKeyName + "\\Select";
-                if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, selectPath, 0, (int)KEY_READ, out IntPtr hKeySelect) == 0)
+                IntPtr hKeySelect;
+                if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, selectPath, 0, (int)KEY_READ, out hKeySelect) == 0)
                 {
-                    int type = 0;
-                    int data = 0;
-                    int size = 4;
+                    int type = 0, data = 0, size = 4;
                     if (RegQueryValueEx(hKeySelect, "Current", IntPtr.Zero, ref type, ref data, ref size) == 0)
-                    {
                         currentSet = data;
-                    }
                     RegCloseKey(hKeySelect);
                 }
 
+                // 2. 打开 ProductOptions 键
                 string setPath = $"{tempKeyName}\\ControlSet{currentSet:D3}\\Control\\ProductOptions";
-                if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, setPath, 0, (int)KEY_SET_VALUE, out IntPtr hKey) != 0)
-                {
-                    setPath = $"{tempKeyName}\\ControlSet001\\Control\\ProductOptions";
-                    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, setPath, 0, (int)KEY_SET_VALUE, out hKey) != 0) return false;
-                }
+                IntPtr hKey;
+                // 注意：这里必须用 KEY_ALL_ACCESS (0xF003F) 权限，否则删不掉值
+                if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, setPath, 0, 0xF003F, out hKey) != 0) return false;
 
-                byte[] dataBytes = Encoding.ASCII.GetBytes(targetType + "\0");
-                int writeRet = RegSetValueEx(hKey, "ProductType", 0, REG_SZ, dataBytes, dataBytes.Length);
+                // 【核心操作 A】：修改 ProductType
+                byte[] typeBytes = Encoding.ASCII.GetBytes(targetType + "\0");
+                RegSetValueEx(hKey, "ProductType", 0, REG_SZ, typeBytes, typeBytes.Length);
+
+                // 【核心操作 B】：暴力删除 SubscriptionPf (28000 的告密者)
+                int delRet = RegDeleteValue(hKey, "SubscriptionPf");
+
+                // 【核心操作 C】：清空 ProductSuite (防止干扰)
+                // 服务器版通常这里是空的或者有特定的值，清空它能绕过大部分 Pro 限制
+                RegDeleteValue(hKey, "ProductSuite");
+                byte[] suiteBytes = new byte[] { 0, 0 }; // REG_MULTI_SZ 的空值
+                RegSetValueEx(hKey, "ProductSuite", 0, 7 /* REG_MULTI_SZ */, suiteBytes, suiteBytes.Length);
 
                 RegCloseKey(hKey);
                 RegFlushKey(HKEY_LOCAL_MACHINE);
-
-                return writeRet == 0;
+                return true;
             }
             finally
             {
