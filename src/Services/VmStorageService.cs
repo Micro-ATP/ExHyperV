@@ -13,8 +13,11 @@ namespace ExHyperV.Services
         private const string NamespaceCimV2 = @"root\cimv2";
         private const string NamespaceStorage = @"Root\Microsoft\Windows\Storage";
 
+        // ============================================================
+        // 核心数据查询：获取虚拟机和主机的存储设备状态
+        // ============================================================
 
-        //查询虚拟机下的控制器和存储设备
+        // 查询指定虚拟机下的所有控制器、磁盘驱动器及其挂载的介质详情
         public async Task LoadVmStorageItemsAsync(VmInstanceInfo vm)
         {
             if (vm == null) return;
@@ -130,30 +133,21 @@ namespace ExHyperV.Services
                                                 driveItem.DiskType = "Physical";
                                                 try
                                                 {
-                                                    // [核心逻辑] 物理磁盘双表映射
                                                     if (hvDiskMap == null)
                                                     {
-                                                        // A表：HV 内部映射 (DeviceID -> DriveNumber)
-                                                        // 修复：不使用 ToDictionary，改用循环以防止空值崩溃或键值重复崩溃
                                                         hvDiskMap = new Dictionary<string, int>();
                                                         var allHvDisks = session.QueryInstances(NamespaceV2, "WQL", "SELECT DeviceID, DriveNumber FROM Msvm_DiskDrive");
                                                         foreach (var d in allHvDisks)
                                                         {
-                                                            // 安全获取 DeviceID，处理可能的 Null 值
                                                             string did = d.CimInstanceProperties["DeviceID"]?.Value?.ToString() ?? "";
-                                                            // 只有当 DeviceID 和 DriveNumber 都有效时才添加
                                                             if (!string.IsNullOrEmpty(did) && d.CimInstanceProperties["DriveNumber"]?.Value != null)
                                                             {
-                                                                // 统一反斜杠格式
                                                                 did = did.Replace("\\\\", "\\");
                                                                 int dnum = Convert.ToInt32(d.CimInstanceProperties["DriveNumber"].Value);
-                                                                // 使用索引器赋值，防止重复键报错 (Last wins)
                                                                 hvDiskMap[did] = dnum;
                                                             }
                                                         }
 
-                                                        // B表：宿主机物理信息 (Index -> Info)
-                                                        // 修复：同样改回循环处理，增加安全性
                                                         osDiskMap = new Dictionary<int, HostDiskInfoCache>();
                                                         var allOsDisks = session.QueryInstances(NamespaceCimV2, "WQL", "SELECT Index, Model, Size, SerialNumber FROM Win32_DiskDrive");
                                                         foreach (var d in allOsDisks)
@@ -161,14 +155,11 @@ namespace ExHyperV.Services
                                                             if (d.CimInstanceProperties["Index"]?.Value != null)
                                                             {
                                                                 int idx = Convert.ToInt32(d.CimInstanceProperties["Index"].Value);
-
-                                                                // 安全获取大小，防止转换错误
                                                                 long sizeBytes = 0;
                                                                 if (d.CimInstanceProperties["Size"]?.Value != null)
                                                                 {
                                                                     long.TryParse(d.CimInstanceProperties["Size"].Value.ToString(), out sizeBytes);
                                                                 }
-
                                                                 osDiskMap[idx] = new HostDiskInfoCache
                                                                 {
                                                                     Model = d.CimInstanceProperties["Model"]?.Value?.ToString(),
@@ -243,7 +234,7 @@ namespace ExHyperV.Services
             });
         }
 
-        //查询主机可用的直通硬盘
+        // 获取主机上可用于直通挂载的物理硬盘列表（排除系统盘及已占用的磁盘）
         public async Task<List<HostDiskInfo>> GetHostDisksAsync()
         {
             return await Task.Run(() =>
@@ -289,17 +280,15 @@ namespace ExHyperV.Services
             });
         }
 
-        //将指定的直通硬盘脱机
-        public async Task<(bool Success, string Message)> SetDiskOfflineStatusAsync(int diskNumber, bool isOffline)
-            => await RunCommandAsync($"Set-Disk -Number {diskNumber} -IsOffline ${isOffline.ToString().ToLower()}");
+        // ============================================================
+        // 槽位检测：寻找可用的控制器接口
+        // ============================================================
 
-
-        //检测存储设备第一个可用的空位
+        // 自动探测虚拟机存储控制器上第一个未被占用的空闲位置
         public async Task<(string ControllerType, int ControllerNumber, int Location)> GetNextAvailableSlotAsync(string vmName, string driveType)
         {
             string script = $@"
     $v = Get-VM -Name '{vmName}'; $ctype = 'NONE'; $cnum = -1; $loc = -1; $found = $false
-    # 1代机且没开机时优先 IDE
     if ($v.Generation -eq 1 -and $v.State -ne 'Running') {{
         for ($c=0; $c -lt 2; $c++) {{ 
             $h_loc = @((Get-VMHardDiskDrive -VMName '{vmName}' -ControllerType IDE -ControllerNumber $c).ControllerLocation)
@@ -309,7 +298,6 @@ namespace ExHyperV.Services
             if ($found) {{ break }} 
         }}
     }}
-    # 如果 IDE 满了或者是一代开机状态/二代机，尝试 SCSI
     if (-not $found) {{
         $controllers = Get-VMScsiController -VMName '{vmName}' | Sort-Object ControllerNumber
         foreach ($ctrl in $controllers) {{
@@ -328,15 +316,19 @@ namespace ExHyperV.Services
             if (parts.Length == 3 && parts[0] != "NONE")
                 return (parts[0], int.Parse(parts[1]), int.Parse(parts[2]));
 
-            return ("NONE", -1, -1); // 明确表示没有位置了
+            return ("NONE", -1, -1);
         }
 
-        //添加硬盘或光盘
+        // ============================================================
+        // 设备增删改操作：通过 PowerShell 脚本进行虚拟机配置变更
+        // ============================================================
+
+        // 向虚拟机添加硬盘或光驱设备（支持新建 VHD、物理直通以及 ISO 生成）
         public async Task<(bool Success, string Message, string ActualType, int ActualNumber, int ActualLocation)> AddDriveAsync(
-    string vmName, string controllerType, int controllerNumber, int location, string driveType,
-    string pathOrNumber, bool isPhysical, bool isNew = false, int sizeGb = 256,
-    string vhdType = "Dynamic", string parentPath = "", string sectorFormat = "Default",
-    string blockSize = "Default", string isoSourcePath = null, string isoVolumeLabel = null)
+            string vmName, string controllerType, int controllerNumber, int location, string driveType,
+            string pathOrNumber, bool isPhysical, bool isNew = false, int sizeGb = 256,
+            string vhdType = "Dynamic", string parentPath = "", string sectorFormat = "Default",
+            string blockSize = "Default", string isoSourcePath = null, string isoVolumeLabel = null)
         {
             string psPath = string.IsNullOrWhiteSpace(pathOrNumber) ? "$null" : $"'{pathOrNumber}'";
 
@@ -405,7 +397,7 @@ namespace ExHyperV.Services
             catch (Exception ex) { return (false, Utils.GetFriendlyErrorMessage(ex.Message), controllerType, controllerNumber, location); }
         }
 
-        //移除存储设备
+        // 从虚拟机移除存储设备，物理硬盘移除后会自动尝试恢复主机联机状态
         public async Task<(bool Success, string Message)> RemoveDriveAsync(string vmName, VmStorageItem drive)
         {
             string script = $@"
@@ -444,11 +436,11 @@ namespace ExHyperV.Services
             catch (Exception ex) { return (false, Utils.GetFriendlyErrorMessage(ex.Message)); }
         }
 
-        //修改光盘路径
+        // 修改光驱挂载的 ISO 文件路径
         public async Task<(bool Success, string Message)> ModifyDvdDrivePathAsync(string vmName, int controllerNumber, int controllerLocation, string newIsoPath)
             => await RunCommandAsync($"Set-VMDvdDrive -VMName '{vmName}' -ControllerNumber {controllerNumber} -ControllerLocation {controllerLocation} -Path {(string.IsNullOrWhiteSpace(newIsoPath) ? "$null" : $"'{newIsoPath}'")} -ErrorAction Stop");
 
-        //修改硬盘路径
+        // 修改虚拟硬盘挂载的 VHD/VHDX 文件路径
         public async Task<(bool Success, string Message)> ModifyHardDrivePathAsync(string vmName, string controllerType, int controllerNumber, int controllerLocation, string newPath)
         {
             string psPath = string.IsNullOrWhiteSpace(newPath) ? "$null" : $"'{newPath}'";
@@ -459,32 +451,31 @@ namespace ExHyperV.Services
             return await RunCommandAsync(script);
         }
 
-        //从执行结果解析字符串
-        private async Task<string> ExecutePowerShellAsync(string script)
-        {
-            try
-            {
-                var res = await Utils.Run2(script);
-                return res == null ? "" : string.Join(Environment.NewLine, res.Select(r => r?.ToString() ?? ""));
-            }
-            catch { return ""; }
-        }
+        // ============================================================
+        // 主机物理磁盘控制
+        // ============================================================
 
-        //创建ISO 9660标准，带完整验证
+        // 设置宿主机物理硬盘的脱机/联机状态（物理直通必须先脱机）
+        public async Task<(bool Success, string Message)> SetDiskOfflineStatusAsync(int diskNumber, bool isOffline)
+            => await RunCommandAsync($"Set-Disk -Number {diskNumber} -IsOffline ${isOffline.ToString().ToLower()}");
+
+        // ============================================================
+        // ISO 镜像生成：将本地目录打包为标准镜像
+        // ============================================================
+
+        // 使用 DiscUtils 库将指定的本地文件夹打包成符合 ISO 9660 / Joliet 标准的镜像文件
         private async Task<(bool Success, string Message)> CreateIsoFromDirectoryAsync(string sourceDirectory, string targetIsoPath, string volumeLabel)
         {
             var sourceDirInfo = new DirectoryInfo(sourceDirectory);
             if (!sourceDirInfo.Exists) return (false, "Iso_Error_SourceDirNotFound");
 
-            // 增强的验证常量
             const long MaxFileSize = 4294967295;
             const int MaxFileNameLength = 64;
             const int MaxPathLength = 240;
             const int MaxDirectoryDepth = 8;
             const int MaxVolumeLabelLength = 16;
-            const long MaxTotalSize = 4700000000;  // DVD 大小
+            const long MaxTotalSize = 4700000000;
 
-            // 验证卷标
             string finalVolumeLabel = string.IsNullOrWhiteSpace(volumeLabel)
                 ? sourceDirInfo.Name
                 : volumeLabel;
@@ -492,7 +483,6 @@ namespace ExHyperV.Services
             if (finalVolumeLabel.Length > MaxVolumeLabelLength)
                 return (false, "Iso_Error_VolumeLabelTooLong");
 
-            // 为 ISO9660 转义卷标
             finalVolumeLabel = Regex.Replace(finalVolumeLabel, @"[^A-Za-z0-9_\- ]", "_");
             if (string.IsNullOrEmpty(finalVolumeLabel))
                 finalVolumeLabel = "NewISO";
@@ -500,7 +490,6 @@ namespace ExHyperV.Services
             return await Task.Run(() => {
                 try
                 {
-                    // 验证源文件夹内容
                     var allItems = Directory.EnumerateFileSystemEntries(sourceDirectory, "*", SearchOption.AllDirectories).ToList();
 
                     if (allItems.Count == 0)
@@ -540,14 +529,12 @@ namespace ExHyperV.Services
                         }
                     }
 
-                    // 确保输出目录存在
                     var targetDir = Path.GetDirectoryName(targetIsoPath);
                     if (!string.IsNullOrEmpty(targetDir) && !Directory.Exists(targetDir))
                     {
                         Directory.CreateDirectory(targetDir);
                     }
 
-                    // 创建 ISO
                     var builder = new CDBuilder
                     {
                         UseJoliet = true,
@@ -569,14 +556,33 @@ namespace ExHyperV.Services
             });
         }
 
-        //包装器，勿动
+        // ============================================================
+        // 底层辅助工具：PowerShell 执行与脚本封装
+        // ============================================================
+
+        // 执行 PowerShell 脚本并返回合并后的字符串结果
+        private async Task<string> ExecutePowerShellAsync(string script)
+        {
+            try
+            {
+                var res = await Utils.Run2(script);
+                return res == null ? "" : string.Join(Environment.NewLine, res.Select(r => r?.ToString() ?? ""));
+            }
+            catch { return ""; }
+        }
+
+        // 通用的 PowerShell 命令执行包装器，仅返回成功与否的状态
         private async Task<(bool Success, string Message)> RunCommandAsync(string script)
         {
             try { await Utils.Run2(script); return (true, "Storage_Msg_Success"); }
             catch (Exception ex) { return (false, Utils.GetFriendlyErrorMessage(ex.Message)); }
         }
 
-        //辅助类，勿动
+        // ============================================================
+        // 内部辅助数据模型
+        // ============================================================
+
+        // 用于在加载过程中缓存宿主机物理硬盘元数据的信息类
         private class HostDiskInfoCache
         {
             public string? Model { get; set; }
