@@ -114,8 +114,7 @@ namespace ExHyperV.Services
                     }
 
                     // =========================================================
-                    // [修复] 找回丢失的高级属性读取逻辑
-                    // 无论网卡是否连接，分配设置(Allocation)中都包含高级特性(FeatureSettings)
+                    // 高级特性
                     // =========================================================
                     try
                     {
@@ -140,7 +139,7 @@ namespace ExHyperV.Services
                             int featureCount = 0;
                             foreach (var feature in features.Cast<ManagementObject>())
                             {
-                                ParseFeatureSettings(adapter, feature); // <--- 调用解析方法
+                                ParseFeatureSettings(adapter, feature);
                                 featureCount++;
                             }
 
@@ -152,7 +151,6 @@ namespace ExHyperV.Services
                     {
                         Log($"    [高级设置] 读取异常: {ex.Message}");
                     }
-                    // =========================================================
                 }
                 else
                 {
@@ -174,7 +172,7 @@ namespace ExHyperV.Services
             return res.Where(s => !string.IsNullOrEmpty(s)).OrderBy(s => s).ToList();
         }
 
-        // 后台任务：尝试通过 ARP/KVP 填充网卡的动态 IP 地址
+        // 后台任务：尝试通过 ARP 填充网卡的动态 IP 地址
         public async Task FillDynamicIpsAsync(string vmName, IEnumerable<VmNetworkAdapter> adapters)
         {
             var targetAdapters = adapters.Where(a => (a.IpAddresses == null || a.IpAddresses.Count == 0) && !string.IsNullOrEmpty(a.MacAddress)).ToList();
