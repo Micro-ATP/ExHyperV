@@ -69,29 +69,72 @@ namespace ExHyperV.Tools
             string hiveFile = Path.Combine(tempDir, "sys_mod_exec.hiv");
             string backupFile = Path.Combine(tempDir, "sys_bak_exec.hiv");
 
+            // 1. 运行环境检查：28000 严禁 32 位运行
+            if (!Environment.Is64BitProcess)
+            {
+                return "错误: 必须编译为 x64 并在 64 位环境下运行！";
+            }
+
             try
             {
                 if (!Directory.Exists(tempDir)) Directory.CreateDirectory(tempDir);
-                try { if (File.Exists(hiveFile)) File.Delete(hiveFile); } catch { return "SUCCESS"; }
-                try { if (File.Exists(backupFile)) File.Delete(backupFile); } catch { }
 
-                if (!EnablePrivilege("SeBackupPrivilege") || !EnablePrivilege("SeRestorePrivilege")) return "权限不足";
+                // 清理旧文件
+                if (File.Exists(hiveFile)) { try { File.Delete(hiveFile); } catch { return "无法删除旧的临时 Hive 文件，请确保没有被挂载"; } }
+                if (File.Exists(backupFile)) { try { File.Delete(backupFile); } catch { } }
 
-                if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "SYSTEM", 0, (int)KEY_READ, out IntPtr hKey) != 0) return "打不开键";
-                int ret = RegSaveKey(hKey, hiveFile, IntPtr.Zero);
-                RegCloseKey(hKey);
-                if (ret != 0) return $"导出失败:{ret}";
+                // 2. 增强提权：增加 TakeOwnership 权限
+                bool p1 = EnablePrivilege("SeBackupPrivilege");
+                bool p2 = EnablePrivilege("SeRestorePrivilege");
+                bool p3 = EnablePrivilege("SeTakeOwnershipPrivilege"); // 应对 28000 可能需要的权限
 
+                if (!p1 || !p2) return "权限提升失败 (SeBackup/Restore)";
+
+                // 3. 打开 SYSTEM 键
+                // 在 28000 中，导出 Hive 必须使用 READ_CONTROL (0x00020000)
+                const uint READ_CONTROL = 0x00020000;
+                int openRet = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "SYSTEM", 0, (int)READ_CONTROL, out IntPtr hKey);
+                if (openRet != 0) return $"打不开 SYSTEM 键, 错误码: {openRet}";
+
+                // 4. 导出 Hive
+                int saveRet = RegSaveKey(hKey, hiveFile, IntPtr.Zero);
+                RegCloseKey(hKey); // 导出完立即关闭句柄
+
+                if (saveRet != 0) return $"导出 Hive 失败: {saveRet} (检查是否有杀毒软件拦截)";
+
+                // 5. 关键验证：检查导出的文件是否有效（必须大于 5MB）
+                FileInfo fi = new FileInfo(hiveFile);
+                if (!fi.Exists || fi.Length < 1024 * 1024 * 5)
+                {
+                    return $"导出异常: 文件大小仅为 {fi.Length / 1024} KB，导出不完整。";
+                }
+
+                // 6. 执行离线修改
                 string targetType = (mode == 1) ? "ServerNT" : "WinNT";
-                if (!PatchHiveOffline(hiveFile, targetType)) return "离线修改失败";
+                if (!PatchHiveOffline(hiveFile, targetType)) return "离线修改失败 (Load/Unload 环节错误)";
 
-                ret = RegReplaceKey(HKEY_LOCAL_MACHINE, "SYSTEM", hiveFile, backupFile);
+                // 7. 替换原系统 Hive
+                // 注意：在 28000 中，如果 ret 为 5 (Access Denied)，说明内核锁定了该操作
+                int replaceRet = RegReplaceKey(HKEY_LOCAL_MACHINE, "SYSTEM", hiveFile, backupFile);
 
-                return ret == 0 || ret == 5 ? "SUCCESS" : $"替换失败:{ret}";
+                if (replaceRet == 0)
+                {
+                    return "SUCCESS";
+                }
+                else if (replaceRet == 5)
+                {
+                    return "替换失败: 拒绝访问 (Build 28000 内核已锁定 SYSTEM 蜂巢。请尝试在 PE 环境下替换程序导出的 C:\\temp\\sys_mod_exec.hiv)";
+                }
+                else
+                {
+                    return $"替换失败: 错误码 {replaceRet}";
+                }
             }
-            catch (Exception ex) { return ex.Message; }
+            catch (Exception ex)
+            {
+                return $"异常: {ex.Message}";
+            }
         }
-
         private static bool PatchHiveOffline(string hivePath, string targetType)
         {
             string tempKeyName = "TEMP_OFFLINE_SYS_MOD";
