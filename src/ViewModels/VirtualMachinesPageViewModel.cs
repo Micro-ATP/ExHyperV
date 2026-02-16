@@ -507,7 +507,24 @@ namespace ExHyperV.ViewModels
                                     if (existingDisk != null)
                                     {
                                         existingDisk.Name = newDiskData.Name;
-                                        existingDisk.CurrentSize = newDiskData.CurrentSize;
+                                        if (vm.IsRunning && existingDisk.DiskType != "Physical" && File.Exists(existingDisk.Path))
+                                        {
+                                            try
+                                            {
+                                                // 使用 long 字节更新，对应 VmDiskDetails 的 CurrentSize
+                                                long realSizeBytes = new FileInfo(existingDisk.Path).Length;
+                                                if (existingDisk.CurrentSize != realSizeBytes)
+                                                {
+                                                    existingDisk.CurrentSize = realSizeBytes;
+                                                }
+                                            }
+                                            catch { /* 忽略锁定错误 */ }
+                                        }
+                                        else
+                                        {
+                                            // 如果没开机或者查不到，才用 WMI 的数据
+                                            existingDisk.CurrentSize = newDiskData.CurrentSize;
+                                        }
                                         existingDisk.MaxSize = newDiskData.MaxSize;
                                         existingDisk.DiskType = newDiskData.DiskType;
                                     }
