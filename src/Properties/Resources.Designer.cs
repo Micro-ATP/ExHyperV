@@ -952,6 +952,46 @@ namespace ExHyperV.Properties {
         }
         
         /// <summary>
+        ///   查找类似 Are you sure you want to restart the virtual machine &quot;{0}&quot;?
+        ///
+        ///This will interrupt all running services and programs. 的本地化字符串。
+        /// </summary>
+        public static string Confirm_Restart_Message {
+            get {
+                return ResourceManager.GetString("Confirm_Restart_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Confirm Restart 的本地化字符串。
+        /// </summary>
+        public static string Confirm_Restart_Title {
+            get {
+                return ResourceManager.GetString("Confirm_Restart_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Are you sure you want to shut down the virtual machine &quot;{0}&quot;?
+        ///
+        ///This operation sends a shutdown signal to the guest OS. 的本地化字符串。
+        /// </summary>
+        public static string Confirm_Shutdown_Message {
+            get {
+                return ResourceManager.GetString("Confirm_Shutdown_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Confirm Shutdown 的本地化字符串。
+        /// </summary>
+        public static string Confirm_Shutdown_Title {
+            get {
+                return ResourceManager.GetString("Confirm_Shutdown_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 The virtual machine &quot;{0}&quot; is currently running.
         ///
         ///To proceed with the GPU assignment, this virtual machine needs to be shut down.
@@ -961,6 +1001,26 @@ namespace ExHyperV.Properties {
         public static string Confirm_ShutdownMessage {
             get {
                 return ResourceManager.GetString("Confirm_ShutdownMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Are you sure you want to force power off the virtual machine &quot;{0}&quot;?
+        ///
+        ///⚠️ Warning: This is equivalent to unplugging the power cord and may cause data loss or file system corruption! 的本地化字符串。
+        /// </summary>
+        public static string Confirm_TurnOff_Message {
+            get {
+                return ResourceManager.GetString("Confirm_TurnOff_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Confirm Force Power Off 的本地化字符串。
+        /// </summary>
+        public static string Confirm_TurnOff_Title {
+            get {
+                return ResourceManager.GetString("Confirm_TurnOff_Title", resourceCulture);
             }
         }
         
@@ -2086,6 +2146,15 @@ namespace ExHyperV.Properties {
         public static string Instanceid {
             get {
                 return ResourceManager.GetString("Instanceid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Please select a virtual machine 的本地化字符串。
+        /// </summary>
+        public static string Instances_SelectVmPrompt {
+            get {
+                return ResourceManager.GetString("Instances_SelectVmPrompt", resourceCulture);
             }
         }
         
@@ -4202,69 +4271,6 @@ namespace ExHyperV.Properties {
         public static string Weight {
             get {
                 return ResourceManager.GetString("Weight", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Confirm Restart 的本地化字符串。
-        /// </summary>
-        public static string Confirm_Restart_Title {
-            get {
-                return ResourceManager.GetString("Confirm_Restart_Title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Are you sure you want to restart the virtual machine? 的本地化字符串。
-        /// </summary>
-        public static string Confirm_Restart_Message {
-            get {
-                return ResourceManager.GetString("Confirm_Restart_Message", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Confirm Shutdown 的本地化字符串。
-        /// </summary>
-        public static string Confirm_Shutdown_Title {
-            get {
-                return ResourceManager.GetString("Confirm_Shutdown_Title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Are you sure you want to shut down the virtual machine? 的本地化字符串。
-        /// </summary>
-        public static string Confirm_Shutdown_Message {
-            get {
-                return ResourceManager.GetString("Confirm_Shutdown_Message", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Confirm Force Power Off 的本地化字符串。
-        /// </summary>
-        public static string Confirm_TurnOff_Title {
-            get {
-                return ResourceManager.GetString("Confirm_TurnOff_Title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Are you sure you want to force power off the virtual machine? 的本地化字符串。
-        /// </summary>
-        public static string Confirm_TurnOff_Message {
-            get {
-                return ResourceManager.GetString("Confirm_TurnOff_Message", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 Please select a virtual machine 的本地化字符串。
-        /// </summary>
-        public static string Instances_SelectVmPrompt {
-            get {
-                return ResourceManager.GetString("Instances_SelectVmPrompt", resourceCulture);
             }
         }
     }

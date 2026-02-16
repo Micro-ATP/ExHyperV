@@ -1363,7 +1363,7 @@
     <value>硬盘</value>
   </data>
   <data name="AddDisk_Type_OpticalDrive" xml:space="preserve">
-    <value>光驱</value>
+    <value>光盘</value>
   </data>
   <data name="AddDisk_VhdType_Differencing" xml:space="preserve">
     <value>差分磁盘</value>
@@ -1491,27 +1491,6 @@
   <data name="Status_Edition_Workstation" xml:space="preserve">
     <value>工作站版本 (WinNT)</value>
   </data>
-  <data name="Status_Msg_CurrentVer_Duplicate" xml:space="preserve">
-    <value>当前识别为</value>
-  </data>
-  <data name="Status_Msg_OperationPending_Duplicate" xml:space="preserve">
-    <value>变更已挂起，重启后生效。</value>
-  </data>
-  <data name="Status_Msg_RestartNow_Duplicate" xml:space="preserve">
-    <value>系统标识已修改。是否立即重启？</value>
-  </data>
-  <data name="Status_Title_Success_Duplicate" xml:space="preserve">
-    <value>操作成功</value>
-  </data>
-  <data name="Status_Title_Info_Duplicate" xml:space="preserve">
-    <value>提示</value>
-  </data>
-  <data name="Status_Title_Error_Duplicate" xml:space="preserve">
-    <value>错误</value>
-  </data>
-  <data name="Global_Restart_Duplicate" xml:space="preserve">
-    <value>立即重启</value>
-  </data>
   <data name="Status_Title_SwitchEdition" xml:space="preserve">
     <value>切换系统版本</value>
   </data>
@@ -1541,5 +1520,26 @@
   </data>
   <data name="Instances_SelectVmPrompt" xml:space="preserve">
     <value>请选择虚拟机</value>
+  </data>
+  <data name="Status_Msg_CurrentVer_Duplicate" xml:space="preserve">
+    <value>当前识别为</value>
+  </data>
+  <data name="Status_Msg_OperationPending_Duplicate" xml:space="preserve">
+    <value>变更已挂起，重启后生效。</value>
+  </data>
+  <data name="Status_Msg_RestartNow_Duplicate" xml:space="preserve">
+    <value>系统标识已修改。是否立即重启？</value>
+  </data>
+  <data name="Status_Title_Success_Duplicate" xml:space="preserve">
+    <value>操作成功</value>
+  </data>
+  <data name="Status_Title_Info_Duplicate" xml:space="preserve">
+    <value>提示</value>
+  </data>
+  <data name="Status_Title_Error_Duplicate" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="Global_Restart_Duplicate" xml:space="preserve">
+    <value>立即重启</value>
   </data>
 </root>
