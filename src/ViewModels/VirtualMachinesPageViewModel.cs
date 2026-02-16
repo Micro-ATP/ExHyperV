@@ -1079,22 +1079,23 @@ namespace ExHyperV.ViewModels
         {
             if (_isInternalUpdating || value == null) return;
 
-            Debug.WriteLine($"[DEBUG-STORAGE] 手动切换类型: {value}");
+            Debug.WriteLine($"[DEBUG-STORAGE] [触发] 类型手动变更 -> {value}");
             RefreshAvailableNumbers(value);
 
-            // 强制触发一次编号刷新
+            // 手动切换时也使用跳变技巧，确保 UI 同步
             SelectedControllerNumber = -2;
             SelectedControllerNumber = AvailableControllerNumbers.FirstOrDefault();
 
             UpdateAvailableLocations();
         }
+
         // 属性变更监听 - 控制器编号
         partial void OnSelectedControllerNumberChanged(int value)
         {
-            // 如果是自动分配设定的 -2，或者是内部更新中，直接跳过，防止死循环刷新列表
+            // 如果是内部设定的跳变值 -2，或者是锁定状态，绝对不要去刷新位置列表，否则会造成闪烁或死循环
             if (value == -2 || _isInternalUpdating) return;
 
-            Debug.WriteLine($"[DEBUG-STORAGE] 手动切换编号: {value}");
+            Debug.WriteLine($"[DEBUG-STORAGE] [触发] 编号手动变更 -> {value}");
             UpdateAvailableLocations();
         }
 
@@ -1289,25 +1290,21 @@ namespace ExHyperV.ViewModels
             IsLoadingSettings = true;
             try
             {
-                VmStorageSlot slot;
-                if (AutoAssign)
-                {
-                    var (type, number, location) = await _storageService.GetNextAvailableSlotAsync(SelectedVm.Name, driveType);
-                    slot = new VmStorageSlot { ControllerType = type, ControllerNumber = number, Location = location };
-                }
-                else
-                {
-                    slot = new VmStorageSlot { ControllerType = SelectedControllerType, ControllerNumber = SelectedControllerNumber, Location = SelectedLocation };
-                }
+                // --- 核心修复：直接读取 UI 属性，不再调用后端 GetNextAvailableSlotAsync ---
+                string targetType = SelectedControllerType;
+                int targetNumber = SelectedControllerNumber;
+                int targetLocation = SelectedLocation;
+
+                Debug.WriteLine($"[STORAGE-ACTION] 执行添加操作: {driveType} -> 控制器:{targetType} #{targetNumber} 位置:{targetLocation}");
 
                 if (isPhysical && int.TryParse(pathOrNumber, out int diskNum))
                     await _storageService.SetDiskOfflineStatusAsync(diskNum, true);
 
                 var result = await _storageService.AddDriveAsync(
                     vmName: SelectedVm.Name,
-                    controllerType: slot.ControllerType,
-                    controllerNumber: slot.ControllerNumber,
-                    location: slot.Location,
+                    controllerType: targetType,   // 传递界面显示的值
+                    controllerNumber: targetNumber, // 传递界面显示的值
+                    location: targetLocation,       // 传递界面显示的值
                     driveType: driveType,
                     pathOrNumber: pathOrNumber,
                     isPhysical: isPhysical,
@@ -1326,58 +1323,94 @@ namespace ExHyperV.ViewModels
                     ShowSnackbar("添加成功", $"设备已连接到 {result.ActualType} {result.ActualNumber}:{result.ActualLocation}", ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
                     await _storageService.LoadVmStorageItemsAsync(SelectedVm);
                 }
-                else ShowSnackbar("添加失败", result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                else
+                {
+                    ShowSnackbar("添加失败", result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                }
             }
-            catch (Exception ex) { ShowSnackbar("异常", Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24); }
-            finally { IsLoadingSettings = false; }
+            catch (Exception ex)
+            {
+                ShowSnackbar("异常", Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+            }
+            finally
+            {
+                IsLoadingSettings = false;
+            }
         }
-
         // 计算最佳可用插槽
         private void CalculateBestSlot()
         {
             if (SelectedVm == null) return;
 
+            bool isRunning = SelectedVm.IsRunning;
             bool isGen1 = SelectedVm.Generation == 1;
             bool isDvd = DeviceType == "DvdDrive";
 
+            // --- 核心修复：开始计算前清除旧警告 ---
+            IsSlotValid = true;
+            SlotWarningMessage = string.Empty;
+
+            // 1. 处理 1 代机光驱的特殊物理约束
+            if (isGen1 && isDvd)
+            {
+                if (isRunning)
+                {
+                    IsSlotValid = false;
+                    SlotWarningMessage = "第 1 代虚拟机的光驱无法在运行状态下添加（IDE 不支持热插拔）。请先关机。";
+                    return;
+                }
+
+                for (int c = 0; c < 2; c++)
+                {
+                    for (int l = 0; l < 2; l++)
+                    {
+                        if (!IsSlotOccupied("IDE", c, l)) { SetSlot("IDE", c, l); return; }
+                    }
+                }
+                IsSlotValid = false;
+                SlotWarningMessage = "第 1 代虚拟机的 IDE 控制器已满，无法添加光驱。";
+                return;
+            }
+
+            // 2. 运行中或二代机 -> 找 SCSI
+            if (isRunning || !isGen1)
+            {
+                for (int c = 0; c < 4; c++)
+                {
+                    for (int l = 0; l < 64; l++)
+                    {
+                        if (!IsSlotOccupied("SCSI", c, l)) { SetSlot("SCSI", c, l); return; }
+                    }
+                }
+                IsSlotValid = false;
+                SlotWarningMessage = isRunning ? "运行中的虚拟机没有可用的 SCSI 插槽。" : "没有可用的 SCSI 插槽。";
+                return;
+            }
+
+            // 3. 关机状态的 1 代机硬盘 -> 优先 IDE
             if (isGen1)
             {
                 for (int c = 0; c < 2; c++)
                 {
                     for (int l = 0; l < 2; l++)
                     {
-                        if (!IsSlotOccupied("IDE", c, l))
-                        {
-                            SetSlot("IDE", c, l);
-                            return;
-                        }
+                        if (!IsSlotOccupied("IDE", c, l)) { SetSlot("IDE", c, l); return; }
                     }
-                }
-
-                if (isDvd)
-                {
-                    IsSlotValid = false;
-                    SlotWarningMessage = "第 1 代虚拟机的 IDE 控制器已满，无法添加光驱。";
-                    return;
                 }
             }
 
+            // 4. 兜底方案：最后尝试 SCSI
             for (int c = 0; c < 4; c++)
             {
                 for (int l = 0; l < 64; l++)
                 {
-                    if (!IsSlotOccupied("SCSI", c, l))
-                    {
-                        SetSlot("SCSI", c, l);
-                        return;
-                    }
+                    if (!IsSlotOccupied("SCSI", c, l)) { SetSlot("SCSI", c, l); return; }
                 }
             }
 
             IsSlotValid = false;
             SlotWarningMessage = "该虚拟机没有可用的存储插槽。";
         }
-
         // 检查插槽是否被占用
         private bool IsSlotOccupied(string type, int ctrlNum, int loc)
         {
@@ -1392,53 +1425,54 @@ namespace ExHyperV.ViewModels
         {
             Debug.WriteLine($"[DEBUG-STORAGE] >>> 开始自动分配: {type} #{ctrlNum} Loc:{loc}");
 
-            _isInternalUpdating = true;
+            _isInternalUpdating = true; // 锁定拦截器
             try
             {
-                // 1. 设置接口类型
+                // 1. 设置接口类型并立即刷新列表数据源
                 SelectedControllerType = type;
-
-                // 2. 刷新并设置编号 (实施强刷技巧)
                 RefreshAvailableNumbers(type);
+                RefreshAvailableLocations(type, ctrlNum);
 
-                // 技巧：先设为一个无效值 (-1)，再设为目标值，强迫 UI 重新检索列表
-                SelectedControllerNumber = -1;
-                if (AvailableControllerNumbers.Contains(ctrlNum))
-                {
-                    SelectedControllerNumber = ctrlNum;
-                }
-                else
-                {
-                    SelectedControllerNumber = AvailableControllerNumbers.FirstOrDefault();
-                }
-                Debug.WriteLine($"[DEBUG-STORAGE] 编号已刷新为: {SelectedControllerNumber}");
-
-                // 3. 刷新位置列表 (实施强刷技巧)
-                RefreshAvailableLocations(type, SelectedControllerNumber);
-
-                SelectedLocation = -1;
-                if (AvailableLocations.Contains(loc))
-                {
-                    SelectedLocation = loc;
-                }
-                else if (AvailableLocations.Count > 0)
-                {
-                    SelectedLocation = AvailableLocations[0];
-                }
-                Debug.WriteLine($"[DEBUG-STORAGE] 位置已刷新为: {SelectedLocation}");
-
-                IsSlotValid = true;
-                SlotWarningMessage = string.Empty;
-            }
-            finally
-            {
-                // 延迟恢复监听，给 UI 渲染留出缓冲时间
+                // 2. 关键步骤：使用 Dispatcher 确保 UI 已处理完 ItemsSource 的变更通知
+                // 使用 Loaded 优先级，这会等待 ComboBox 完成内部项的生成
                 Application.Current.Dispatcher.BeginInvoke(new Action(() => {
+
+                    // --- 强刷 [编号] ---
+                    var targetNum = AvailableControllerNumbers.Contains(ctrlNum) ? ctrlNum : (AvailableControllerNumbers.Count > 0 ? AvailableControllerNumbers[0] : 0);
+
+                    // 用 -2 强制触发 PropertyChanged，因为 -1 可能已经是当前 UI 的内部错误状态
+                    SelectedControllerNumber = -2;
+                    SelectedControllerNumber = targetNum;
+                    Debug.WriteLine($"[DEBUG-STORAGE] 编号强刷完成 -> {SelectedControllerNumber}");
+
+                    // --- 强刷 [位置] ---
+                    SelectedLocation = -2;
+                    if (AvailableLocations.Contains(loc))
+                    {
+                        SelectedLocation = loc;
+                    }
+                    else if (AvailableLocations.Count > 0)
+                    {
+                        SelectedLocation = AvailableLocations[0];
+                    }
+                    Debug.WriteLine($"[DEBUG-STORAGE] 位置强刷完成 -> {SelectedLocation}");
+
+                    IsSlotValid = true;
+                    SlotWarningMessage = string.Empty;
+
+                    // 全部完成后解锁
                     _isInternalUpdating = false;
-                    Debug.WriteLine("[DEBUG-STORAGE] <<< 自动分配结束，状态已同步");
-                }), System.Windows.Threading.DispatcherPriority.Background);
+                    Debug.WriteLine("[DEBUG-STORAGE] <<< 自动分配与 UI 同步全部结束");
+
+                }), System.Windows.Threading.DispatcherPriority.Loaded);
+            }
+            catch (Exception ex)
+            {
+                _isInternalUpdating = false;
+                Debug.WriteLine($"[DEBUG-STORAGE] SetSlot 异常: {ex.Message}");
             }
         }
+
         private void RefreshAvailableNumbers(string type)
         {
             Debug.WriteLine($"[DEBUG-STORAGE] 正在刷新 [编号] 列表，类型: {type}");
@@ -1472,22 +1506,27 @@ namespace ExHyperV.ViewModels
 
             if (SelectedVm == null || string.IsNullOrEmpty(SelectedControllerType)) return;
 
+            // --- 核心修复：每次计算前先重置错误状态 ---
+            IsSlotValid = true;
+            SlotWarningMessage = string.Empty;
+
             RefreshAvailableLocations(SelectedControllerType, SelectedControllerNumber);
 
-            // 如果当前选中的位置在新列表里不存在，安全地重置它
+            // 如果该控制器下确实一个位置都没有
+            if (AvailableLocations.Count == 0)
+            {
+                SelectedLocation = -1;
+                IsSlotValid = false;
+                SlotWarningMessage = $"控制器 {SelectedControllerType} #{SelectedControllerNumber} 已满";
+                Debug.WriteLine($"[DEBUG-STORAGE] 验证失败: {SelectedControllerType} #{SelectedControllerNumber} 已满");
+                return;
+            }
+
+            // 如果当前位置不在新列表中，重置为第一个可用位置
             if (!AvailableLocations.Contains(SelectedLocation))
             {
-                if (AvailableLocations.Count > 0)
-                {
-                    SelectedLocation = AvailableLocations[0];
-                }
-                else
-                {
-                    // 如果控制器全满，设为 -1 触发红框警告，而不是设为 0 误导 UI
-                    SelectedLocation = -1;
-                    IsSlotValid = false;
-                    SlotWarningMessage = $"控制器 {SelectedControllerType} #{SelectedControllerNumber} 已满";
-                }
+                SelectedLocation = AvailableLocations[0];
+                Debug.WriteLine($"[DEBUG-STORAGE] 手动切换后重置位置为: {SelectedLocation}");
             }
         }
         // 刷新控制器选项
@@ -1495,31 +1534,52 @@ namespace ExHyperV.ViewModels
         {
             if (SelectedVm == null) return;
 
+            bool isGen1 = SelectedVm.Generation == 1;
+            bool isDvd = DeviceType == "DvdDrive";
+
             AvailableControllerTypes.Clear();
 
-            if (SelectedVm.Generation == 2)
+            // --- 核心物理约束逻辑 ---
+            if (isGen1)
             {
-                AvailableControllerTypes.Add("SCSI");
+                if (isDvd)
+                {
+                    // 法则 1：1 代机光驱必须在 IDE 上
+                    AvailableControllerTypes.Add("IDE");
+                }
+                else
+                {
+                    // 1 代机硬盘
+                    if (SelectedVm.IsRunning)
+                    {
+                        // 法则 2：运行中只能热插拔 SCSI
+                        AvailableControllerTypes.Add("SCSI");
+                    }
+                    else
+                    {
+                        // 关机状态，IDE 和 SCSI 都可以
+                        AvailableControllerTypes.Add("IDE");
+                        AvailableControllerTypes.Add("SCSI");
+                    }
+                }
             }
             else
             {
-                AvailableControllerTypes.Add("IDE");
-                if (DeviceType == "HardDisk")
-                {
-                    AvailableControllerTypes.Add("SCSI");
-                }
+                // 法则 3：2 代机永远只有 SCSI
+                AvailableControllerTypes.Add("SCSI");
             }
 
+            // 纠正当前选中项
             if (!AvailableControllerTypes.Contains(SelectedControllerType))
             {
                 SelectedControllerType = AvailableControllerTypes.FirstOrDefault() ?? "SCSI";
             }
             else
             {
+                // 强制刷新一次编号列表
                 OnSelectedControllerTypeChanged(SelectedControllerType);
             }
         }
-
         // ----------------------------------------------------------------------------------
         // 网络设置模块
         // ----------------------------------------------------------------------------------
