@@ -44,12 +44,11 @@ namespace ExHyperV.Services
         private const string QueryMemSettings = "SELECT InstanceID, VirtualQuantity FROM Msvm_MemorySettingData WHERE ResourceType = 4";
         private const string QuerySettings = "SELECT ConfigurationID, VirtualSystemSubType, Version FROM Msvm_VirtualSystemSettingData WHERE VirtualSystemType = 'Microsoft:Hyper-V:System:Realized'";
         private const string QueryGpuPvSettings = "SELECT InstanceID, HostResource FROM Msvm_GpuPartitionSettingData";
-        private const string QueryPartitionableGpus = "SELECT Name FROM Msvm_PartitionableGpu";
         private const string QueryDiskPerf = "SELECT Name, ReadBytesPersec, WriteBytesPersec FROM Win32_PerfFormattedData_Counters_HyperVVirtualStorageDevice";
         private const string QuerySwitches = "SELECT Name, ElementName FROM Msvm_VirtualEthernetSwitch";
         private const string QueryGuestNetwork = "SELECT InstanceID, IPAddresses FROM Msvm_GuestNetworkAdapterConfiguration";
 
-        // --- 核心业务查询方法 ---
+        // --- 核心查询方法 ---
 
         // 获取所有虚拟机的详细列表信息，整合了计算、存储、网络和 GPU 基础配置
         public async Task<List<VmInstanceInfo>> GetVmListAsync()
