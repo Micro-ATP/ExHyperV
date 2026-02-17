@@ -135,6 +135,7 @@ namespace ExHyperV.ViewModels
         [ObservableProperty] private ObservableCollection<PartitionInfo> _detectedPartitions = new();
         [ObservableProperty] private PartitionInfo _selectedPartition;
         [ObservableProperty] private bool _showSshForm = false;
+        [ObservableProperty] private string? _currentProcessingGpuAdapterId;
 
         // Linux SSH 凭据
         [ObservableProperty] private string _sshHost = "";
@@ -415,13 +416,10 @@ namespace ExHyperV.ViewModels
                                 if (wasRunning != vm.IsRunning)
                                 {
                                     needsResort = true;
-
-                                    // --- [新增逻辑] Root 调度器自动同步补丁 ---
-                                    // 当检测到虚拟机从关机/挂起状态进入运行状态时
+                                    // Root 调度器自动同步补丁
                                     if (vm.IsRunning)
                                     {
                                         _ = Task.Run(async () => {
-                                            // 只有在 Root 调度器模式下才需要这种进程级补偿
                                             if (HyperVSchedulerService.GetSchedulerType() == HyperVSchedulerType.Root)
                                             {
                                                 string savedAffinity = Utils.GetTagValue(vm.Notes, "Affinity");
@@ -429,18 +427,11 @@ namespace ExHyperV.ViewModels
                                                 {
                                                     try
                                                     {
-                                                        var coreIds = savedAffinity.Split(',')
-                                                                        .Select(s => int.Parse(s.Trim()))
-                                                                        .ToList();
-                                                        // 等待 vmmem 进程完全初始化（防止 PID 还没分配或所有权还没同步）
+                                                        var coreIds = savedAffinity.Split(',').Select(s => int.Parse(s.Trim())).ToList();
                                                         await Task.Delay(2000);
                                                         ProcessAffinityManager.SetVmProcessAffinity(vm.Id, coreIds);
-                                                        System.Diagnostics.Debug.WriteLine($"[RootAutoSync] 已为虚拟机 {vm.Name} 自动恢复 CPU 绑定: {savedAffinity}");
                                                     }
-                                                    catch (Exception ex)
-                                                    {
-                                                        System.Diagnostics.Debug.WriteLine($"[RootAutoSync] 自动同步失败: {ex.Message}");
-                                                    }
+                                                    catch { }
                                                 }
                                             }
                                         });
@@ -452,18 +443,12 @@ namespace ExHyperV.ViewModels
                                     SyncNetworkAdaptersInternal(vm.NetworkAdapters, update.NetworkAdapters.ToList());
                                 }
 
-                                // IP 地址探测逻辑
                                 if (vm.IsRunning)
                                 {
-                                    var allIps = vm.NetworkAdapters
-                                                   .SelectMany(a => a.IpAddresses ?? new List<string>())
+                                    var allIps = vm.NetworkAdapters.SelectMany(a => a.IpAddresses ?? new List<string>())
                                                    .Where(ip => !string.IsNullOrEmpty(ip) && !ip.Contains(":"))
                                                    .ToList();
-
-                                    if (allIps.Count > 0)
-                                    {
-                                        vm.IpAddress = allIps.First();
-                                    }
+                                    if (allIps.Count > 0) vm.IpAddress = allIps.First();
 
                                     foreach (var adapter in vm.NetworkAdapters)
                                     {
@@ -474,15 +459,10 @@ namespace ExHyperV.ViewModels
                                                 {
                                                     string arpIp = await Utils.GetVmIpAddressAsync(vm.Name, adapter.MacAddress);
                                                     if (!string.IsNullOrEmpty(arpIp))
-                                                    {
                                                         Application.Current.Dispatcher.Invoke(() => {
                                                             adapter.IpAddresses = new List<string> { arpIp };
-                                                            if (vm.IpAddress == "---" || string.IsNullOrWhiteSpace(vm.IpAddress) || vm.IpAddress.Contains("获取"))
-                                                            {
-                                                                vm.IpAddress = arpIp;
-                                                            }
+                                                            if (vm.IpAddress == "---" || string.IsNullOrWhiteSpace(vm.IpAddress)) vm.IpAddress = arpIp;
                                                         });
-                                                    }
                                                 }
                                                 catch { }
                                             });
@@ -494,43 +474,50 @@ namespace ExHyperV.ViewModels
                                     vm.IpAddress = "---";
                                 }
 
-                                // 增量更新磁盘信息
-                                var updatePaths = update.Disks.Select(d => d.Path).ToHashSet();
+                                // --- 核心修复：使用忽略大小写的 HashSet ---
+                                var updatePaths = update.Disks.Select(d => d.Path).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                                // 1. 移除不存在的磁盘
                                 for (int i = vm.Disks.Count - 1; i >= 0; i--)
                                 {
                                     if (!updatePaths.Contains(vm.Disks[i].Path))
                                         vm.Disks.RemoveAt(i);
                                 }
+
+                                // 2. 更新或添加新磁盘
                                 foreach (var newDiskData in update.Disks)
                                 {
-                                    var existingDisk = vm.Disks.FirstOrDefault(d => d.Path == newDiskData.Path);
+                                    // 使用忽略大小写的比对
+                                    var existingDisk = vm.Disks.FirstOrDefault(d => d.Path.Equals(newDiskData.Path, StringComparison.OrdinalIgnoreCase));
+
                                     if (existingDisk != null)
                                     {
                                         existingDisk.Name = newDiskData.Name;
                                         existingDisk.MaxSize = newDiskData.MaxSize;
                                         existingDisk.DiskType = newDiskData.DiskType;
 
-                                        // --- 逻辑拦截 ---
                                         if (vm.IsRunning && existingDisk.DiskType != "Physical" && File.Exists(existingDisk.Path))
                                         {
                                             try
                                             {
                                                 long realSizeBytes = new FileInfo(existingDisk.Path).Length;
-                                                // 只有当文件大小真的变了才赋值，触发上面的 Notify 通知
                                                 if (existingDisk.CurrentSize != realSizeBytes)
-                                                {
                                                     existingDisk.CurrentSize = realSizeBytes;
-                                                }
                                             }
-                                            catch { /* 处理独占锁定 */ }
+                                            catch { }
                                         }
                                         else
                                         {
-                                            // 如果没开机，才同步后端可能滞后的数据
                                             existingDisk.CurrentSize = newDiskData.CurrentSize;
                                         }
                                     }
+                                    else
+                                    {
+                                        vm.Disks.Add(newDiskData);
+                                    }
                                 }
+                                // --- 磁盘同步逻辑结束 ---
+
                                 vm.GpuName = update.GpuName;
 
                                 if (memoryMap.TryGetValue(vm.Id.ToString(), out var memData))
@@ -547,9 +534,7 @@ namespace ExHyperV.ViewModels
                             foreach (var vm in VmList)
                             {
                                 if (gpuUsageMap.TryGetValue(vm.Id, out var gpuData))
-                                {
                                     vm.UpdateGpuStats(gpuData);
-                                }
                             }
                         }
                         if (needsResort)
@@ -564,23 +549,16 @@ namespace ExHyperV.ViewModels
                         if (SelectedVm.IsRunning)
                         {
                             var img = await VmThumbnailProvider.GetThumbnailAsync(SelectedVm.Name, 320, 240);
-                            if (img != null)
-                            {
-                                Application.Current.Dispatcher.Invoke(() => SelectedVm.Thumbnail = img);
-                            }
+                            if (img != null) Application.Current.Dispatcher.Invoke(() => SelectedVm.Thumbnail = img);
                         }
                         else
                         {
-                            if (SelectedVm.Thumbnail != null)
-                            {
-                                Application.Current.Dispatcher.Invoke(() => SelectedVm.Thumbnail = null);
-                            }
+                            if (SelectedVm.Thumbnail != null) Application.Current.Dispatcher.Invoke(() => SelectedVm.Thumbnail = null);
                         }
                     }
 
                     if (SelectedVm != null && SelectedVm.IsRunning)
                     {
-                        // 仅对当前选中的、且正在运行的 VM 进行磁盘大小轮询
                         await _storageService.RefreshVirtualDiskSizesAsync(SelectedVm);
                     }
 
@@ -594,7 +572,7 @@ namespace ExHyperV.ViewModels
                 }
             }
         }
-
+        // ----------------------------------------------------------------------------------
         // 同步单个虚拟机的最新状态
         private async Task SyncSingleVmStateAsync(VmInstanceInfo vm)
         {
@@ -2055,8 +2033,19 @@ namespace ExHyperV.ViewModels
 
         // 取消添加 GPU
         [RelayCommand]
-        private void CancelAddGpu()
+        private async Task CancelAddGpu() // 【修改为 async Task】
         {
+            // 【新增：处理中途取消的回滚】
+            if (!string.IsNullOrEmpty(_currentProcessingGpuAdapterId) && SelectedVm != null)
+            {
+                try
+                {
+                    await _vmGpuService.RemoveGpuPartitionAsync(SelectedVm.Name, _currentProcessingGpuAdapterId);
+                    _currentProcessingGpuAdapterId = null;
+                }
+                catch { } // 静默清理
+            }
+
             CurrentViewType = VmDetailViewType.GpuSettings;
             GpuTasks.Clear();
         }
@@ -2098,6 +2087,7 @@ namespace ExHyperV.ViewModels
         private async Task RunRealGpuWorkflowAsync(int startIndex)
         {
             var tasks = GpuTasks;
+            _currentProcessingGpuAdapterId = null;
 
             for (int i = startIndex; i < tasks.Count; i++)
             {
@@ -2111,7 +2101,7 @@ namespace ExHyperV.ViewModels
                     {
                         case "环境准备":
                             await _vmGpuService.PrepareHostEnvironmentAsync();
-                            task.Description = "宿主机策略已成功应用。";
+                            task.Description = "策略已成功应用。";
                             break;
 
                         case "电源检查":
@@ -2123,15 +2113,15 @@ namespace ExHyperV.ViewModels
                                 await _powerService.ExecuteControlActionAsync(SelectedVm.Name, "TurnOff");
                                 while (!(await _vmGpuService.IsVmPoweredOffAsync(SelectedVm.Name)).IsOff)
                                 {
-                                    await Task.Delay(1000);
+                                    await Task.Delay(100);
                                 }
                             }
-                            task.Description = "虚拟机已就绪 (Off)。";
+                            task.Description = "虚拟机已关机。";
                             break;
 
                         case "系统优化":
                             bool optOk = await _vmGpuService.OptimizeVmForGpuAsync(SelectedVm.Name);
-                            task.Description = optOk ? "MMIO 地址空间配置完成 (64GB High / 1GB Low)。" : "优化配置失败，将尝试继续。";
+                            task.Description = optOk ? "MMIO 地址空间配置完成。" : "优化配置失败，将尝试继续。";
                             break;
 
                         case "分配显卡":
@@ -2141,88 +2131,90 @@ namespace ExHyperV.ViewModels
 
                             var assignRes = await _vmGpuService.AssignGpuPartitionAsync(SelectedVm.Name, targetPath);
                             if (!assignRes.Success) throw new Exception(assignRes.Message);
-                            task.Description = "GPU 分区已成功创建并绑定。";
+                            task.Description = "GPU 分区已成功创建。";
+                            await Task.Delay(100);
+                            var currentAdapters = await _vmGpuService.GetVmGpuAdaptersAsync(SelectedVm.Name);
+                            // 记录下来，以便后续步骤（如驱动安装）失败时删除
+                            _currentProcessingGpuAdapterId = currentAdapters.LastOrDefault().Id;
+
                             break;
 
                         case "驱动安装":
-                            task.Description = "正在分析虚拟机磁盘分区...";
+                            try
+                            {
+                                task.Description = "正在扫描所有挂载硬盘的分区...";
                             AppendLog(task.Description);
-                            var partitions = await _vmGpuService.GetPartitionsFromVmAsync(SelectedVm.Name);
 
-                            // ----------------------------------------------------------------------
-                            // 修复点 1: 处理未检测到分区的情况
-                            // ----------------------------------------------------------------------
-                            if (partitions == null || partitions.Count == 0)
+                            // 获取所有硬盘的所有分区
+                            var allPartitions = await _vmGpuService.GetPartitionsFromVmAsync(SelectedVm.Name);
+
+                            if (allPartitions == null || allPartitions.Count == 0)
                             {
-                                // 直接抛出异常，会被外层的 catch 捕获，从而将任务状态置为 Failed (红色 X)
-                                throw new Exception("未能识别到任何有效分区，无法注入驱动。请确保虚拟机已安装操作系统且文件系统可识别。");
+                                throw new Exception("未能在任何硬盘上识别到有效分区。请确保系统已安装。");
                             }
 
-                            // ----------------------------------------------------------------------
-                            // 修复点 2: 唯一的 Windows 分区 (保持原样)
-                            // ----------------------------------------------------------------------
-                            if (partitions.Count == 1 && partitions[0].OsType == OperatingSystemType.Windows)
-                            {
-                                task.Description = "已识别到 Windows 主分区，正在同步驱动...";
-                                var syncRes = await _vmGpuService.SyncWindowsDriversAsync(
-                                    SelectedVm.Name,
-                                    SelectedHostGpu.Pname,
-                                    SelectedHostGpu.Manu,
-                                    partitions[0],
-                                    msg => {
-                                        task.Description = msg;
-                                        AppendLog(msg);
+                            // 计算涉及到的物理磁盘数量（通过 DiskPath 判别）
+                            // 注意：需要在 PartitionInfo 中实现 DiskPath 赋值
+                            var distinctDisks = allPartitions.Select(p => p.DiskPath).Distinct().Count();
+                            AppendLog($"扫描完成：共发现 {allPartitions.Count} 个分区，分布在 {distinctDisks} 个磁盘上。");
+
+                                // 自动注入逻辑：只有当“只有一个磁盘”且“该磁盘只有一个 Windows 分区”时才执行
+                                if (distinctDisks == 1 && allPartitions.Count == 1 && allPartitions[0].OsType == OperatingSystemType.Windows)
+                                {
+                                    task.Description = "检测到唯一的 Windows 系统分区，正在同步驱动...";
+                                    var syncRes = await _vmGpuService.SyncWindowsDriversAsync(
+                                        SelectedVm.Name,
+                                        SelectedHostGpu.Pname,
+                                        SelectedHostGpu.Manu,
+                                        allPartitions[0],
+                                        msg =>
+                                        {
+                                            task.Description = msg;
+                                            AppendLog(msg);
+                                        });
+
+                                    if (!syncRes.Success) throw new Exception(syncRes.Message);
+                                    task.Description = "Windows 驱动安装成功。";
+                                }
+                                else
+                                {
+                                    // 如果有多个硬盘或多个分区，显示选择器让用户挑
+                                    Application.Current.Dispatcher.Invoke(() =>
+                                    {
+                                        DetectedPartitions = new ObservableCollection<PartitionInfo>(allPartitions);
+                                        ShowPartitionSelector = true;
+                                        ShowSshForm = false;
                                     });
+                                    task.Description = "请手动选择操作系统所在的分区...";
+                                    AppendLog(task.Description);
 
-                                if (!syncRes.Success) throw new Exception(syncRes.Message);
-                                task.Description = "Windows 驱动安装成功。";
-                            }
-                            // ----------------------------------------------------------------------
-                            // 修复点 3: 唯一的 Linux 分区 (新增逻辑 -> 自动跳转 SSH)
-                            // ----------------------------------------------------------------------
-                            else if (partitions.Count == 1 && partitions[0].OsType == OperatingSystemType.Linux)
+                                    // 关键：停止当前循环工作流，等待用户点击 UI 列表触发 SelectPartitionAndContinue 命令
+                                    return;
+                                }
+                            } catch (Exception ex)
                             {
-                                task.Description = "已识别到 Linux 主分区，正在初始化连接...";
-                                AppendLog(task.Description);
-
-                                // 必须在 UI 线程调用跳转逻辑，因为 SelectPartitionAndContinue 会修改 ObservableProperty
-                                await Application.Current.Dispatcher.InvokeAsync(async () => {
-                                    ShowPartitionSelector = true;
-                                    // 直接调用选择分区的逻辑，就像用户点击了按钮一样
-                                    await SelectPartitionAndContinue(partitions[0]);
-                                });
-
-                                // 关键：直接 return 退出当前的循环工作流。
-                                // 因为 Linux 需要用户填写 SSH 密码，流程暂停，等待用户点击“连接”按钮触发 StartLinuxDeploy
-                                return;
-                            }
-                            // ----------------------------------------------------------------------
-                            // 修复点 4: 多个分区 (保持原样 -> 让用户选)
-                            // ----------------------------------------------------------------------
-                            else
-                            {
-                                Application.Current.Dispatcher.Invoke(() => {
-                                    DetectedPartitions = new ObservableCollection<PartitionInfo>(partitions);
-                                    ShowPartitionSelector = true;
-                                    ShowSshForm = false;
-                                });
-                                task.Description = "检测到多个环境，请选择目标分区...";
-                                AppendLog(task.Description);
-                                // 同样 return，等待用户手动点击列表项
-                                return;
+                                throw; 
                             }
                             break;
+
                     }
 
                     task.Status = ExHyperV.Models.TaskStatus.Success;
                     AppendLog($"[成功] {task.Name}: {task.Description}");
-                    await Task.Delay(300);
                 }
                 catch (Exception ex)
                 {
                     task.Status = ExHyperV.Models.TaskStatus.Failed;
                     task.Description = $"失败: {ex.Message}";
                     AppendLog($"[错误] {task.Name} 环节异常: {ex.Message}");
+                    if (!string.IsNullOrEmpty(_currentProcessingGpuAdapterId))
+                    {
+                        AppendLog(">>> 检测到流程异常，正在自动撤销已创建的 GPU 分区以保持环境整洁...");
+                        await _vmGpuService.RemoveGpuPartitionAsync(SelectedVm.Name, _currentProcessingGpuAdapterId);
+                        _currentProcessingGpuAdapterId = null;
+                        AppendLog(">>> 已成功移除失效的 GPU 分区。");
+                    }
+
                     ShowSnackbar("操作失败", $"{task.Name} 环节出现异常", ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                     return;
                 }
@@ -2258,13 +2250,20 @@ namespace ExHyperV.ViewModels
                 if (result.Success)
                 {
                     driveTask.Status = ExHyperV.Models.TaskStatus.Success;
+                    _currentProcessingGpuAdapterId = null;
                     await FinishWorkflowAsync();
                 }
                 else
                 {
+                    if (!string.IsNullOrEmpty(_currentProcessingGpuAdapterId))
+                    {
+                        AppendLog($"[回滚] 驱动同步失败: {result.Message}");
+                        await _vmGpuService.RemoveGpuPartitionAsync(SelectedVm.Name, _currentProcessingGpuAdapterId);
+                        _currentProcessingGpuAdapterId = null;
+                    }
+
                     driveTask.Status = ExHyperV.Models.TaskStatus.Failed;
                     driveTask.Description = result.Message;
-                    AppendLog($"[错误] Windows 驱动同步失败: {result.Message}");
                 }
             }
             else if (partition.OsType == OperatingSystemType.Linux)
@@ -2396,11 +2395,19 @@ namespace ExHyperV.ViewModels
             if (result == "OK")
             {
                 driveTask.Status = ExHyperV.Models.TaskStatus.Success;
+                _currentProcessingGpuAdapterId = null;
                 AppendLog(">>> Linux 部署任务全部完成。");
                 await FinishWorkflowAsync();
             }
             else
             {
+                if (!string.IsNullOrEmpty(_currentProcessingGpuAdapterId))
+                {
+                    AppendLog($"[回滚] Linux 部署失败，正在移除 GPU 分区...");
+                    await _vmGpuService.RemoveGpuPartitionAsync(SelectedVm.Name, _currentProcessingGpuAdapterId);
+                    _currentProcessingGpuAdapterId = null;
+                }
+
                 driveTask.Status = ExHyperV.Models.TaskStatus.Failed;
                 driveTask.Description = result;
                 AppendLog($">>> [严重错误] Linux 部署失败: {result}");

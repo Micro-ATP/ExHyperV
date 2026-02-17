@@ -19,6 +19,11 @@ namespace ExHyperV.Models
         public OperatingSystemType OsType { get; }
         public string TypeDescription { get; }
 
+        public string DiskPath { get; set; }        // 所属 VHDX 路径或物理磁盘编号
+        public string DiskDisplayName { get; set; } // 友好显示：如 "Disk 0 (System.vhdx)"
+        public bool IsPhysicalDisk { get; set; }    // 标记是否为物理直通盘
+
+
         public PartitionInfo(int number, ulong startOffset, ulong size, OperatingSystemType osType, string typeDescription)
         {
             PartitionNumber = number;
@@ -28,9 +33,9 @@ namespace ExHyperV.Models
             TypeDescription = typeDescription;
         }
 
-        public string DisplayName => $"Partition {PartitionNumber} ({SizeInGb:F2} GB) - {TypeDescription}";
         public double SizeInGb => SizeInBytes / (1024.0 * 1024.0 * 1024.0);
 
+        public string DisplayName => $"[{DiskDisplayName}] Partition {PartitionNumber} （{SizeInGb:F2} GB) - {TypeDescription}";
         public string IconPath
         {
             get

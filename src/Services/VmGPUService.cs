@@ -201,94 +201,79 @@ namespace ExHyperV.Services
             throw new IOException(ExHyperV.Properties.Resources.Error_NoAvailableDriveLetters);
         }
 
-        public Task<List<PartitionInfo>> GetPartitionsFromVmAsync(string vmName)
+        public async Task<List<PartitionInfo>> GetPartitionsFromVmAsync(string vmName)
         {
-            return Task.Run(() =>
+            var allPartitions = new List<PartitionInfo>();
+
+            // 获取虚拟机挂载的所有硬盘（虚拟+物理）
+            var diskTargets = await GetAllVmHardDrivesAsync(vmName);
+
+            foreach (var target in diskTargets)
             {
-                VmDiskTarget diskTarget = null;
+                int hostDiskNumber = -1;
                 try
                 {
-                    // 步骤 1: 准确识别磁盘类型
-                    var diskTask = GetVmBootDiskInfoAsync(vmName);
-                    diskTask.Wait();
-                    diskTarget = diskTask.Result;
-
-                    if (diskTarget == null) throw new FileNotFoundException($"无法找到虚拟机 '{vmName}' 的启动磁盘。");
-
-                    string devicePath;
-
-                    if (diskTarget.IsPhysical)
+                    if (target.IsPhysical)
                     {
                         // [物理盘逻辑] 联机以供读取
                         var setupScript = $@"
-                            $ErrorActionPreference = 'Stop'
-                            Set-Disk -Number {diskTarget.PhysicalDiskNumber} -IsOffline $false
-                            Set-Disk -Number {diskTarget.PhysicalDiskNumber} -IsReadOnly $true
-                            
-                            # 验证循环：等待磁盘联机
-                            for ($i=0; $i -lt 10; $i++) {{
-                                if ((Get-Disk -Number {diskTarget.PhysicalDiskNumber}).IsOffline -eq $false) {{ return 'OK' }}
-                                Start-Sleep -Milliseconds 500
-                            }}
-                            throw 'Disk {diskTarget.PhysicalDiskNumber} failed to come online.'
-                        ";
-                        Utils.Run(setupScript);
-                        devicePath = $@"\\.\PhysicalDrive{diskTarget.PhysicalDiskNumber}";
+                    Set-Disk -Number {target.PhysicalDiskNumber} -IsOffline $false -ErrorAction SilentlyContinue
+                    Set-Disk -Number {target.PhysicalDiskNumber} -IsReadOnly $true -ErrorAction SilentlyContinue
+                    Start-Sleep -Milliseconds 500
+                    (Get-Disk -Number {target.PhysicalDiskNumber}).Number
+                ";
+                        var res = Utils.Run(setupScript);
+                        if (res != null && res.Count > 0) hostDiskNumber = target.PhysicalDiskNumber;
                     }
                     else
                     {
-                        // [虚拟盘逻辑] 挂载并处理文件锁
+                        // [虚拟盘逻辑] 挂载
                         var mountScript = $@"
-                            $path = '{diskTarget.Path}'
-                            Dismount-DiskImage -ImagePath $path -ErrorAction SilentlyContinue
-                            for ($i=0; $i -lt 5; $i++) {{
-                                try {{
-                                    $img = Mount-DiskImage -ImagePath $path -NoDriveLetter -PassThru -ErrorAction Stop
-                                    if ($img) {{ return ($img | Get-Disk).Number }}
-                                }} catch {{ Start-Sleep -Seconds 1 }}
-                            }}
-                            throw 'Failed to mount VHDX after 5 retries, file may be locked.'
-                        ";
+                    $path = '{target.Path}'
+                    Dismount-DiskImage -ImagePath $path -ErrorAction SilentlyContinue
+                    $img = Mount-DiskImage -ImagePath $path -NoDriveLetter -PassThru -ErrorAction Stop
+                    ($img | Get-Disk).Number
+                ";
                         var mountResult = Utils.Run(mountScript);
-                        if (mountResult == null || mountResult.Count == 0 || !int.TryParse(mountResult[0].ToString(), out int num))
-                        {
-                            throw new InvalidOperationException("无法挂载虚拟磁盘，文件可能仍被占用。");
-                        }
-                        devicePath = $@"\\.\PhysicalDrive{num}";
+                        if (mountResult != null && mountResult.Count > 0)
+                            int.TryParse(mountResult[0].ToString(), out hostDiskNumber);
                     }
 
-                    // 步骤 2: 解析分区
-                    var diskParser = new DiskParserService();
-                    return diskParser.GetPartitions(devicePath);
+                    if (hostDiskNumber != -1)
+                    {
+                        var diskParser = new DiskParserService();
+                        var devicePath = $@"\\.\PhysicalDrive{hostDiskNumber}";
+                        var partitions = diskParser.GetPartitions(devicePath);
+
+                        foreach (var p in partitions)
+                        {
+                            p.DiskPath = target.IsPhysical ? target.PhysicalDiskNumber.ToString() : target.Path;
+                            p.DiskDisplayName = target.IsPhysical ? $"Physical Disk {target.PhysicalDiskNumber}" : Path.GetFileName(target.Path);
+                            p.IsPhysicalDisk = target.IsPhysical;
+
+                            allPartitions.Add(p);
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
-                    // 将底层 PowerShell 异常传递给上层
-                    Debug.WriteLine($"分区获取失败: {ex.Message}");
-                    throw;
+                    Debug.WriteLine($"[扫描磁盘失败] {target.Path ?? "Physical"}: {ex.Message}");
                 }
                 finally
                 {
-                    // 步骤 3: 严格清理
-                    if (diskTarget != null)
+                    // 扫描完一个磁盘立即清理，防止后面磁盘挂载冲突
+                    if (target.IsPhysical)
                     {
-                        if (diskTarget.IsPhysical)
-                        {
-                            // ------------------------------------------------------------------
-                            // [关键修复] 将无效的组合命令拆分为两个独立的有效命令
-                            // ------------------------------------------------------------------
-                            // 1. 先移除只读属性
-                            Utils.Run($"Set-Disk -Number {diskTarget.PhysicalDiskNumber} -IsReadOnly $false -ErrorAction SilentlyContinue");
-                            // 2. 再将磁盘设为脱机，供虚拟机使用
-                            Utils.Run($"Set-Disk -Number {diskTarget.PhysicalDiskNumber} -IsOffline $true -ErrorAction SilentlyContinue");
-                        }
-                        else if (!string.IsNullOrEmpty(diskTarget.Path))
-                        {
-                            Utils.Run($"Dismount-DiskImage -ImagePath '{diskTarget.Path}' -ErrorAction SilentlyContinue");
-                        }
+                        Utils.Run($"Set-Disk -Number {target.PhysicalDiskNumber} -IsReadOnly $false -ErrorAction SilentlyContinue");
+                        Utils.Run($"Set-Disk -Number {target.PhysicalDiskNumber} -IsOffline $true -ErrorAction SilentlyContinue");
+                    }
+                    else if (!string.IsNullOrEmpty(target.Path))
+                    {
+                        Utils.Run($"Dismount-DiskImage -ImagePath '{target.Path}' -ErrorAction SilentlyContinue");
                     }
                 }
-            });
+            }
+            return allPartitions;
         }
         public string NormalizeDeviceId(string deviceId)
         {
@@ -510,12 +495,38 @@ namespace ExHyperV.Services
                 // --- 阶段 2：注入驱动 ---
                 char suggestedLetter = GetFreeDriveLetter();
                 var assignRes = Utils.Run($@"
-            $p = Get-Partition -DiskNumber {hostDiskNumber} | Where-Object PartitionNumber -eq {partition.PartitionNumber}
-            Set-Partition -InputObject $p -NewDriveLetter '{suggestedLetter}' -ErrorAction Stop
-            '{suggestedLetter}'");
+    $p = Get-Partition -DiskNumber {hostDiskNumber} | Where-Object PartitionNumber -eq {partition.PartitionNumber}
+    Set-Partition -InputObject $p -NewDriveLetter '{suggestedLetter}' -ErrorAction Stop
+    '{suggestedLetter}'");
 
                 assignedDriveLetter = assignRes[0].ToString().TrimEnd(':') + ":";
 
+                // ================= [BitLocker 与 分区可用性验证] =================
+                var checkStatus = Utils.Run($@"
+    $drive = '{assignedDriveLetter[0]}'
+    $v = Get-BitLockerVolume -MountPoint ""$($drive):"" -ErrorAction SilentlyContinue
+    $gV = Get-Volume -DriveLetter $drive -ErrorAction SilentlyContinue
+    
+    $isBL = $v -ne $null
+    $fs = if ($gV) {{ $gV.FileSystem }} else {{ '' }}
+    $prot = if ($v) {{ [string]$v.ProtectionStatus }} else {{ '' }}
+
+    if ($isBL -and ([string]::IsNullOrWhiteSpace($fs) -or $prot -eq 'Unknown')) {{
+        return 'LOCKED'
+    }}
+    return 'OK'
+");
+
+                if (checkStatus != null && checkStatus.Count > 0 && checkStatus[0].ToString() == "LOCKED")
+                {
+                    return "目标分区已开启 BitLocker 保护，需要先进入虚拟机关闭 BitLocker。";
+                }
+
+                // 验证 Windows 目录是否存在 (二次防错)
+                if (!Directory.Exists(Path.Combine(assignedDriveLetter, "Windows", "System32")))
+                {
+                    return $"安装中止：目标分区上未发现 Windows\\System32 目录。请确保选择了正确的系统分区。";
+                }
                 // 同步文件 (Robocopy)
                 string sourceFolder = FindGpuDriverSourcePath(gpuInstancePath);
                 if (string.IsNullOrEmpty(sourceFolder)) sourceFolder = @"C:\Windows\System32\DriverStore\FileRepository";
@@ -696,16 +707,17 @@ namespace ExHyperV.Services
                     {
                         if (selectedPartition.OsType == OperatingSystemType.Windows)
                         {
-                            // [修复 CS1503]
-                            // 不再获取字符串路径，而是获取 VmDiskTarget 对象
-                            Log("正在识别虚拟机启动磁盘...");
-                            var diskTarget = await GetVmBootDiskInfoAsync(vmName);
-                            if (diskTarget == null)
-                            {
-                                return ExHyperV.Properties.Resources.Error_GetVmHardDiskPathFailed;
-                            }
+                            Log("正在准备目标磁盘...");
 
-                            // 传入 diskTarget 对象 (修复了参数类型不匹配)
+                            // 【核心修复】：直接从选中的分区中提取磁盘信息
+                            var diskTarget = new VmDiskTarget
+                            {
+                                IsPhysical = selectedPartition.IsPhysicalDisk,
+                                Path = selectedPartition.IsPhysicalDisk ? null : selectedPartition.DiskPath,
+                                PhysicalDiskNumber = selectedPartition.IsPhysicalDisk ? int.Parse(selectedPartition.DiskPath) : 0
+                            };
+
+                            // 此时参数 2 类型就是单个 VmDiskTarget，不再报错
                             string injectionResult = await InjectWindowsDriversAsync(vmName, diskTarget, selectedPartition, gpuManu, id, Log);
 
                             if (injectionResult != "OK")
@@ -1108,83 +1120,64 @@ namespace ExHyperV.Services
         // 步骤5：驱动程序同步 (Windows) - 自动化注入宿主机驱动
         // 职责：驱动 Windows 离线注入流程的入口方法
         // ----------------------------------------------------------------------------------
-        private Task<VmDiskTarget> GetVmBootDiskInfoAsync(string vmName)
+        private Task<List<VmDiskTarget>> GetAllVmHardDrivesAsync(string vmName)
         {
             return Task.Run(() =>
             {
-                // [关键修正] PowerShell 脚本现在直接检查 DiskNumber 属性，而不是脆弱的 Path 字符串
                 var script = $@"
-                    $drive = Get-VMHardDiskDrive -VMName '{vmName}' | Sort-Object ControllerNumber, ControllerLocation | Select-Object -First 1
-                    if ($drive -eq $null) {{ return 'NONE' }}
-                    
-                    # 物理直通盘的核心特征是 .DiskNumber 属性有值
-                    if ($drive.DiskNumber -ne $null) {{
-                        return 'PHYSICAL:' + $drive.DiskNumber
-                    }} 
-                    # 虚拟盘的特征是 .Path 属性是一个文件路径
-                    elseif (-not [string]::IsNullOrWhiteSpace($drive.Path)) {{
-                        return 'VHD:' + $drive.Path
-                    }}
-                    
-                    return 'UNKNOWN'
-                ";
+            $drives = Get-VMHardDiskDrive -VMName '{vmName}' | Sort-Object ControllerNumber, ControllerLocation
+            if ($drives -eq $null) {{ return @() }}
+            
+            $results = @()
+            foreach ($drive in $drives) {{
+                if ($drive.DiskNumber -ne $null) {{
+                    $results += 'PHYSICAL:' + $drive.DiskNumber
+                }} 
+                elseif (-not [string]::IsNullOrWhiteSpace($drive.Path)) {{
+                    $results += 'VHD:' + $drive.Path
+                }}
+            }}
+            return $results";
 
                 var result = Utils.Run(script);
-                if (result == null || result.Count == 0 || result[0] == null) return null;
+                var list = new List<VmDiskTarget>();
+                if (result == null) return list;
 
-                string raw = result[0].ToString();
-
-                if (raw.StartsWith("PHYSICAL:"))
+                foreach (var raw in result)
                 {
-                    if (int.TryParse(raw.Substring(9), out int num))
+                    string s = raw.ToString();
+                    if (s.StartsWith("PHYSICAL:"))
                     {
-                        return new VmDiskTarget { IsPhysical = true, PhysicalDiskNumber = num };
+                        if (int.TryParse(s.Substring(9), out int num))
+                            list.Add(new VmDiskTarget { IsPhysical = true, PhysicalDiskNumber = num });
+                    }
+                    else if (s.StartsWith("VHD:"))
+                    {
+                        list.Add(new VmDiskTarget { IsPhysical = false, Path = s.Substring(4) });
                     }
                 }
-                else if (raw.StartsWith("VHD:"))
-                {
-                    return new VmDiskTarget { IsPhysical = false, Path = raw.Substring(4) };
-                }
-
-                return null;
+                return list;
             });
         }
-
 
         public async Task<(bool Success, string Message)> SyncWindowsDriversAsync(
             string vmName,
             string gpuInstancePath,
             string gpuManu,
-            PartitionInfo selectedPartition,
+            PartitionInfo selectedPartition, // 这里的 selectedPartition 已经带了 DiskPath
             Action<string> progressCallback = null)
         {
-            // 1. 基础校验
-            if (selectedPartition == null || selectedPartition.OsType != OperatingSystemType.Windows)
+            if (selectedPartition == null) return (false, "未选择分区");
+
+            var diskTarget = new VmDiskTarget
             {
-                return (false, "未选择有效的 Windows 分区。");
-            }
+                IsPhysical = selectedPartition.IsPhysicalDisk,
+                Path = selectedPartition.IsPhysicalDisk ? null : selectedPartition.DiskPath,
+                PhysicalDiskNumber = selectedPartition.IsPhysicalDisk ? int.Parse(selectedPartition.DiskPath) : 0
+            };
 
-            try
-            {
-                // 2. 获取虚拟机第一个虚拟硬盘路径
-                var harddiskPathResult = Utils.Run($"(Get-VMHardDiskDrive -vmname '{vmName}')[0].Path");
-                if (harddiskPathResult == null || harddiskPathResult.Count == 0)
-                    return (false, "未能获取虚拟机硬盘文件路径。");
-
-                var diskTarget = await GetVmBootDiskInfoAsync(vmName);
-
-                if (diskTarget == null)
-                    return (false, "未能获取虚拟机硬盘信息 (可能是未挂载硬盘)。");
-
-                // [修复 CS1503] 这里的参数现在匹配了
-                string result = await InjectWindowsDriversAsync(vmName, diskTarget, selectedPartition, gpuManu, gpuInstancePath, progressCallback);
-                
-                return result == "OK" ? (true, "OK") : (false, result);
-            }
-            catch (Exception ex)
-            {
-                return (false, $"驱动程序同步异常: {ex.Message}");
-            }
+            string result = await InjectWindowsDriversAsync(vmName, diskTarget, selectedPartition, gpuManu, gpuInstancePath, progressCallback);
+            return result == "OK" ? (true, "OK") : (false, result);
         }
 
         // ----------------------------------------------------------------------------------
