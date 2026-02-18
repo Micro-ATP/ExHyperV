@@ -263,8 +263,8 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <StackPanel VerticalAlignment="Center">
-                                                <TextBlock Text="单根 I/O 虚拟化 (SR-IOV)"/>
-                                                <TextBlock Text="直接访问物理网卡资源，获得最高性能和最低延迟。" Style="{StaticResource DescriptionTextStyle}"/>
+                                                <TextBlock Text="单根 I/O 虚拟化"/>
+                                                <TextBlock Text="获得最高性能和最低延迟（需要虚拟交换机和对应的物理网卡支持并开启了 SR-IOV ）" Style="{StaticResource DescriptionTextStyle}"/>
                                             </StackPanel>
                                             <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding SriovEnabled, Mode=TwoWay}" Command="{Binding DataContext.ToggleOffloadSettingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
                                         </Grid>
@@ -275,8 +275,8 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <StackPanel VerticalAlignment="Center">
-                                                <TextBlock Text="虚拟机队列 (VMQ)"/>
-                                                <TextBlock Text="使用物理网卡 DMA 传输包到虚拟机内存，降低 CPU 开销。" Style="{StaticResource DescriptionTextStyle}"/>
+                                                <TextBlock Text="虚拟机队列"/>
+                                                <TextBlock Text="使用物理网卡 DMA 传输包到虚拟机内存，降低 CPU 开销" Style="{StaticResource DescriptionTextStyle}"/>
                                             </StackPanel>
                                             <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding VmqEnabled, Mode=TwoWay}" Command="{Binding DataContext.ToggleOffloadSettingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
                                         </Grid>
@@ -288,7 +288,7 @@
                                             </Grid.ColumnDefinitions>
                                             <StackPanel VerticalAlignment="Center">
                                                 <TextBlock Text="IPsec 任务卸载"/>
-                                                <TextBlock Text="将 IPsec 的加密和解密计算从虚拟机 CPU 卸载到物理网卡。" Style="{StaticResource DescriptionTextStyle}"/>
+                                                <TextBlock Text="减轻主机 CPU 负担并提高网络吞吐量" Style="{StaticResource DescriptionTextStyle}"/>
                                             </StackPanel>
                                             <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding IpsecOffloadEnabled, Mode=TwoWay}" Command="{Binding DataContext.ToggleOffloadSettingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
                                         </Grid>
@@ -306,7 +306,7 @@
                                             </Grid.ColumnDefinitions>
                                             <StackPanel VerticalAlignment="Center">
                                                 <TextBlock Text="允许 MAC 地址欺骗"/>
-                                                <TextBlock Text="允许虚拟机更改源 MAC。用于负载均衡或嵌套虚拟化。" Style="{StaticResource DescriptionTextStyle}"/>
+                                                <TextBlock Text="允许虚拟机更改源 MAC，用于负载均衡或嵌套虚拟化" Style="{StaticResource DescriptionTextStyle}"/>
                                             </StackPanel>
                                             <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding MacSpoofingAllowed, Mode=TwoWay}" Command="{Binding DataContext.ToggleSecuritySettingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
                                         </Grid>
@@ -318,7 +318,7 @@
                                             </Grid.ColumnDefinitions>
                                             <StackPanel VerticalAlignment="Center">
                                                 <TextBlock Text="启用 DHCP 防护"/>
-                                                <TextBlock Text="防止未经授权的虚拟机充当 DHCP 服务器。" Style="{StaticResource DescriptionTextStyle}"/>
+                                                <TextBlock Text="防止未经授权的虚拟机充当 DHCP 服务器" Style="{StaticResource DescriptionTextStyle}"/>
                                             </StackPanel>
                                             <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding DhcpGuardEnabled, Mode=TwoWay}" Command="{Binding DataContext.ToggleSecuritySettingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
                                         </Grid>
@@ -330,7 +330,7 @@
                                             </Grid.ColumnDefinitions>
                                             <StackPanel VerticalAlignment="Center">
                                                 <TextBlock Text="启用路由器防护"/>
-                                                <TextBlock Text="防止未经授权的虚拟机发送路由器通告。" Style="{StaticResource DescriptionTextStyle}"/>
+                                                <TextBlock Text="防止未经授权的虚拟机发送路由器通告" Style="{StaticResource DescriptionTextStyle}"/>
                                             </StackPanel>
                                             <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding RouterGuardEnabled, Mode=TwoWay}" Command="{Binding DataContext.ToggleSecuritySettingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
                                         </Grid>
