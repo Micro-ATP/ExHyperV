@@ -47,6 +47,16 @@
                 </ui:NavigationViewItem>
 
                 <ui:NavigationViewItem
+                    Content="{x:Static properties:Resources.complisetting}"
+                    NavigationCacheMode="Enabled"
+                    TargetPageType="{x:Type pages:HostPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon FontSize="16" FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xE9D9;"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+                
+
+                <ui:NavigationViewItem
                     Content="虚拟机"
                     NavigationCacheMode="Enabled"
                     TargetPageType="{x:Type pages:VirtualMachinesPage}">
@@ -55,15 +65,6 @@
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 
-                <ui:NavigationViewItem
-                    Content="{x:Static properties:Resources.complisetting}"
-                    NavigationCacheMode="Enabled"
-                    TargetPageType="{x:Type pages:HostPage}">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:FontIcon FontSize="16" FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xE9D9;"/>
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
-
                 <ui:NavigationViewItem
                     x:Name="dda"
                     Content="{x:Static properties:Resources.DDA}"
