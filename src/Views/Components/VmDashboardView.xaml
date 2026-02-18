@@ -360,20 +360,25 @@
                             <ui:FontIcon FontSize="22" FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xF211;" Margin="-5,0,12,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="显卡" FontSize="16" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                                <!-- 固定描述文字，不再修改 -->
                                 <TextBlock Text="GPU-PV 设置和使用情况" FontSize="12" Opacity="0.6" Margin="0,2,0,0" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
                         </StackPanel>
 
-                        <!-- 中间：总体摘要 -->
+                        <!-- 中间：总体利用率数值 -->
                         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock FontSize="20" FontWeight="Light" VerticalAlignment="Bottom" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Text" Value="{Binding SelectedVm.GpuMaxUsage, StringFormat='{}{0:N1}'}"/>
                                         <Style.Triggers>
+                                            <!-- 无显卡或驱动未活动时数值变淡 -->
                                             <DataTrigger Binding="{Binding SelectedVm.HasGpu}" Value="False">
                                                 <Setter Property="Text" Value="0.0"/>
-                                                <Setter Property="Opacity" Value="0.4"/>
+                                                <Setter Property="Opacity" Value="0.3"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding SelectedVm.IsGpuActive}" Value="False">
+                                                <Setter Property="Opacity" Value="0.3"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -388,23 +393,24 @@
                     </Grid>
                 </ui:CardExpander.Header>
 
-                <!-- 展开内容区域 -->
                 <Grid Margin="-5">
-                    <!-- 1. 有显卡时显示的四个引擎框 -->
+                    <!-- 1. 正常活动状态 (开机且感应到驱动实例) -->
                     <UniformGrid x:Name="GpuEnginesGrid" Rows="1" Columns="4">
                         <UniformGrid.Style>
                             <Style TargetType="UniformGrid">
-                                <Setter Property="Visibility" Value="Visible"/>
+                                <Setter Property="Visibility" Value="Collapsed"/>
                                 <Style.Triggers>
-                                    <!-- ✅ 关键：如果没有显卡，隐藏整个 Grid -->
-                                    <DataTrigger Binding="{Binding SelectedVm.HasGpu}" Value="False">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding SelectedVm.IsRunning}" Value="True"/>
+                                            <Condition Binding="{Binding SelectedVm.IsGpuActive}" Value="True"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </MultiDataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </UniformGrid.Style>
 
-                        <!-- 3D 引擎 -->
                         <Grid Margin="2" Height="80">
                             <Border CornerRadius="4" BorderThickness="1" BorderBrush="#1A888888" Background="#08FFFFFF" ClipToBounds="True">
                                 <Grid>
@@ -421,7 +427,6 @@
                             </Border>
                         </Grid>
 
-                        <!-- COPY 引擎 -->
                         <Grid Margin="2" Height="80">
                             <Border CornerRadius="4" BorderThickness="1" BorderBrush="#1A888888" Background="#08FFFFFF" ClipToBounds="True">
                                 <Grid>
@@ -438,7 +443,6 @@
                             </Border>
                         </Grid>
 
-                        <!-- Encode 引擎 -->
                         <Grid Margin="2" Height="80">
                             <Border CornerRadius="4" BorderThickness="1" BorderBrush="#1A888888" Background="#08FFFFFF" ClipToBounds="True">
                                 <Grid>
@@ -455,7 +459,6 @@
                             </Border>
                         </Grid>
 
-                        <!-- Decode 引擎 -->
                         <Grid Margin="2" Height="80">
                             <Border CornerRadius="4" BorderThickness="1" BorderBrush="#1A888888" Background="#08FFFFFF" ClipToBounds="True">
                                 <Grid>
@@ -473,28 +476,65 @@
                         </Grid>
                     </UniformGrid>
 
-                    <!-- 2. 无显卡时的提示信息 -->
-                    <Border x:Name="NoGpuMessage" Padding="20">
+                    <!-- 2. 驱动未就绪状态 (运行中但无实例，包含 Code 43 或正在开机) -->
+                    <Border x:Name="GpuNotReady" Padding="30">
                         <Border.Style>
                             <Style TargetType="Border">
                                 <Setter Property="Visibility" Value="Collapsed"/>
                                 <Style.Triggers>
-                                    <!-- ✅ 关键：如果没有显卡，显示提示文字 -->
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding SelectedVm.HasGpu}" Value="True"/>
+                                            <Condition Binding="{Binding SelectedVm.IsRunning}" Value="True"/>
+                                            <Condition Binding="{Binding SelectedVm.IsGpuActive}" Value="False"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel HorizontalAlignment="Center">
+                            <ui:SymbolIcon Symbol="Warning24" FontSize="28" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Opacity="0.6" Margin="0,0,0,8"/>
+                            <TextBlock Text="显卡驱动未就绪" HorizontalAlignment="Center" Opacity="0.6" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 3. 未开机状态 -->
+                    <Border x:Name="VmOffStatus" Padding="30">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding SelectedVm.HasGpu}" Value="True"/>
+                                            <Condition Binding="{Binding SelectedVm.IsRunning}" Value="False"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <TextBlock Text="虚拟机未启动" HorizontalAlignment="Center" Opacity="0.4" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                    </Border>
+
+                    <!-- 4. 未分配状态 -->
+                    <Border x:Name="NoGpuStatus" Padding="30">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
                                     <DataTrigger Binding="{Binding SelectedVm.HasGpu}" Value="False">
                                         <Setter Property="Visibility" Value="Visible"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </Border.Style>
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="此虚拟机未分配显卡分区" 
-                           Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" 
-                           Opacity="0.4" FontSize="14"/>
-                        </StackPanel>
+                        <TextBlock Text="此虚拟机未分配显卡分区" HorizontalAlignment="Center" Opacity="0.4" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                     </Border>
+
                 </Grid>
             </ui:CardExpander>
-
             <!-- 网络 (Network) 折叠卡片 -->
             <ui:CardExpander Margin="0,0,0,8" IsExpanded="False">
                 <ui:CardExpander.Header>

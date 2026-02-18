@@ -21,6 +21,7 @@ namespace ExHyperV.Services
             public double GpuCopy;
             public double GpuEncode;
             public double GpuDecode;
+            public bool IsDriverBound;
         }
 
         // --- 静态变量与缓存 ---
@@ -280,11 +281,13 @@ namespace ExHyperV.Services
         public async Task<Dictionary<Guid, GpuUsageData>> GetGpuPerformanceAsync(IEnumerable<VmInstanceInfo> vms)
         {
             var results = new Dictionary<Guid, GpuUsageData>();
+            // 只处理正在运行且分配了 GPU 的虚拟机
             var gpuVms = vms.Where(vm => vm.IsRunning && vm.HasGpu).ToList();
             if (!gpuVms.Any()) return results;
 
             try
             {
+                // 1. 刷新进程 ID 缓存 (vmwp.exe)
                 bool pidRefreshed = false;
                 if ((DateTime.Now - _processIdCacheTimestamp).TotalSeconds > 5)
                 {
@@ -293,9 +296,34 @@ namespace ExHyperV.Services
                 }
 
                 if (!_vmProcessIdCache.Any()) return results;
-                if (pidRefreshed || !_gpuCounters.Any()) RebuildGpuCounters();
 
-                var usageByPid = _vmProcessIdCache.Values.ToDictionary(p => p, p => new GpuUsageData());
+                // 2. 如果 PID 变了或者计数器列表为空，重建计数器
+                if (pidRefreshed || !_gpuCounters.Any())
+                {
+                    RebuildGpuCounters();
+                }
+
+                // 3. 【核心感知步】获取调度器中所有活跃的实例名
+                // 这是判断“代码 43”的关键：看有没有该 PID 的“名号”
+                string[] allGpuInstances = new string[0];
+                try
+                {
+                    var category = new PerformanceCounterCategory("GPU Engine");
+                    allGpuInstances = category.GetInstanceNames();
+                }
+                catch { /* 计数器库异常处理 */ }
+
+                // 4. 初始化所有目标虚拟机的结果状态
+                var usageByPid = new Dictionary<int, GpuUsageData>();
+                foreach (var pair in _vmProcessIdCache)
+                {
+                    int pid = pair.Value;
+                    // 只要实例名列表中包含 pid_PID_，就说明驱动是 Active 的
+                    bool isBound = allGpuInstances.Any(n => n.Contains($"pid_{pid}_", StringComparison.OrdinalIgnoreCase));
+                    usageByPid[pid] = new GpuUsageData { IsDriverBound = isBound };
+                }
+
+                // 5. 抓取计数器数值 (只有驱动 Bound 的 PID 才会有计数器在 _gpuCounters 里)
                 foreach (var counter in _gpuCounters.ToList())
                 {
                     try
@@ -303,24 +331,43 @@ namespace ExHyperV.Services
                         var m = GpuInstanceRegex.Match(counter.InstanceName);
                         if (m.Success && int.TryParse(m.Groups[1].Value, out int pid) && usageByPid.ContainsKey(pid))
                         {
-                            string type = m.Groups[2].Value.ToUpper();
+                            // 获取当前数据并累加
                             float val = counter.NextValue();
                             var d = usageByPid[pid];
+
+                            string type = m.Groups[2].Value.ToUpper();
                             if (type.Contains("3D")) d.Gpu3d += val;
                             else if (type.Contains("COPY")) d.GpuCopy += val;
                             else if (type.Contains("ENCODE")) d.GpuEncode += val;
                             else if (type.Contains("DECODE")) d.GpuDecode += val;
+
                             usageByPid[pid] = d;
                         }
                     }
-                    catch { _gpuCounters.Remove(counter); counter.Dispose(); }
+                    catch
+                    {
+                        // 计数器失效（例如进程刚退出），移除它
+                        _gpuCounters.Remove(counter);
+                        counter.Dispose();
+                    }
                 }
-                foreach (var vm in gpuVms) if (_vmProcessIdCache.TryGetValue(vm.Id, out int pid)) results[vm.Id] = usageByPid[pid];
+
+                // 6. 将 PID 统计结果映射回 VM Guid
+                foreach (var vm in gpuVms)
+                {
+                    if (_vmProcessIdCache.TryGetValue(vm.Id, out int pid))
+                    {
+                        results[vm.Id] = usageByPid[pid];
+                    }
+                }
             }
-            catch { }
+            catch
+            {
+                // 全局异常保护
+            }
+
             return results;
         }
-
         // 获取虚拟机动态内存当前的分配量和可用百分比
         public async Task<Dictionary<string, VmDynamicMemoryData>> GetVmRuntimeMemoryDataAsync()
         {

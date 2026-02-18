@@ -401,6 +401,11 @@ namespace ExHyperV.Models
 
         public double GpuMaxUsage => Math.Max(Math.Max(Gpu3dUsage, GpuCopyUsage), Math.Max(GpuEncodeUsage, GpuDecodeUsage));
 
+        // GPU 是否感应到活跃实例（由宿主机内核感应）
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasGpu))] // 当活性改变时，也通知 HasGpu 刷新
+        private bool _isGpuActive;
+
         // GPU 波形图数据点
         [ObservableProperty] private PointCollection _gpu3dHistoryPoints;
         [ObservableProperty] private PointCollection _gpuCopyHistoryPoints;
@@ -501,11 +506,16 @@ namespace ExHyperV.Models
             if (!IsRunning)
             {
                 Gpu3dUsage = 0; GpuCopyUsage = 0; GpuEncodeUsage = 0; GpuDecodeUsage = 0;
+                IsGpuActive = false; // 关机时自动熄灭
             }
             else
             {
-                Gpu3dUsage = data.Gpu3d; GpuCopyUsage = data.GpuCopy;
-                GpuEncodeUsage = data.GpuEncode; GpuDecodeUsage = data.GpuDecode;
+                Gpu3dUsage = data.Gpu3d;
+                GpuCopyUsage = data.GpuCopy;
+                GpuEncodeUsage = data.GpuEncode;
+                GpuDecodeUsage = data.GpuDecode;
+
+                IsGpuActive = data.IsDriverBound;
             }
 
             UpdateSingleGpuHistory(_gpu3dHistory, Gpu3dUsage);
@@ -516,7 +526,6 @@ namespace ExHyperV.Models
             RefreshGpuPoints();
             OnPropertyChanged(nameof(GpuMaxUsage));
         }
-
         private void UpdateSingleGpuHistory(LinkedList<double> history, double value)
         {
             history.AddLast(Math.Max(0, Math.Min(100, value)));
@@ -598,7 +607,11 @@ namespace ExHyperV.Models
         {
             State = _transientState ?? _backendState;
             IsRunning = !string.IsNullOrEmpty(State) && !new[] { "已关机", "Off", "已暂停", "Paused", "已保存", "Saved" }.Contains(State);
-            if (!IsRunning) UpdateMemoryStatus(0, 0);
+            if (!IsRunning)
+            {
+                UpdateMemoryStatus(0, 0);
+                IsGpuActive = false; 
+            }
         }
 
         private bool ShouldClearTransientState(string backend)
