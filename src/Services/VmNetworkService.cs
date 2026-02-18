@@ -252,22 +252,90 @@ namespace ExHyperV.Services
         // 4. 高级特性配置 (Apply Settings)
         // ==========================================
 
-        // 应用 VLAN 设置 (Access, Trunk, Pvlan)
         public async Task<(bool Success, string Message)> ApplyVlanSettingsAsync(string vmName, VmNetworkAdapter adapter)
         {
+            // ---------------------------------------------------------
+            // 1. 【UI 归一逻辑】直接操作 adapter 属性，使界面立刻同步
+            // ---------------------------------------------------------
+            if (adapter.VlanMode == VlanOperationMode.Private)
+            {
+                // 自动补全 0 值
+                if (adapter.PvlanPrimaryId == 0) adapter.PvlanPrimaryId = 100;
+                if (adapter.PvlanSecondaryId == 0) adapter.PvlanSecondaryId = 101;
+
+                // 如果是网关模式，强制 UI 上的“辅 ID”跳回和“主 ID”一致
+                if (adapter.PvlanMode == PvlanMode.Promiscuous)
+                {
+                    Log($"[归一执行] 网关模式：强制辅ID {adapter.PvlanSecondaryId} -> 主ID {adapter.PvlanPrimaryId}");
+                    adapter.PvlanSecondaryId = adapter.PvlanPrimaryId;
+                }
+            }
+
+            // ---------------------------------------------------------
+            // 2. 【WMI 写入逻辑】根据 Hyper-V 协议强制转换底层参数
+            // ---------------------------------------------------------
             return await EnsureAndModifyFeatureAsync(adapter.Id, "Msvm_EthernetSwitchPortVlanSettingData", (s) => {
+
                 s["OperationMode"] = (uint)adapter.VlanMode;
-                s["AccessVlanId"] = (ushort)adapter.AccessVlanId;
-                s["NativeVlanId"] = (ushort)adapter.NativeVlanId;
-                if (adapter.TrunkAllowedVlanIds?.Any() == true)
-                    s["TrunkVlanIdArray"] = adapter.TrunkAllowedVlanIds.Select(x => (ushort)x).ToArray();
-                s["PrimaryVlanId"] = (ushort)adapter.PvlanPrimaryId;
-                s["SecondaryVlanId"] = (ushort)adapter.PvlanSecondaryId;
-                s["PvlanMode"] = (uint)adapter.PvlanMode;
+
+                switch (adapter.VlanMode)
+                {
+                    case VlanOperationMode.Access:
+                        s["AccessVlanId"] = (ushort)adapter.AccessVlanId;
+                        s["NativeVlanId"] = (ushort)0;
+                        s["TrunkVlanIdArray"] = null;
+                        s["PvlanMode"] = (uint)0;
+                        s["PrimaryVlanId"] = (ushort)0;
+                        s["SecondaryVlanId"] = (ushort)0;
+                        s["SecondaryVlanIdArray"] = null;
+                        break;
+
+                    case VlanOperationMode.Trunk:
+                        s["NativeVlanId"] = (ushort)adapter.NativeVlanId;
+                        s["TrunkVlanIdArray"] = adapter.TrunkAllowedVlanIds?.Any() == true ? adapter.TrunkAllowedVlanIds.Select(x => (ushort)x).ToArray() : Array.Empty<ushort>();
+                        s["AccessVlanId"] = (ushort)0;
+                        s["PvlanMode"] = (uint)0;
+                        s["PrimaryVlanId"] = (ushort)0;
+                        s["SecondaryVlanId"] = (ushort)0;
+                        s["SecondaryVlanIdArray"] = null;
+                        break;
+
+                    case VlanOperationMode.Private:
+                        uint pMode = (uint)adapter.PvlanMode;
+                        if (pMode == 0) pMode = 1;
+
+                        ushort priId = (ushort)adapter.PvlanPrimaryId;
+                        ushort secId = (ushort)adapter.PvlanSecondaryId;
+
+                        s["PvlanMode"] = pMode;
+                        s["PrimaryVlanId"] = priId;
+
+                        // --- 核心修复：针对 Promiscuous (3) 的特殊协议转换 ---
+                        if (pMode == 3)
+                        {
+                            // 协议规定：网关模式下，底层 SecondaryVlanId 必须为 0
+                            s["SecondaryVlanId"] = (ushort)0;
+                            // 协议规定：网关能互通的 ID 必须写在数组里
+                            s["SecondaryVlanIdArray"] = new ushort[] { priId };
+
+                            Log($"[WMI修正] 网关模式底层对齐：SecondaryVlanId 已设为 0，Array 已填入 {priId}");
+                        }
+                        else
+                        {
+                            // Isolated 或 Community 模式，正常写入辅 ID
+                            s["SecondaryVlanId"] = secId;
+                            s["SecondaryVlanIdArray"] = null;
+                        }
+                        // --------------------------------------------------
+
+                        s["AccessVlanId"] = (ushort)0;
+                        s["NativeVlanId"] = (ushort)0;
+                        s["TrunkVlanIdArray"] = null;
+                        break;
+                }
             });
         }
 
-        // 应用带宽管理设置 (Limit, Reservation)
         public async Task<(bool Success, string Message)> ApplyBandwidthSettingsAsync(string vmName, VmNetworkAdapter adapter)
         {
             return await EnsureAndModifyFeatureAsync(adapter.Id, "Msvm_EthernetSwitchPortBandwidthSettingData", (s) => {
@@ -303,54 +371,93 @@ namespace ExHyperV.Services
         // 5. 核心内部逻辑 (Internal Core Logic)
         // ==========================================
 
-        // 通用方法：确保高级特性存在并修改其属性（如果不存在则从默认模板创建）
+        // 通用方法：确保高级特性存在并修改其属性
         private async Task<(bool Success, string Message)> EnsureAndModifyFeatureAsync(string portId, string featureClass, Action<ManagementObject> updateAction)
         {
             try
             {
                 string escapedId = portId.Replace("\\", "\\\\");
+
+                // 第一步：获取或创建配置对象
                 var xmlInfo = await WmiTools.QueryAsync($"SELECT * FROM Msvm_SyntheticEthernetPortSettingData WHERE InstanceID = '{escapedId}'", (port) => {
                     using var allocation = port.GetRelated("Msvm_EthernetPortAllocationSettingData").Cast<ManagementObject>().FirstOrDefault();
                     if (allocation == null) return null;
+
                     var existing = allocation.GetRelated(featureClass, "Msvm_EthernetPortSettingDataComponent", null, null, null, null, false, null).Cast<ManagementObject>().FirstOrDefault();
+
                     if (existing != null)
                     {
+                        // 修改现有对象
                         updateAction(existing);
-                        return new { IsNew = false, Xml = existing.GetText(TextFormat.CimDtd20), Target = string.Empty };
+                        return new { IsNew = false, Obj = existing, Target = string.Empty };
                     }
                     else
                     {
+                        // 创建新对象模板
                         var template = GetDefaultFeatureTemplate(featureClass);
                         if (template == null) return null;
-                        updateAction(template);
+
                         template["InstanceID"] = Guid.NewGuid().ToString();
-                        return new { IsNew = true, Xml = template.GetText(TextFormat.CimDtd20), Target = allocation.Path.Path };
+                        updateAction(template); // 应用属性
+                        return new { IsNew = true, Obj = template, Target = allocation.Path.Path };
                     }
                 });
 
                 var info = xmlInfo.FirstOrDefault();
-                if (info == null) return (false, "无法定位配置对象。");
-                var inParams = new Dictionary<string, object> { { "FeatureSettings", new string[] { info.Xml } } };
-                if (info.IsNew) inParams["AffectedConfiguration"] = info.Target;
-                return await WmiTools.ExecuteMethodAsync($"SELECT * FROM {ServiceClass}", info.IsNew ? "AddFeatureSettings" : "ModifyFeatureSettings", inParams);
-            }
-            catch (Exception ex) { return (false, ex.Message); }
-        }
+                if (info == null) return (false, "无法定位配置对象或创建模板失败。");
 
+                // 第二步：生成 XML
+                string finalXml = info.Obj.GetText(TextFormat.CimDtd20);
+
+                // --- [DEBUG START] 输出 XML 到调试窗口 ---
+                Log($"正在提交 {featureClass} 设置...");
+                // 打印 XML (为了不刷屏，只打印关键部分，或者全部打印)
+                Debug.WriteLine($"-------- [WMI XML DEBUG] --------\n{finalXml}\n---------------------------------");
+                // --- [DEBUG END] ---
+
+                // 第三步：提交给 Hyper-V 服务
+                var inParams = new Dictionary<string, object> { { "FeatureSettings", new string[] { finalXml } } };
+
+                string methodName = info.IsNew ? "AddFeatureSettings" : "ModifyFeatureSettings";
+                if (info.IsNew) inParams["AffectedConfiguration"] = info.Target;
+
+                var result = await WmiTools.ExecuteMethodAsync($"SELECT * FROM {ServiceClass}", methodName, inParams);
+
+                if (!result.Success)
+                {
+                    Log($"[WMI 错误] 方法: {methodName}, 返回信息: {result.Message}");
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Log($"[异常] {ex.Message}\n{ex.StackTrace}");
+                return (false, ex.Message);
+            }
+        }
         // 将 WMI 获取的 FeatureSettings 对象解析为 Model 属性
         private void ParseFeatureSettings(VmNetworkAdapter adapter, ManagementObject feature)
         {
             string cls = feature.ClassPath.ClassName;
             if (cls == "Msvm_EthernetSwitchPortVlanSettingData")
             {
-                adapter.VlanMode = (VlanOperationMode)GetUint(feature, "OperationMode");
+                uint rawMode = (uint)GetUint(feature, "OperationMode");
+                
+
+                // 核心映射：如果 WMI 返回 0 (Unknown)，UI 显示为 Access (1)
+                adapter.VlanMode = (rawMode == 0) ? VlanOperationMode.Access : (VlanOperationMode)rawMode;
+
                 adapter.AccessVlanId = (int)GetUint(feature, "AccessVlanId");
                 adapter.NativeVlanId = (int)GetUint(feature, "NativeVlanId");
-                adapter.PvlanMode = (PvlanMode)GetUint(feature, "PvlanMode");
+                adapter.PvlanMode = (PvlanMode)(uint)GetUint(feature, "PvlanMode");
                 adapter.PvlanPrimaryId = (int)GetUint(feature, "PrimaryVlanId");
                 adapter.PvlanSecondaryId = (int)GetUint(feature, "SecondaryVlanId");
-                if (HasProperty(feature, "TrunkVlanIdArray") && feature["TrunkVlanIdArray"] is ushort[] trunks) adapter.TrunkAllowedVlanIds = trunks.Select(x => (int)x).ToList();
+
+                if (HasProperty(feature, "TrunkVlanIdArray") && feature["TrunkVlanIdArray"] is ushort[] trunks)
+                    adapter.TrunkAllowedVlanIds = trunks.Select(x => (int)x).ToList();
             }
+
             else if (cls == "Msvm_EthernetSwitchPortBandwidthSettingData")
             {
                 adapter.BandwidthLimit = GetUlong(feature, "Limit") / 1000000;

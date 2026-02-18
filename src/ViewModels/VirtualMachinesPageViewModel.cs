@@ -1583,6 +1583,35 @@ namespace ExHyperV.ViewModels
         // 网络设置模块
         // ----------------------------------------------------------------------------------
 
+
+        // ----------------------------------------------------------------------------------
+        // 网络模式映射选项 (用于翻译)
+        // ----------------------------------------------------------------------------------
+
+        // 1. VLAN 主模式映射
+        public List<object> VlanModeOptions { get; } = new()
+{
+    new { Value = VlanOperationMode.Access, Name = "接入" },
+    new { Value = VlanOperationMode.Trunk, Name = "中继" },
+    new { Value = VlanOperationMode.Private, Name = "专用" }
+};
+
+        // 2. Private VLAN 类型 (角色) 映射
+        public List<object> PvlanModeOptions { get; } = new()
+{
+    new { Value = PvlanMode.Isolated, Name = "隔离" },
+    new { Value = PvlanMode.Community, Name = "社区" },
+    new { Value = PvlanMode.Promiscuous, Name = "混杂" }
+};
+
+        // 3. 端口镜像模式映射
+        public List<object> PortMirroringOptions { get; } = new()
+{
+    new { Value = PortMonitorMode.None, Name = "禁用" },
+    new { Value = PortMonitorMode.Source, Name = "加入发送组" },
+    new { Value = PortMonitorMode.Destination, Name = "加入接收组" }
+};
+
         // 导航至网络设置
         [RelayCommand]
         private async Task GoToNetworkSettings()
@@ -1828,7 +1857,7 @@ namespace ExHyperV.ViewModels
                     return;
                 }
 
-                ShowSnackbar("成功", "所有相关设置已应用", ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
+                ShowSnackbar("成功", "设置已应用", ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
             }
             finally
             {

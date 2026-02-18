@@ -200,7 +200,7 @@
                     <ui:CardControl.Header>
                         <StackPanel>
                             <TextBlock Text="解除消费级硬件限制" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="修复因硬件安全检查（ACS）导致的问题" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="修复因硬件安全检查导致的问题" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                     </ui:CardControl.Header>
                     <ui:ToggleSwitch IsChecked="{Binding IsGpuStrategyEnabled, Mode=TwoWay}"
@@ -215,7 +215,7 @@
                     <ui:CardControl.Header>
                         <StackPanel>
                             <TextBlock Text="切换系统为服务器版本" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="黑魔法，仅对 Build 26100 及以下系统生效。" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="黑魔法，仅对 Build 26100 及以下系统生效" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                     </ui:CardControl.Header>
                     <ui:ToggleSwitch IsChecked="{Binding IsServerSystem, Mode=TwoWay}"

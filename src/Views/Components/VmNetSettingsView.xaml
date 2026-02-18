@@ -36,22 +36,6 @@
             <sys:String>1000</sys:String>
         </x:Array>
 
-        <ObjectDataProvider x:Key="VlanModes" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
-            <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="models:VlanOperationMode"/>
-            </ObjectDataProvider.MethodParameters>
-        </ObjectDataProvider>
-        <ObjectDataProvider x:Key="PvlanModes" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
-            <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="models:PvlanMode"/>
-            </ObjectDataProvider.MethodParameters>
-        </ObjectDataProvider>
-        <ObjectDataProvider x:Key="PortMonitorModes" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
-            <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="models:PortMonitorMode"/>
-            </ObjectDataProvider.MethodParameters>
-        </ObjectDataProvider>
-
         <Style x:Key="SectionBorderStyle" TargetType="Border">
             <Setter Property="Background" Value="{ui:ThemeResource CardBackgroundFillColorDefaultBrush}"/>
             <Setter Property="BorderBrush" Value="{ui:ThemeResource CardStrokeColorDefaultBrush}"/>
@@ -183,41 +167,71 @@
                                 </Border>
 
                                 <!-- 2. VLAN 与 隔离 -->
+                                <!-- 2. VLAN 与 隔离 -->
                                 <TextBlock Text="VLAN 与 隔离" Style="{StaticResource SectionHeaderTextStyle}"/>
                                 <Border Style="{StaticResource SectionBorderStyle}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
+                                            <!-- 模式标签 -->
                                             <ColumnDefinition Width="Auto"/>
+                                            <!-- 模式下拉框 -->
                                             <ColumnDefinition Width="*"/>
+                                            <!-- 参数动态面板 (左对齐) -->
                                             <ColumnDefinition Width="Auto"/>
+                                            <!-- 应用按钮 -->
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Text="模式" VerticalAlignment="Center" Margin="0,0,16,0" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
-                                        <ComboBox Grid.Column="1" Width="150" ItemsSource="{Binding Source={StaticResource VlanModes}}" SelectedValue="{Binding VlanMode, Mode=TwoWay}"/>
 
-                                        <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <TextBlock Text="模式" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+
+                                        <!-- 减少模式宽度: 140 -> 110 -->
+                                        <ComboBox Grid.Column="1" Width="110" 
+                  ItemsSource="{Binding DataContext.VlanModeOptions, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                  SelectedValue="{Binding VlanMode, Mode=TwoWay}"
+                  DisplayMemberPath="Name"
+                  SelectedValuePath="Value"
+                  Margin="0,0,16,0"/>
+
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+
+                                            <!-- Access 模式 -->
                                             <StackPanel Orientation="Horizontal" Visibility="{Binding VlanMode, Converter={StaticResource VlanModeToVisibilityConverter}, ConverterParameter=Access}">
-                                                <TextBlock Text="VLAN ID" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                                <ui:TextBox Text="{Binding AccessVlanId, Mode=TwoWay}" Width="60"/>
+                                                <TextBlock Text="VLAN ID" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <ui:TextBox Text="{Binding AccessVlanId, Mode=TwoWay}" Width="70" VerticalAlignment="Center"/>
                                             </StackPanel>
+
+                                            <!-- Trunk 模式 -->
                                             <StackPanel Orientation="Horizontal" Visibility="{Binding VlanMode, Converter={StaticResource VlanModeToVisibilityConverter}, ConverterParameter=Trunk}">
-                                                <TextBlock Text="Native" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                                <ui:TextBox Text="{Binding NativeVlanId, Mode=TwoWay}" Width="50" Margin="0,0,12,0"/>
+                                                <TextBlock Text="本征 ID" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <ui:TextBox Text="{Binding NativeVlanId, Mode=TwoWay}" Width="70" Margin="0,0,12,0" VerticalAlignment="Center"/>
                                                 <TextBlock Text="允许列表" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                                <ui:TextBox Text="{Binding TrunkAllowedVlanIds, Converter={StaticResource IntListConverter}, Mode=TwoWay}" Width="120"/>
+                                                <ui:TextBox Text="{Binding TrunkAllowedVlanIds, Converter={StaticResource IntListConverter}, Mode=TwoWay}" Width="160" PlaceholderText="10, 20..." VerticalAlignment="Center"/>
                                             </StackPanel>
+
+                                            <!-- Private VLAN 模式 -->
                                             <StackPanel Orientation="Horizontal" Visibility="{Binding VlanMode, Converter={StaticResource VlanModeToVisibilityConverter}, ConverterParameter=Private}">
-                                                <ComboBox ItemsSource="{Binding Source={StaticResource PvlanModes}}" SelectedValue="{Binding PvlanMode, Mode=TwoWay}" Width="90" Margin="0,0,12,0"/>
-                                                <TextBlock Text="主" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                                <ui:TextBox Text="{Binding PvlanPrimaryId, Mode=TwoWay}" Width="45" Margin="0,0,8,0"/>
-                                                <TextBlock Text="辅" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                                <ui:TextBox Text="{Binding PvlanSecondaryId, Mode=TwoWay}" Width="45"/>
+                                                <TextBlock Text="类型" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <!-- 减少类型宽度: 160 -> 125 -->
+                                                <ComboBox ItemsSource="{Binding DataContext.PvlanModeOptions, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                          SelectedValue="{Binding PvlanMode, Mode=TwoWay}" 
+                          DisplayMemberPath="Name"
+                          SelectedValuePath="Value"
+                          Width="125" Margin="0,0,12,0" VerticalAlignment="Center"/>
+
+                                                <TextBlock Text="主 ID" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <ui:TextBox Text="{Binding PvlanPrimaryId, Mode=TwoWay}" Width="65" Margin="0,0,12,0" VerticalAlignment="Center"/>
+
+                                                <TextBlock Text="辅 ID" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <ui:TextBox Text="{Binding PvlanSecondaryId, Mode=TwoWay}" Width="65" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </StackPanel>
-                                        <ui:Button Grid.Column="3" Content="应用" Appearance="Primary" Width="60" Command="{Binding DataContext.ApplyVlanSettingsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+
+                                        <ui:Button Grid.Column="3" Content="应用" Appearance="Primary" Width="60" 
+                   Command="{Binding DataContext.ApplyVlanSettingsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                   CommandParameter="{Binding}"/>
                                     </Grid>
                                 </Border>
-
+                                
                                 <!-- 3. 流量控制 (QoS) -->
                                 <TextBlock Text="流量控制 (QoS)" Style="{StaticResource SectionHeaderTextStyle}"/>
                                 <Border Style="{StaticResource SectionBorderStyle}">
@@ -334,8 +348,11 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Text="端口镜像" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
-                                            <ComboBox Grid.Column="1" Width="140" ItemsSource="{Binding Source={StaticResource PortMonitorModes}}" SelectedValue="{Binding MonitorMode, Mode=TwoWay}"/>
-
+                                            <ComboBox Grid.Column="1" Width="140" 
+          ItemsSource="{Binding DataContext.PortMirroringOptions, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+          SelectedValue="{Binding MonitorMode, Mode=TwoWay}"
+          DisplayMemberPath="Name"
+          SelectedValuePath="Value"/>
                                             <TextBlock Grid.Column="3" Text="风暴阈值" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                                             <ComboBox Grid.Column="4" IsEditable="True" Width="100" Text="{Binding StormLimit, Mode=TwoWay}" ItemsSource="{StaticResource StormLimitPresets}"/>
 
