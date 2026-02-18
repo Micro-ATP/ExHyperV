@@ -340,7 +340,7 @@
     <value>首页</value>
   </data>
   <data name="complisetting" xml:space="preserve">
-    <value>兼容性和设定</value>
+    <value>主机</value>
   </data>
   <data name="gpupvv" xml:space="preserve">
     <value>GPU半虚拟化</value>

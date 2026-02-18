@@ -1,0 +1,227 @@
+﻿<Page
+    x:Class="ExHyperV.Views.Pages.HostPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:converters="clr-namespace:ExHyperV.Converters"
+    xmlns:properties="clr-namespace:ExHyperV.Properties"
+    Title="HostPage">
+
+    <Page.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </Page.Resources>
+
+    <Grid Margin="24">
+        <StackPanel>
+            <StackPanel Margin="0,0,0,12">
+                <ui:TextBlock Text="环境与配置" FontSize="28" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" />
+            </StackPanel>
+
+            <!-- 第一部分：运行环境 -->
+            <StackPanel Margin="0,0,0,16">
+                <ui:TextBlock Text="运行环境" 
+                              Margin="0,0,0,8"
+                              Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+
+                <!-- 1. CPU 虚拟化 -->
+                <!-- 修改：Padding 设为 16，增加高度 -->
+                <ui:Card Padding="16" Margin="0,0,0,4">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <!-- 第一列：现在放状态图标 -->
+                            <ColumnDefinition Width="Auto"/>
+                            <!-- 第二列：文字 -->
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 状态图标 (原右侧移到左侧) -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,12,0">
+                            <ui:ProgressRing Width="16" Height="16" IsIndeterminate="True" 
+                                             Visibility="{Binding CpuStatus.IsChecking, Converter={StaticResource BoolToVis}}"/>
+                            <ui:FontIcon FontSize="20" FontFamily="{DynamicResource SegoeFluentIcons}" 
+                                         Glyph="{Binding CpuStatus.IconGlyph}" 
+                                         Foreground="{Binding CpuStatus.IconColor}" 
+                                         Visibility="{Binding CpuStatus.IsChecking, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}"/>
+                        </StackPanel>
+
+                        <!-- 文字 -->
+                        <TextBlock Grid.Column="1" Text="CPU 虚拟化" VerticalAlignment="Center" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                    </Grid>
+                </ui:Card>
+
+                <!-- 2. IOMMU -->
+                <ui:Card Padding="16" Margin="0,0,0,4">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 状态图标 -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,12,0">
+                            <ui:ProgressRing Width="16" Height="16" IsIndeterminate="True" 
+                                             Visibility="{Binding IommuStatus.IsChecking, Converter={StaticResource BoolToVis}}"/>
+                            <ui:FontIcon FontSize="20" FontFamily="{DynamicResource SegoeFluentIcons}" 
+                                         Glyph="{Binding IommuStatus.IconGlyph}" 
+                                         Foreground="{Binding IommuStatus.IconColor}" 
+                                         Visibility="{Binding IommuStatus.IsChecking, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}"/>
+                        </StackPanel>
+
+                        <!-- 文字 -->
+                        <TextBlock Grid.Column="1" Text="IOMMU 开关" VerticalAlignment="Center" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                    </Grid>
+                </ui:Card>
+
+                <!-- 3. Hyper-V 服务 -->
+                <ui:Card Padding="16" Margin="0,0,0,4">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 状态图标 -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,12,0">
+                            <ui:ProgressRing Width="16" Height="16" IsIndeterminate="True" 
+                                             Visibility="{Binding HyperVStatus.IsChecking, Converter={StaticResource BoolToVis}}"/>
+                            <ui:FontIcon FontSize="20" FontFamily="{DynamicResource SegoeFluentIcons}" 
+                                         Glyph="{Binding HyperVStatus.IconGlyph}" 
+                                         Foreground="{Binding HyperVStatus.IconColor}" 
+                                         Visibility="{Binding HyperVStatus.IsChecking, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}"/>
+                        </StackPanel>
+
+                        <!-- 文字 -->
+                        <TextBlock Grid.Column="1" Text="Hyper-V 服务" VerticalAlignment="Center" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+
+                        <ui:Button Grid.Column="2" 
+                   Content="启用" 
+                   Appearance="Primary"
+                   Visibility="{Binding HyperVStatus.IsInstalled, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}"
+                   Command="{Binding EnableHyperVCommand}"/>
+                    </Grid>
+                </ui:Card>
+
+                <!-- 4. 系统版本 -->
+                <ui:Card Padding="16" Margin="0,0,0,4">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 状态图标 -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,12,0">
+                            <ui:ProgressRing Width="16" Height="16" IsIndeterminate="True" 
+                                             Visibility="{Binding VersionStatus.IsChecking, Converter={StaticResource BoolToVis}}"/>
+                            <ui:FontIcon FontSize="20" FontFamily="{DynamicResource SegoeFluentIcons}" 
+                                         Glyph="{Binding VersionStatus.IconGlyph}" 
+                                         Foreground="{Binding VersionStatus.IconColor}" 
+                                         Visibility="{Binding VersionStatus.IsChecking, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}"/>
+                        </StackPanel>
+
+                        <!-- 文字 -->
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center">
+                            <Run Text="系统版本：" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                            <Run Text="{Binding VersionStatus.StatusText}" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                        </TextBlock>
+                    </Grid>
+                </ui:Card>
+
+                <!-- 5. Windows Server 环境 -->
+                <ui:Card Padding="16" Margin="0,0,0,4">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 状态图标 -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,12,0">
+                            <ui:ProgressRing Width="16" Height="16" IsIndeterminate="True" 
+                                             Visibility="{Binding SystemStatus.IsChecking, Converter={StaticResource BoolToVis}}"/>
+                            <ui:FontIcon FontSize="20" FontFamily="{DynamicResource SegoeFluentIcons}" 
+                                         Glyph="{Binding SystemStatus.IconGlyph}" 
+                                         Foreground="{Binding SystemStatus.IconColor}" 
+                                         Visibility="{Binding SystemStatus.IsChecking, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}"/>
+                        </StackPanel>
+
+                        <!-- 文字 -->
+                        <TextBlock Grid.Column="1" Text="Windows Server 环境" VerticalAlignment="Center" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                    </Grid>
+                </ui:Card>
+            </StackPanel>
+
+            <!-- 第二部分：高级设定 (保持原样，仅做参考) -->
+            <StackPanel>
+                <ui:TextBlock Text="高级设定" 
+                              Margin="0,0,0,8"
+                              Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+
+                <!-- 核心调度器 -->
+                <ui:CardControl Margin="0,0,0,8" Padding="12">
+                    <ui:CardControl.Icon>
+                        <ui:FontIcon FontSize="22" FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xEA86;"/>
+                    </ui:CardControl.Icon>
+                    <ui:CardControl.Header>
+                        <TextBlock Text="调度器类型" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                    </ui:CardControl.Header>
+
+                    <ComboBox Width="140" 
+                              ItemsSource="{Binding SchedulerModes}"
+                              DisplayMemberPath="Name"
+                              SelectedValuePath="Type"
+                              SelectedValue="{Binding CurrentSchedulerType, Mode=TwoWay}"
+                              IsEnabled="{Binding AdminStatus.IsSuccess}">
+                    </ComboBox>
+                </ui:CardControl>
+
+                <!-- NUMA 跨越 -->
+                <ui:CardControl Margin="0,0,0,8" Padding="12">
+                    <ui:CardControl.Icon>
+                        <ui:FontIcon FontSize="22" FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xF57C;"/>
+                    </ui:CardControl.Icon>
+                    <ui:CardControl.Header>
+                        <StackPanel>
+                            <TextBlock Text="允许 NUMA 跨越" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="开启后虚拟机可跨物理处理器分配内存" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                    </ui:CardControl.Header>
+
+                    <ui:ToggleSwitch IsChecked="{Binding IsNumaSpanningEnabled, Mode=TwoWay}"
+                                     IsEnabled="{Binding AdminStatus.IsSuccess}"/>
+                </ui:CardControl>
+
+                <!-- DDA 策略 -->
+                <ui:CardControl Margin="0,0,0,8" Padding="12">
+                    <ui:CardControl.Icon>
+                        <ui:FontIcon FontSize="22" FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xED56;"/>
+                    </ui:CardControl.Icon>
+                    <ui:CardControl.Header>
+                        <StackPanel>
+                            <TextBlock Text="解除消费级硬件限制" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="修复因硬件安全检查（ACS）导致的问题" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                    </ui:CardControl.Header>
+                    <ui:ToggleSwitch IsChecked="{Binding IsGpuStrategyEnabled, Mode=TwoWay}"
+                                     IsEnabled="{Binding IsGpuStrategyToggleEnabled}"/>
+                </ui:CardControl>
+
+                <!-- 系统切换 -->
+                <ui:CardControl Margin="0,0,0,8" Padding="12">
+                    <ui:CardControl.Icon>
+                        <ui:FontIcon FontSize="22" FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xE8D7;"/>
+                    </ui:CardControl.Icon>
+                    <ui:CardControl.Header>
+                        <StackPanel>
+                            <TextBlock Text="切换系统为服务器版本" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="黑魔法，仅对 Build 26100 及以下系统生效。" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                    </ui:CardControl.Header>
+                    <ui:ToggleSwitch IsChecked="{Binding IsServerSystem, Mode=TwoWay}"
+                                     IsEnabled="{Binding IsSystemSwitchEnabled}"/>
+                </ui:CardControl>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Page>

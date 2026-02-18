@@ -3,12 +3,12 @@ using ExHyperV.ViewModels;
 
 namespace ExHyperV.Views.Pages
 {
-    public partial class StatusPage : Page
+    public partial class HostPage : Page
     {
-        public StatusPage()
+        public HostPage()
         {
             InitializeComponent();
-            this.DataContext = new StatusPageViewModel();
+            this.DataContext = new HostPageViewModel();
         }
     }
 }
