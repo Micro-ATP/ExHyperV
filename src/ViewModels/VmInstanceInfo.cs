@@ -505,19 +505,22 @@ namespace ExHyperV.Models
         {
             if (!IsRunning)
             {
-                Gpu3dUsage = 0; GpuCopyUsage = 0; GpuEncodeUsage = 0; GpuDecodeUsage = 0;
-                IsGpuActive = false; // 关机时自动熄灭
+                Gpu3dUsage = 0;
+                GpuCopyUsage = 0;
+                GpuEncodeUsage = 0;
+                GpuDecodeUsage = 0;
+                IsGpuActive = false;
             }
             else
             {
-                Gpu3dUsage = data.Gpu3d;
-                GpuCopyUsage = data.GpuCopy;
-                GpuEncodeUsage = data.GpuEncode;
-                GpuDecodeUsage = data.GpuDecode;
+                // 使用 Math.Clamp 将原始数据钳制在 0% - 100% 之间
+                Gpu3dUsage = Math.Clamp(data.Gpu3d, 0, 100);
+                GpuCopyUsage = Math.Clamp(data.GpuCopy, 0, 100);
+                GpuEncodeUsage = Math.Clamp(data.GpuEncode, 0, 100);
+                GpuDecodeUsage = Math.Clamp(data.GpuDecode, 0, 100);
 
                 IsGpuActive = data.IsDriverBound;
             }
-
             UpdateSingleGpuHistory(_gpu3dHistory, Gpu3dUsage);
             UpdateSingleGpuHistory(_gpuCopyHistory, GpuCopyUsage);
             UpdateSingleGpuHistory(_gpuEncodeHistory, GpuEncodeUsage);
