@@ -45,6 +45,10 @@ ExHyperV 通过深入研究微软官方文档、 [WMI](https://github.com/Justse
 ![功能](https://github.com/Justsenger/ExHyperV/blob/main/img/06.png)
 ![功能](https://github.com/Justsenger/ExHyperV/blob/main/img/07.png)
 ![功能](https://github.com/Justsenger/ExHyperV/blob/main/img/08.png)
+![功能](https://github.com/Justsenger/ExHyperV/blob/main/img/09.png)
+![功能](https://github.com/Justsenger/ExHyperV/blob/main/img/10.png)
+![功能](https://github.com/Justsenger/ExHyperV/blob/main/img/11.png)
+![功能](https://github.com/Justsenger/ExHyperV/blob/main/img/12.png)
 
 </details>
 
