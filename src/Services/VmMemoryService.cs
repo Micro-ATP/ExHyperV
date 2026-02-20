@@ -1,4 +1,4 @@
-﻿using ExHyperV.Models;
+using ExHyperV.Models;
 using ExHyperV.Tools;
 using System.Diagnostics;
 using System.Management;
@@ -52,7 +52,7 @@ public class VmMemoryService
                 string vmWql = $"SELECT * FROM Msvm_ComputerSystem WHERE ElementName = '{vmName.Replace("'", "''")}'";
                 var vmList = await WmiTools.QueryAsync(vmWql, obj => obj["Name"]?.ToString());
                 string vmId = vmList.FirstOrDefault();
-                if (string.IsNullOrEmpty(vmId)) return (false, "找不到虚拟机实例。");
+                if (string.IsNullOrEmpty(vmId)) return (false, Properties.Resources.Error_Memory_VmNotFound);
 
                 string memWql = $"SELECT * FROM Msvm_MemorySettingData WHERE InstanceID LIKE 'Microsoft:{vmId}%' AND ResourceType = 4";
 
@@ -60,7 +60,7 @@ public class VmMemoryService
                 using var collection = searcher.Get();
                 using var memObj = collection.Cast<ManagementObject>().FirstOrDefault();
 
-                if (memObj == null) return (false, "无法定位内存配置对象。");
+                if (memObj == null) return (false, Properties.Resources.Error_Memory_ObjNotFound);
 
                 ApplyMemorySettingsToWmiObject(memObj, newSettings);
 
@@ -79,7 +79,7 @@ public class VmMemoryService
                     return (false, $"修改失败: {result.Message}");
                 }
 
-                return (true, "内存设置已应用。");
+                return (true, Properties.Resources.Msg_Memory_Applied);
             }
             catch (Exception ex)
             {

@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows.Data;
 
 namespace ExHyperV.Converters
@@ -11,12 +11,12 @@ namespace ExHyperV.Converters
             {
                 return type.ToUpper() switch
                 {
-                    "DYNAMIC" => "动态磁盘",
-                    "FIXED" => "固定磁盘",
-                    "DIFFERENCING" => "差异磁盘",
-                    "ISO" => "光盘镜像",
-                    "PHYSICAL" => "物理磁盘",
-                    "DVDDRIVE" => "物理光驱",
+                    "DYNAMIC" => Properties.Resources.Disk_Dynamic,
+                    "FIXED" => Properties.Resources.Disk_Fixed,
+                    "DIFFERENCING" => Properties.Resources.Disk_Differencing,
+                    "ISO" => Properties.Resources.Disk_IsoImage,
+                    "PHYSICAL" => Properties.Resources.Disk_Physical,
+                    "DVDDRIVE" => Properties.Resources.Disk_PhysicalDvd,
                     _ => type // 如果没匹配上，返回原样
                 };
             }

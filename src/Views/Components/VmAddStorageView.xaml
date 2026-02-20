@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="ExHyperV.Views.Components.VmAddStorageView"
+<UserControl x:Class="ExHyperV.Views.Components.VmAddStorageView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
@@ -112,7 +112,7 @@
                     </Grid>
                 </Border>
                 <!-- 媒体设置 -->
-                <TextBlock Text="媒体设置" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,8"/>
+                <TextBlock Text="{x:Static properties:Resources.Label_MediaSettings}" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,8"/>
 
                 <Border Background="{ui:ThemeResource CardBackgroundFillColorDefaultBrush}" 
                         BorderBrush="{ui:ThemeResource CardStrokeColorDefaultBrush}" 
@@ -350,7 +350,7 @@
                                 </Style>
                             </StackPanel.Style>
 
-                            <TextBlock Text="源文件夹" FontSize="12" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="{x:Static properties:Resources.Label_SourceFolder}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -360,10 +360,10 @@
                                 <ui:Button Grid.Column="1" Content="{x:Static properties:Resources.Common_Select}" Margin="8,0,0,0" Width="80" Command="{Binding BrowseFolderCommand}"/>
                             </Grid>
 
-                            <TextBlock Margin="0,12,0,4" Text="卷标签" FontSize="12" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Margin="0,12,0,4" Text="{x:Static properties:Resources.Label_VolLabel}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                             <ui:TextBox Text="{Binding IsoVolumeLabel, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="{x:Static properties:Resources.AddDisk_Placeholder_VolumeLabel}" HorizontalAlignment="Stretch"/>
 
-                            <TextBlock Margin="0,12,0,4" Text="ISO 保存路径" FontSize="12" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Margin="0,12,0,4" Text="{x:Static properties:Resources.Label_IsoSavePath}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -376,7 +376,7 @@
                                             VerticalAlignment="Center"/>
 
                                 <ui:Button Grid.Column="1"
-                                           Content="保存为..."
+                                           Content="{x:Static properties:Resources.Button_SaveAs}"
                                            Margin="8,0,0,0"
                                            Width="80"
                                            Command="{Binding BrowseSaveIsoCommand}"/>

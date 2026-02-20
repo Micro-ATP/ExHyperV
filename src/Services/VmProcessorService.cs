@@ -91,7 +91,7 @@ namespace ExHyperV.Services
                 });
 
                 var xml = xmlResults.FirstOrDefault();
-                if (string.IsNullOrEmpty(xml)) return (false, "找不到虚拟机或处理器配置。");
+                if (string.IsNullOrEmpty(xml)) return (false, Properties.Resources.Error_Cpu_ConfigNotFound);
 
                 var inParams = new Dictionary<string, object>
             {

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -52,7 +52,7 @@ namespace ExHyperV.ViewModels
                 }
                 else if (result.IsInnerTest) // 直接在这里合并判断
                 {
-                    UpdateStatusText = "内测版本"; // 或者从资源文件读
+                    UpdateStatusText = Properties.Resources.Label_Beta; // 或者从资源文件读
                     UpdateActionIcon = "\uF196"; // 实验室/烧瓶图标
                     UpdateActionCommand = CheckForUpdateCommand;
                 }
@@ -93,7 +93,7 @@ namespace ExHyperV.ViewModels
         public SettingsViewModel()
         {
             AvailableThemes = new List<string> { Resources.light, Resources.dark };
-            AvailableLanguages = new List<string> { "中文", "English" };
+            AvailableLanguages = new List<string> { Properties.Resources.Lang_Chinese, "English" };
 
             LoadCurrentSettings();
             _isInitializing = false;
@@ -106,7 +106,7 @@ namespace ExHyperV.ViewModels
         {
             _selectedTheme = SettingsService.GetTheme();
             string langCode = SettingsService.GetLanguage();
-            _selectedLanguage = langCode == "zh-CN" ? "中文" : "English";
+            _selectedLanguage = langCode == "zh-CN" ? Properties.Resources.Lang_Chinese : "English";
         }
 
         partial void OnSelectedThemeChanged(string value)

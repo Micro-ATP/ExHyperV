@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="ExHyperV.Views.Components.VmCpuSettingsView"
+<UserControl x:Class="ExHyperV.Views.Components.VmCpuSettingsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -27,7 +27,7 @@
                 <!-- 如果后端不支持此功能 (Tag为Null)，永久禁用 -->
                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Tag}" Value="{x:Null}">
                     <Setter Property="IsEnabled" Value="False"/>
-                    <Setter Property="ToolTip" Value="当前虚拟机配置版本不支持此功能"/>
+                    <Setter Property="ToolTip" Value="{x:Static properties:Resources.Error_VerNotSupport}"/>
                 </DataTrigger>
                 <!-- 如果虚拟机正在运行，禁用 -->
                 <MultiDataTrigger>
@@ -36,7 +36,7 @@
                         <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=Tag, Converter={StaticResource NullableToBoolConverter}}" Value="True"/>
                     </MultiDataTrigger.Conditions>
                     <Setter Property="IsEnabled" Value="False"/>
-                    <Setter Property="ToolTip" Value="此设置项要求虚拟机处于关机状态"/>
+                    <Setter Property="ToolTip" Value="{x:Static properties:Resources.Warn_VmOffRequired}"/>
                 </MultiDataTrigger>
                 <Trigger Property="IsEnabled" Value="False">
                     <Setter Property="Opacity" Value="0.5"/>
@@ -55,7 +55,7 @@
                 <!-- 依然检查功能支持情况 -->
                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Tag}" Value="{x:Null}">
                     <Setter Property="IsEnabled" Value="False"/>
-                    <Setter Property="ToolTip" Value="当前虚拟机配置版本不支持此功能"/>
+                    <Setter Property="ToolTip" Value="{x:Static properties:Resources.Error_VerNotSupport}"/>
                 </DataTrigger>
                 <Trigger Property="IsEnabled" Value="False">
                     <Setter Property="Opacity" Value="0.5"/>
@@ -76,7 +76,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="处理器设置" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+            <TextBlock Text="{x:Static properties:Resources.Label_ProcessorSettings}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
             <ui:Button Grid.Column="1" Appearance="Transparent" Padding="8" Command="{Binding GoBackToDashboardCommand}">
                 <ui:SymbolIcon Symbol="ArrowLeft24" FontSize="18"/>
             </ui:Button>
@@ -236,8 +236,8 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="隐藏 Hypervisor 标识" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
-                                <TextBlock Text="为虚拟机系统隐藏虚拟化标识符，可能有助于绕过软件检测" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{x:Static properties:Resources.Menu_HideHypervisor}" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="{x:Static properties:Resources.Desc_HideHypervisor}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
                             <ui:ToggleSwitch Grid.Column="1" Style="{StaticResource ShutdownRequiredToggleStyle}"
                                      Tag="{Binding SelectedVm.Processor.HideHypervisorPresent}"
@@ -252,8 +252,8 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="暴露架构性能监控单元" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
-                                <TextBlock Text="透传硬件计数器，允许开发工具直接访问物理 PMU" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{x:Static properties:Resources.Menu_ExposePmu}" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="{x:Static properties:Resources.Desc_ExposePmu}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
                             <ui:ToggleSwitch Grid.Column="1" Style="{StaticResource ShutdownRequiredToggleStyle}"
                                      Tag="{Binding SelectedVm.Processor.EnablePerfmonArchPmu}"
@@ -268,8 +268,8 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="暴露频率监视寄存器" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
-                                <TextBlock Text="允许虚拟机读取处理器真实频率" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{x:Static properties:Resources.Menu_ExposeMsr}" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="{x:Static properties:Resources.Desc_ExposeMsr}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
                             <ui:ToggleSwitch Grid.Column="1" Style="{StaticResource ShutdownRequiredToggleStyle}"
                                      Tag="{Binding SelectedVm.Processor.AllowAcountMcount}"
@@ -284,8 +284,8 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="禁用侧信道攻击缓解" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
-                                <TextBlock Text="禁用漏洞补丁 (如 Spectre)，提升性能但降低安全性" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{x:Static properties:Resources.Menu_DisableSpectre}" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="{x:Static properties:Resources.Desc_DisableSpectre}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
                             <ui:ToggleSwitch Grid.Column="1" Style="{StaticResource ShutdownRequiredToggleStyle}"
                                      Tag="{Binding SelectedVm.Processor.DisableSpeculationControls}"
@@ -300,8 +300,8 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="启用插槽拓扑" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
-                                <TextBlock Text="映射物理插槽拓扑，优化多插槽软件的运行环境" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{x:Static properties:Resources.Menu_SocketTopo}" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="{x:Static properties:Resources.Desc_SocketTopo}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
                             <ui:ToggleSwitch Grid.Column="1" Style="{StaticResource ShutdownRequiredToggleStyle}"
                                      Tag="{Binding SelectedVm.Processor.EnableSocketTopology}"
@@ -311,7 +311,7 @@
                     </StackPanel>
                 </Border>
 
-                <TextBlock Text="实验功能" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,12"/>
+                <TextBlock Text="{x:Static properties:Resources.Label_Experimental}" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,12"/>
                 <Border Background="{ui:ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ui:ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="0">
                     <StackPanel>
                         <Grid Margin="24,16">
@@ -321,9 +321,9 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="{x:Static properties:Resources.CpuBinding}" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
-                                <TextBlock Text="配置虚拟机与物理核心的亲和性" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{x:Static properties:Resources.Desc_CpuAffinity}" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
-                            <ui:Button Grid.Column="1" Content="配置亲和性" Icon="BranchFork24" Padding="16,6" Command="{Binding GoToCpuAffinityCommand}"/>
+                            <ui:Button Grid.Column="1" Content="{x:Static properties:Resources.Button_ConfigAffinity}" Icon="BranchFork24" Padding="16,6" Command="{Binding GoToCpuAffinityCommand}"/>
                         </Grid>
                     </StackPanel>
                 </Border>

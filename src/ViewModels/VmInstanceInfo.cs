@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -160,9 +160,9 @@ namespace ExHyperV.Models
 
         public List<PageSizeItem> AvailablePageSizes { get; } = new List<PageSizeItem>
         {
-            new PageSizeItem { Description = "标准 (4KB)", Value = 0 },
-            new PageSizeItem { Description = "大页 (2MB)", Value = 1 },
-            new PageSizeItem { Description = "巨页 (1GB)", Value = 2 }
+            new PageSizeItem { Description = Properties.Resources.Mem_Standard, Value = 0 },
+            new PageSizeItem { Description = Properties.Resources.Mem_Large, Value = 1 },
+            new PageSizeItem { Description = Properties.Resources.Mem_Huge, Value = 2 }
         };
 
         [ObservableProperty] private byte? _memoryEncryptionPolicy;
@@ -374,7 +374,7 @@ namespace ExHyperV.Models
                     return GpuName;
                 }
 
-                return "无";
+                return Properties.Resources.Common_None;
             }
         }
         // ✅ 辅助：手动触发更新的方法（供 ViewModel 调用）
@@ -562,7 +562,7 @@ namespace ExHyperV.Models
                 string diskPart;
                 if (Disks == null || Disks.Count == 0)
                 {
-                    diskPart = "无磁盘";
+                    diskPart = Properties.Resources.Common_NoDisk;
                 }
                 else
                 {
@@ -572,7 +572,7 @@ namespace ExHyperV.Models
                         .Select(g => g >= 1 ? $"{g:0.#} GB" : $"{g * 1024:0} MB"));
                 }
 
-                return $"{_cpuCount} 核 / {_memoryGb:0.#} GB / {diskPart}";
+                return string.Format(Properties.Resources.Format_VmSummary, _cpuCount, _memoryGb, diskPart);
             }
         }
 
@@ -611,7 +611,7 @@ namespace ExHyperV.Models
         private void RefreshStateDisplay()
         {
             State = _transientState ?? _backendState;
-            IsRunning = !string.IsNullOrEmpty(State) && !new[] { "已关机", "Off", "已暂停", "Paused", "已保存", "Saved" }.Contains(State);
+            IsRunning = !string.IsNullOrEmpty(State) && !new[] { Properties.Resources.Status_Off, "Off", Properties.Resources.Status_Suspended, "Paused", Properties.Resources.Status_Saved, "Saved" }.Contains(State);
 
             if (!IsRunning)
             {
@@ -637,9 +637,9 @@ namespace ExHyperV.Models
 
         private bool ShouldClearTransientState(string backend)
         {
-            if ((_transientState == "正在启动" || _transientState == "正在重启") && (backend == "运行中" || backend == "Running")) return true;
-            if ((_transientState == "正在关闭" || _transientState == "正在保存") && (backend == "已关机" || backend == "Off" || backend == "已保存" || backend == "Saved" || backend == "已暂停" || backend == "Paused")) return true;
-            if (_transientState == "正在暂停" && (backend == "已暂停" || backend == "Paused" || backend == "已保存" || backend == "Saved")) return true;
+            if ((_transientState == Properties.Resources.Status_Starting || _transientState == Properties.Resources.Status_Restarting) && (backend == Properties.Resources.Status_Running || backend == "Running")) return true;
+            if ((_transientState == Properties.Resources.Status_StoppingPresent || _transientState == Properties.Resources.Status_Saving) && (backend == Properties.Resources.Status_Off || backend == "Off" || backend == Properties.Resources.Status_Saved || backend == "Saved" || backend == Properties.Resources.Status_Suspended || backend == "Paused")) return true;
+            if (_transientState == Properties.Resources.Status_Suspending && (backend == Properties.Resources.Status_Suspended || backend == "Paused" || backend == Properties.Resources.Status_Saved || backend == "Saved")) return true;
             return false;
         }
 

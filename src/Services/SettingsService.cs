@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Xml.Linq;
@@ -102,7 +102,7 @@ namespace ExHyperV.Services
         // 保存语言设置并重启应用
         public static void SetLanguageAndRestart(string languageName)
         {
-            string languageCode = languageName == "中文" ? "zh-CN" : "en-US";
+            string languageCode = languageName == Properties.Resources.Lang_Chinese ? "zh-CN" : "en-US";
 
             XDocument configDoc;
             if (File.Exists(ConfigFilePath))

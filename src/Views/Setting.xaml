@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="ExHyperV.Views.Pages.Setting"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -197,7 +197,7 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="我很可爱，请给我钱" />
+                        <TextBlock Grid.Column="0" Text="{x:Static properties:Resources.Label_Donate}" />
                         <ui:FontIcon
                             Grid.Column="1"
                             FontFamily="{DynamicResource SegoeFluentIcons}"

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -75,7 +75,7 @@ namespace ExHyperV.Tools
             // 1. 运行环境检查：28000 严禁 32 位运行
             if (!Environment.Is64BitProcess)
             {
-                return "错误: 必须编译为 x64 并在 64 位环境下运行！";
+                return Properties.Resources.Error_Common_X64Required;
             }
 
             try
@@ -83,7 +83,7 @@ namespace ExHyperV.Tools
                 if (!Directory.Exists(tempDir)) Directory.CreateDirectory(tempDir);
 
                 // 清理旧文件
-                if (File.Exists(hiveFile)) { try { File.Delete(hiveFile); } catch { return "无法删除旧的临时 Hive 文件，请确保没有被挂载"; } }
+                if (File.Exists(hiveFile)) { try { File.Delete(hiveFile); } catch { return Properties.Resources.Error_Sys_HiveLocked; } }
                 if (File.Exists(backupFile)) { try { File.Delete(backupFile); } catch { } }
 
                 // 2. 增强提权：增加 TakeOwnership 权限
@@ -91,7 +91,7 @@ namespace ExHyperV.Tools
                 bool p2 = EnablePrivilege("SeRestorePrivilege");
                 bool p3 = EnablePrivilege("SeTakeOwnershipPrivilege"); // 应对 28000 可能需要的权限
 
-                if (!p1 || !p2) return "权限提升失败 (SeBackup/Restore)";
+                if (!p1 || !p2) return Properties.Resources.Error_Sys_Privilege;
 
                 // 3. 打开 SYSTEM 键
                 // 在 28000 中，导出 Hive 必须使用 READ_CONTROL (0x00020000)
@@ -109,12 +109,12 @@ namespace ExHyperV.Tools
                 FileInfo fi = new FileInfo(hiveFile);
                 if (!fi.Exists || fi.Length < 1024 * 1024 * 5)
                 {
-                    return $"导出异常: 文件大小仅为 {fi.Length / 1024} KB，导出不完整。";
+                    return string.Format(Properties.Resources.Error_Sys_ExportIncomplete, fi.Length / 1024);
                 }
 
                 // 6. 执行离线修改
                 string targetType = (mode == 1) ? "ServerNT" : "WinNT";
-                if (!PatchHiveOffline(hiveFile, targetType)) return "离线修改失败 (Load/Unload 环节错误)";
+                if (!PatchHiveOffline(hiveFile, targetType)) return Properties.Resources.Error_Sys_OfflineMod;
 
                 // 7. 替换原系统 Hive
                 // 注意：在 28000 中，如果 ret 为 5 (Access Denied)，说明内核锁定了该操作

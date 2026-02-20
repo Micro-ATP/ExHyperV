@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Management;
 
 namespace ExHyperV.Tools;
@@ -52,7 +52,7 @@ public static class WmiTools
                 using var collection = searcher.Get();
                 using var targetObj = collection.Cast<ManagementObject>().FirstOrDefault();
 
-                if (targetObj == null) return (false, "未找到 WMI 目标对象。");
+                if (targetObj == null) return (false, Properties.Resources.Error_Wmi_NotFound);
 
                 using var methodParams = targetObj.GetMethodParameters(methodName);
                 if (inParameters != null)
@@ -63,7 +63,7 @@ public static class WmiTools
                 using var outParams = targetObj.InvokeMethod(methodName, methodParams, null);
                 int returnValue = Convert.ToInt32(outParams["ReturnValue"]);
 
-                if (returnValue == 0) return (true, "成功");
+                if (returnValue == 0) return (true, Properties.Resources.Common_Success);
                 if (returnValue == 4096)
                 {
                     string jobPath = (string)outParams["Job"];
@@ -91,7 +91,7 @@ public static class WmiTools
                 job.Get();
                 ushort jobState = (ushort)job["JobState"];
 
-                if (jobState == 7) return (true, "成功");
+                if (jobState == 7) return (true, Properties.Resources.Common_Success);
                 if (jobState > 7)
                 {
                     string err = job["ErrorDescription"]?.ToString();

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using ExHyperV.Tools;
 
 namespace ExHyperV.Services
@@ -37,7 +37,7 @@ namespace ExHyperV.Services
 
                 await Utils.Run2(command);
 
-                return (true, "设置已更新");
+                return (true, Properties.Resources.Msg_SettingsUpdated);
             }
             catch (PowerShellScriptException psEx)
             {

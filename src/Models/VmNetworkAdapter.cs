@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -83,17 +83,17 @@ namespace ExHyperV.Models
         /// 当前连接的虚拟交换机的名称。
         /// WMI: Msvm_EthernetPortAllocationSettingData.HostResource
         /// </summary>
-        private string _switchName = "未连接";
+        private string _switchName = Properties.Resources.Status_Unconnected;
         public string SwitchName
         {
             get => _switchName;
             set
             {
                 // 核心铁律：如果内存里已经是真实的交换机名，绝对拒绝“空值”或“错误占位符”的覆盖
-                if (!string.IsNullOrEmpty(_switchName) && _switchName != "未连接")
+                if (!string.IsNullOrEmpty(_switchName) && _switchName != Properties.Resources.Status_Unconnected)
                 {
                     // 如果新值是空的、未连接、或者带 WMI_ 前缀的错误，直接丢弃，保留旧值
-                    if (string.IsNullOrWhiteSpace(value) || value == "未连接" || value.StartsWith("WMI_"))
+                    if (string.IsNullOrWhiteSpace(value) || value == Properties.Resources.Status_Unconnected || value.StartsWith("WMI_"))
                     {
                         return;
                     }

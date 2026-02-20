@@ -1,4 +1,4 @@
-﻿using ExHyperV.Models;
+using ExHyperV.Models;
 using ExHyperV.Tools;
 using System.Management;
 using System.Diagnostics;
@@ -31,7 +31,7 @@ namespace ExHyperV.Services
             var resultList = new List<VmNetworkAdapter>();
             if (string.IsNullOrEmpty(vmName))
             {
-                Log("[错误] 传入的 vmName 为空，操作中止。");
+                Log(Properties.Resources.Error_Net_NameEmpty);
                 return resultList;
             }
 
@@ -67,18 +67,18 @@ namespace ExHyperV.Services
             Log($"--------------------------------------------------------------");
 
             // 步骤 3: 遍历网卡端口，并匹配其对应的分配设置
-            Log($"[3/4] 开始遍历和匹配每个网卡...");
+            Log(Properties.Resources.Msg_Net_Scanning);
             int counter = 0;
             foreach (var port in allPorts)
             {
                 counter++;
-                string elementName = port["ElementName"]?.ToString() ?? "（无名称）";
+                string elementName = port["ElementName"]?.ToString() ?? Properties.Resources.Common_NoName;
                 Log($"\n--- [处理第 {counter}/{allPorts.Count} 个网卡: '{elementName}'] ---");
 
                 string fullPortId = port["InstanceID"]?.ToString() ?? string.Empty;
                 if (string.IsNullOrEmpty(fullPortId))
                 {
-                    Log("  [警告] 此端口的 InstanceID 为空，跳过处理。");
+                    Log(Properties.Resources.Warn_Net_EmptyInstance);
                     continue;
                 }
 
@@ -144,7 +144,7 @@ namespace ExHyperV.Services
                             }
 
                             if (featureCount == 0)
-                                Log($"    [高级设置] 未找到关联设置，将使用默认值。");
+                                Log(Properties.Resources.Warn_Net_DefaultSettings);
                         }
                     }
                     catch (Exception ex)
@@ -155,13 +155,13 @@ namespace ExHyperV.Services
                 else
                 {
                     adapter.IsConnected = false;
-                    adapter.SwitchName = "未连接";
+                    adapter.SwitchName = Properties.Resources.Status_Unconnected;
                 }
 
                 resultList.Add(adapter);
             }
 
-            Log($"\n[4/4] 所有网卡处理完毕。");
+            Log(Properties.Resources.Msg_Net_ScanDone);
             return resultList;
         }
 
@@ -210,7 +210,7 @@ namespace ExHyperV.Services
         {
             var searcher = new ManagementObjectSearcher(ScopeNamespace, "SELECT * FROM Msvm_SyntheticEthernetPortSettingData WHERE InstanceID LIKE '%Default%'");
             var template = searcher.Get().Cast<ManagementObject>().FirstOrDefault();
-            if (template == null) return (false, "模板缺失");
+            if (template == null) return (false, Properties.Resources.Error_Net_TemplateMissing);
             template["InstanceID"] = Guid.NewGuid().ToString();
             string xml = template.GetText(TextFormat.CimDtd20);
             var vmPaths = await WmiTools.QueryAsync($"SELECT * FROM Msvm_ComputerSystem WHERE ElementName = '{vmName.Replace("'", "''")}'", (vm) => {
@@ -244,7 +244,7 @@ namespace ExHyperV.Services
                 else { allocation["HostResource"] = null; }
                 return allocation.GetText(TextFormat.CimDtd20);
             });
-            if (string.IsNullOrEmpty(res.FirstOrDefault())) return (false, "找不到分配对象");
+            if (string.IsNullOrEmpty(res.FirstOrDefault())) return (false, Properties.Resources.Error_Net_AllocNotFound);
             return await WmiTools.ExecuteMethodAsync($"SELECT * FROM {ServiceClass}", "ModifyResourceSettings", new Dictionary<string, object> { { "ResourceSettings", new string[] { res.First() } } });
         }
 
@@ -404,7 +404,7 @@ namespace ExHyperV.Services
                 });
 
                 var info = xmlInfo.FirstOrDefault();
-                if (info == null) return (false, "无法定位配置对象或创建模板失败。");
+                if (info == null) return (false, Properties.Resources.Error_Net_ConfigObject);
 
                 // 第二步：生成 XML
                 string finalXml = info.Obj.GetText(TextFormat.CimDtd20);
@@ -487,11 +487,11 @@ namespace ExHyperV.Services
         // 根据交换机 GUID 查找显示名称
         private async Task<string> GetSwitchNameByGuidAsync(string guid)
         {
-            if (string.IsNullOrEmpty(guid)) return "未连接";
+            if (string.IsNullOrEmpty(guid)) return Properties.Resources.Status_Unconnected;
             var res = await WmiTools.QueryAsync(
                 $"SELECT ElementName FROM Msvm_VirtualEthernetSwitch WHERE Name = '{guid}'",
                 (s) => s["ElementName"]?.ToString());
-            return res.FirstOrDefault() ?? "未知交换机";
+            return res.FirstOrDefault() ?? Properties.Resources.Common_UnknownSwitch;
         }
 
         // 根据交换机名称查找其 WMI 路径

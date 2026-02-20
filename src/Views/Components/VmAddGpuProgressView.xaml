@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="ExHyperV.Views.Components.VmAddGpuProgressView"
+<UserControl x:Class="ExHyperV.Views.Components.VmAddGpuProgressView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -29,7 +29,7 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <TextBlock Text="配置进度" FontSize="20" VerticalAlignment="Center" 
+            <TextBlock Text="{x:Static properties:Resources.Label_Progress}" FontSize="20" VerticalAlignment="Center" 
                        Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
             <ui:Button Grid.Column="1" Appearance="Transparent" Padding="8" Command="{Binding CancelAddGpuCommand}">
                 <ui:SymbolIcon Symbol="ArrowLeft24" FontSize="18"/>
@@ -64,7 +64,7 @@
                             </Grid.RowDefinitions>
 
                             <Border Padding="16,12" Background="{ui:ThemeResource ControlFillColorTertiaryBrush}" CornerRadius="8,8,0,0">
-                                <TextBlock Text="请选择要安装驱动的分区" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="{x:Static properties:Resources.Label_SelectPart}" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                             </Border>
 
                             <ui:ListView Grid.Row="1" 
@@ -259,11 +259,11 @@
                             <Grid>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <ui:SymbolIcon Symbol="Document24" Margin="0,0,8,0" Filled="True"/>
-                                    <TextBlock Text="配置日志" FontWeight="Medium" VerticalAlignment="Center" 
+                                    <TextBlock Text="{x:Static properties:Resources.Label_ConfigLog}" FontWeight="Medium" VerticalAlignment="Center" 
                                Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                                 </StackPanel>
 
-                                <ui:Button Content="复制日志" 
+                                <ui:Button Content="{x:Static properties:Resources.Button_CopyLog}" 
                            Icon="Copy24"
                            Appearance="Transparent" 
                            HorizontalAlignment="Right"

@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
@@ -428,7 +428,7 @@ public class Utils
     {
         var messageBox = new Wpf.Ui.Controls.MessageBox
         {
-            Title = "提示",
+            Title = Properties.Resources.Common_Notice,
             Content = message,
             CloseButtonText = "OK"
         };

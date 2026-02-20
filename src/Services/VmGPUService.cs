@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -470,7 +470,7 @@ namespace ExHyperV.Services
         }} else {{ throw 'DiskNotFoundInVm' }}";
 
                     var detachRes = Utils.Run(detachScript);
-                    if (detachRes == null || detachRes.Count == 0) return "无法剥离磁盘：未在虚拟机配置中找到该磁盘。";
+                    if (detachRes == null || detachRes.Count == 0) return Properties.Resources.Error_Gpu_DiskNotFound;
 
                     var parts = detachRes[0].ToString().Split(',');
                     savedCtrlType = parts[0];
@@ -491,7 +491,7 @@ namespace ExHyperV.Services
         ($img | Get-Disk).Number");
 
                     if (mountRes == null || !int.TryParse(mountRes[0].ToString(), out hostDiskNumber))
-                        return "虚拟磁盘挂载失败。";
+                        return Properties.Resources.Error_Gpu_MountVhdFailed;
                 }
 
                 // --- 阶段 2：分配盘符与检查 ---
@@ -523,7 +523,7 @@ return 'OK'
 
                 if (checkStatus != null && checkStatus.Count > 0 && checkStatus[0].ToString() == "LOCKED")
                 {
-                    return "目标分区已开启 BitLocker 保护，请先关闭 BitLocker。";
+                    return Properties.Resources.Error_Gpu_BitLocker;
                 }
 
                 if (!Directory.Exists(Path.Combine(assignedDriveLetter, "Windows", "System32")))
@@ -555,7 +555,7 @@ return 'OK'
                 if (!Directory.Exists(destFolder)) Directory.CreateDirectory(destFolder);
 
                 // [修复状态显示]：在耗时操作前更新 Log
-                Log($"正在同步驱动文件...");
+                Log(Properties.Resources.Msg_Gpu_SyncingFiles);
                 Log($"源: {sourceFolder}"); // 可选：打印源路径方便调试
 
                 using (Process p = Process.Start(new ProcessStartInfo
@@ -570,7 +570,7 @@ return 'OK'
                 // NVIDIA 注册表注入
                 if (gpuManu.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase))
                 {
-                    Log("正在注入 NVIDIA 注册表项...");
+                    Log(Properties.Resources.Msg_Gpu_InjectingReg);
                     NvidiaReg(assignedDriveLetter);
                 }
 
@@ -582,7 +582,7 @@ return 'OK'
                 // --- 阶段 4：清理与归还 ---
                 if (isPhysical && hostDiskNumber != -1)
                 {
-                    Log("正在执行物理磁盘安全回挂流程..."); // 这里的Log现在能接上前文的"正在同步..."
+                    Log(Properties.Resources.Msg_Gpu_Remounting); // 这里的Log现在能接上前文的Properties.Resources.Msg_Common_Syncing
                     try
                     {
                         // 1. 移除盘符
@@ -613,7 +613,7 @@ return 'OK'
                                 -DiskNumber {hostDiskNumber} `
                                 -ErrorAction Stop";
                         Utils.Run(reattachScript);
-                        Log("物理磁盘已成功回挂至虚拟机。");
+                        Log(Properties.Resources.Msg_Gpu_RemountSuccess);
                     }
                     catch (Exception ex)
                     {
@@ -622,7 +622,7 @@ return 'OK'
                 }
                 else if (!string.IsNullOrEmpty(diskTarget?.Path))
                 {
-                    Log("正在卸载虚拟磁盘...");
+                    Log(Properties.Resources.Msg_Gpu_Unmounting);
                     Utils.Run($"Dismount-DiskImage -ImagePath '{diskTarget.Path}' -ErrorAction SilentlyContinue");
                 }
             }
@@ -736,7 +736,7 @@ return 'OK'
                     {
                         if (selectedPartition.OsType == OperatingSystemType.Windows)
                         {
-                            Log("正在准备目标磁盘...");
+                            Log(Properties.Resources.Msg_Gpu_PreparingDisk);
 
                             // 【核心修复】：直接从选中的分区中提取磁盘信息
                             var diskTarget = new VmDiskTarget
@@ -1112,7 +1112,7 @@ return 'OK'
                     // 如果返回列表为空，说明分配动作虽然没崩溃，但由于权限、驱动或内核原因失败了
                     if (verifyResult == null || verifyResult.Count == 0)
                     {
-                        return (false, "PowerShell 命令已执行但未产生分区。请检查宿主机 GPU 是否支持分区，以及是否以管理员权限运行。");
+                        return (false, Properties.Resources.Error_Gpu_NoPartition);
                     }
 
                     // 4. 写入标签并返回成功
@@ -1196,7 +1196,7 @@ return 'OK'
             PartitionInfo selectedPartition, // 这里的 selectedPartition 已经带了 DiskPath
             Action<string> progressCallback = null)
         {
-            if (selectedPartition == null) return (false, "未选择分区");
+            if (selectedPartition == null) return (false, Properties.Resources.Error_Common_NoPartitionSelected);
 
             var diskTarget = new VmDiskTarget
             {
@@ -1236,13 +1236,13 @@ return 'OK'
                     var currentState = await GetVmStateAsync(vmName);
                     if (currentState != "Running")
                     {
-                        Log("正在启动虚拟机以进行 Linux 配置...");
+                        Log(Properties.Resources.Msg_Gpu_LinuxConfigStart);
                         Utils.Run($"Start-VM -Name '{vmName}'");
                         await Task.Delay(5000); // 等待 BIOS/UEFI 初始化
                     }
 
                     // 2. 获取 IP 地址
-                    Log("正在等待虚拟机网络就绪并获取 IP...");
+                    Log(Properties.Resources.Msg_Gpu_LinuxWaitingIp);
                     string getMacScript = $"(Get-VMNetworkAdapter -VMName '{vmName}').MacAddress | Select-Object -First 1";
                     var macResult = await Utils.Run2(getMacScript);
                     if (macResult == null || macResult.Count == 0) return string.Format(Properties.Resources.Error_GetVmMacAddressFailed, vmName);
@@ -1262,7 +1262,7 @@ return 'OK'
                     // 3. 等待 SSH 端口响应
                     if (!await WaitForVmToBeResponsiveAsync(credentials.Host, credentials.Port, cancellationToken))
                     {
-                        return "SSH 连接超时，请检查虚拟机网络设置。";
+                        return Properties.Resources.Error_Gpu_SshTimeout;
                     }
 
                     // 4. 初始化远程环境
@@ -1294,11 +1294,11 @@ return 'OK'
                     }
 
                     // 6. 上传宿主机驱动文件
-                    Log("正在定位并上传宿主机 GPU 驱动...");
+                    Log(Properties.Resources.Msg_Gpu_LinuxUploadingDriver);
                     string sourceDriverPath = FindGpuDriverSourcePath(gpuInstancePath); // 调用类中原有的私有方法
                     if (string.IsNullOrEmpty(sourceDriverPath))
                     {
-                        Log("警告：无法精确定位驱动，使用全量 DriverStore (速度较慢)...");
+                        Log(Properties.Resources.Warn_Gpu_LinuxDriverStore);
                         sourceDriverPath = @"C:\Windows\System32\DriverStore\FileRepository";
                     }
 
@@ -1306,11 +1306,11 @@ return 'OK'
                     await sshService.UploadDirectoryAsync(credentials, sourceDriverPath, $"{remoteTempDir}/drivers/{sourceFolderName}");
 
                     // 7. 上传 WSL 库文件
-                    Log("正在上传 WSL 依赖库...");
+                    Log(Properties.Resources.Msg_Gpu_LinuxUploadingWsl);
                     await UploadLocalFilesAsync(sshService, credentials, $"{remoteTempDir}/lib"); // 调用类中原有的私有方法
 
                     // 8. 下载并执行配置脚本
-                    Log("正在下载配置脚本...");
+                    Log(Properties.Resources.Msg_Gpu_LinuxDownloadingScripts);
                     var scripts = new List<string> { "install_dxgkrnl.sh", "configure_system.sh" };
                     if (credentials.InstallGraphics) scripts.Add("setup_graphics.sh");
 
@@ -1322,12 +1322,12 @@ return 'OK'
                     await sshService.ExecuteSingleCommandAsync(credentials, $"chmod +x {remoteTempDir}/*.sh", Log);
 
                     // 9. 编译 dxgkrnl
-                    Log("正在编译安装 dxgkrnl 内核模块 (这可能需要一些时间)...");
+                    Log(Properties.Resources.Msg_Gpu_LinuxCompilingDxg);
                     var dxgResult = await sshService.ExecuteCommandAndCaptureOutputAsync(credentials, withSudo($"{remoteTempDir}/install_dxgkrnl.sh"), Log, TimeSpan.FromMinutes(60));
 
                     if (dxgResult.Output.Contains("STATUS: REBOOT_REQUIRED"))
                     {
-                        Log("内核已更新，正在重启虚拟机以应用更改...");
+                        Log(Properties.Resources.Msg_Gpu_LinuxKernelUpdated);
                         try { await sshService.ExecuteSingleCommandAsync(credentials, withSudo("reboot"), Log); } catch { }
 
                         // 这里返回特殊状态，由上层决定是否等待重启后再次调用本方法继续后续步骤，
@@ -1338,22 +1338,22 @@ return 'OK'
 
                     if (!dxgResult.Output.Contains("STATUS: SUCCESS"))
                     {
-                        throw new Exception("dxgkrnl 编译脚本执行失败，请检查日志。");
+                        throw new Exception(Properties.Resources.Error_Gpu_LinuxCompileFail);
                     }
 
                     // 10. 配置图形和系统
                     if (credentials.InstallGraphics)
                     {
-                        Log("正在配置 Mesa 3D...");
+                        Log(Properties.Resources.Msg_Gpu_LinuxMesa);
                         await sshService.ExecuteSingleCommandAsync(credentials, withSudo($"{remoteTempDir}/setup_graphics.sh"), Log, TimeSpan.FromMinutes(20));
                     }
 
-                    Log("正在完成系统最终配置...");
+                    Log(Properties.Resources.Msg_Gpu_LinuxFinalizing);
                     string configArgs = credentials.InstallGraphics ? "enable_graphics" : "no_graphics";
                     await sshService.ExecuteSingleCommandAsync(credentials, withSudo($"{remoteTempDir}/configure_system.sh {configArgs}"), Log);
 
                     // 11. 最终重启
-                    Log("配置完成，正在重启虚拟机...");
+                    Log(Properties.Resources.Msg_Gpu_LinuxConfigDone);
                     try { await sshService.ExecuteSingleCommandAsync(credentials, withSudo("reboot"), Log); } catch { }
 
                     return "OK";

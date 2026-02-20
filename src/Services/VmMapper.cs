@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text.RegularExpressions;
 
 //映射工具
@@ -31,18 +31,18 @@ namespace ExHyperV.Services
         {
             return code switch
             {
-                2 => "运行中",       // Enabled
-                3 => "已关机",       // Disabled
-                6 => "已保存",       // Enabled but Offline
-                9 => "已暂停",       // Quiesce
-                32768 => "已暂停",   // Paused
-                32769 => "已保存",   // Saved
-                32770 => "正在启动",
-                32771 => "正在快照",
-                32773 => "正在保存",
-                32774 => "正在停止",
-                32776 => "正在暂停",
-                32777 => "正在恢复",
+                2 => Properties.Resources.Status_Running,       // Enabled
+                3 => Properties.Resources.Status_Off,       // Disabled
+                6 => Properties.Resources.Status_Saved,       // Enabled but Offline
+                9 => Properties.Resources.Status_Suspended,       // Quiesce
+                32768 => Properties.Resources.Status_Suspended,   // Paused
+                32769 => Properties.Resources.Status_Saved,   // Saved
+                32770 => Properties.Resources.Status_Starting,
+                32771 => Properties.Resources.Status_Snapshotting,
+                32773 => Properties.Resources.Status_Saving,
+                32774 => Properties.Resources.Status_Stopping,
+                32776 => Properties.Resources.Status_Suspending,
+                32777 => Properties.Resources.Status_Resuming,
                 _ => $"未知状态({code})"
             };
         }

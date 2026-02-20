@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
@@ -287,7 +287,7 @@ namespace ExHyperV.ViewModels
                                 Application.Current.Dispatcher.Invoke(() => instance.ClearTransientState());
                                 var realEx = ex;
                                 while (realEx.InnerException != null) { realEx = realEx.InnerException; }
-                                ShowSnackbar("操作失败", Utils.GetFriendlyErrorMessages(realEx.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                                ShowSnackbar(Properties.Resources.Error_Common_OpFail, Utils.GetFriendlyErrorMessages(realEx.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                             }
                         });
 
@@ -326,7 +326,7 @@ namespace ExHyperV.ViewModels
             }
             catch (Exception ex)
             {
-                ShowSnackbar("加载失败", Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Properties.Resources.Error_Common_LoadFail, Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
             finally
             {
@@ -354,7 +354,7 @@ namespace ExHyperV.ViewModels
             }
             catch (Exception ex)
             {
-                ShowSnackbar("启动失败", "无法打开官方连接工具，请确保已安装 Hyper-V 管理组件。", ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Properties.Resources.Error_Vm_StartFail, Properties.Resources.Error_Vm_ConnectTool, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
         }
 
@@ -372,7 +372,7 @@ namespace ExHyperV.ViewModels
             {
                 SelectedVm.OsType = oldOsType;
                 SelectedVm.Notes = oldNotes;
-                ShowSnackbar("修改失败", "无法保存标签，请检查权限", ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Properties.Resources.Error_Common_ModFailShort, Properties.Resources.Error_Common_NoPermission, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
         }
 
@@ -643,7 +643,7 @@ namespace ExHyperV.ViewModels
                     _originalSettingsCache = settings.Clone();
                 }
             }
-            catch (Exception ex) { ShowSnackbar("加载失败", Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24); }
+            catch (Exception ex) { ShowSnackbar(Properties.Resources.Error_Common_LoadFail, Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24); }
             finally
             {
                 await Task.Delay(200);
@@ -664,13 +664,13 @@ namespace ExHyperV.ViewModels
                     _originalSettingsCache = SelectedVm.Processor.Clone();
                 else
                 {
-                    ShowSnackbar("应用失败", Utils.GetFriendlyErrorMessages(result.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                    ShowSnackbar(Properties.Resources.Error_Common_ApplyFail, Utils.GetFriendlyErrorMessages(result.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                     await GoToCpuSettings();
                 }
             }
             catch (Exception ex)
             {
-                ShowSnackbar("系统异常", Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Properties.Resources.Error_Common_SysException, Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                 await GoToCpuSettings();
             }
             finally { IsLoadingSettings = false; }
@@ -731,7 +731,7 @@ namespace ExHyperV.ViewModels
             }
             catch (Exception ex)
             {
-                ShowSnackbar("加载亲和性失败", Utils.GetFriendlyErrorMessages(ex.Message),
+                ShowSnackbar(Properties.Resources.Error_Cpu_AffinityFail, Utils.GetFriendlyErrorMessages(ex.Message),
                     ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
             finally
@@ -761,7 +761,7 @@ namespace ExHyperV.ViewModels
 
                 if (success)
                 {
-                    ShowSnackbar("保存成功", "CPU 亲和性已应用。", ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
+                    ShowSnackbar(Properties.Resources.Msg_Common_SaveSuccess, Properties.Resources.Msg_Cpu_AffinityApplied, ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
                     GoToCpuSettings();
                 }
                 else
@@ -770,18 +770,18 @@ namespace ExHyperV.ViewModels
                     var scheduler = HyperVSchedulerService.GetSchedulerType();
                     if (scheduler == HyperVSchedulerType.Root && !SelectedVm.IsRunning)
                     {
-                        ShowSnackbar("设定已排队", "当前为 Root 调度模式，亲和性已保存，将在虚拟机下次启动时自动生效。", ControlAppearance.Info, SymbolRegular.Clock24);
+                        ShowSnackbar(Properties.Resources.Msg_Cpu_AffinityQueued, Properties.Resources.Msg_Cpu_RootNotice, ControlAppearance.Info, SymbolRegular.Clock24);
                         GoToCpuSettings();
                     }
                     else
                     {
-                        ShowSnackbar("保存失败", "无法应用设置，请检查 HCS 权限或调度器状态。", ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                        ShowSnackbar(Properties.Resources.Error_Common_SaveFail, Properties.Resources.Error_Cpu_ApplyFail, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                     }
                 }
             }
             catch (Exception ex)
             {
-                ShowSnackbar("错误", Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Properties.Resources.Common_Error, Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
             finally
             {
@@ -811,7 +811,7 @@ namespace ExHyperV.ViewModels
                     SelectedVm.MemorySettings.PropertyChanged += MemorySettings_PropertyChanged;
                 }
             }
-            catch (Exception ex) { ShowSnackbar("错误", $"加载失败: {Utils.GetFriendlyErrorMessages(ex.Message)}", ControlAppearance.Danger, SymbolRegular.ErrorCircle24); }
+            catch (Exception ex) { ShowSnackbar(Properties.Resources.Common_Error, $"加载失败: {Utils.GetFriendlyErrorMessages(ex.Message)}", ControlAppearance.Danger, SymbolRegular.ErrorCircle24); }
             finally
             {
                 await Task.Delay(200);
@@ -834,7 +834,7 @@ namespace ExHyperV.ViewModels
                     var result = await _vmMemoryService.SetVmMemorySettingsAsync(SelectedVm.Name, SelectedVm.MemorySettings);
                     if (!result.Success)
                     {
-                        ShowSnackbar("自动应用失败", result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                        ShowSnackbar(Properties.Resources.Error_Memory_AutoApply, result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                         await GoToMemorySettings();
                     }
                     else OnPropertyChanged(nameof(SelectedVm));
@@ -856,10 +856,10 @@ namespace ExHyperV.ViewModels
             try
             {
                 var result = await _vmMemoryService.SetVmMemorySettingsAsync(SelectedVm.Name, SelectedVm.MemorySettings);
-                if (!result.Success) ShowSnackbar("保存失败", Utils.GetFriendlyErrorMessages(result.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                if (!result.Success) ShowSnackbar(Properties.Resources.Error_Common_SaveFail, Utils.GetFriendlyErrorMessages(result.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                 await GoToMemorySettings();
             }
-            catch (Exception ex) { ShowSnackbar("异常", Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24); }
+            catch (Exception ex) { ShowSnackbar(Properties.Resources.Common_ExceptionLabel, Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24); }
             finally { IsLoadingSettings = false; }
         }
 
@@ -882,7 +882,7 @@ namespace ExHyperV.ViewModels
                     await _storageService.LoadVmStorageItemsAsync(SelectedVm);
                     await LoadHostDisksAsync();
                 }
-                catch (Exception ex) { ShowSnackbar("加载存储失败", Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24); }
+                catch (Exception ex) { ShowSnackbar(Properties.Resources.Error_Storage_LoadFail, Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24); }
                 finally { IsLoadingSettings = false; }
             }
         }
@@ -909,12 +909,12 @@ namespace ExHyperV.ViewModels
                 var result = await _storageService.RemoveDriveAsync(SelectedVm.Name, item);
                 if (result.Success)
                 {
-                    ShowSnackbar("成功", result.Message == "Storage_Msg_Ejected" ? "光盘已弹出" : "设备已移除", ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
+                    ShowSnackbar(Properties.Resources.Common_Success, result.Message == "Storage_Msg_Ejected" ? Properties.Resources.Msg_Storage_Ejected : Properties.Resources.Msg_Storage_Removed, ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
                     await _storageService.LoadVmStorageItemsAsync(SelectedVm);
                 }
-                else ShowSnackbar("移除失败", result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                else ShowSnackbar(Properties.Resources.Error_Storage_RemoveFail, result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
-            catch (Exception ex) { ShowSnackbar("错误", Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24); }
+            catch (Exception ex) { ShowSnackbar(Properties.Resources.Common_Error, Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24); }
             finally { IsLoadingSettings = false; }
         }
 
@@ -932,23 +932,23 @@ namespace ExHyperV.ViewModels
 
             if (driveItem.DiskType == "Physical")
             {
-                ShowSnackbar("操作受限", "物理直通磁盘无法修改路径，请移除后重新添加。", ControlAppearance.Danger, SymbolRegular.Warning24);
+                ShowSnackbar(Properties.Resources.Common_Restricted, Properties.Resources.Error_Storage_PhysicalMod, ControlAppearance.Danger, SymbolRegular.Warning24);
                 return;
             }
 
             if (driveItem.DriveType == "HardDisk" && SelectedVm.IsRunning)
             {
-                ShowSnackbar("操作受限", "无法在虚拟机运行时更换虚拟硬盘文件，请先关机。", ControlAppearance.Danger, SymbolRegular.Warning24);
+                ShowSnackbar(Properties.Resources.Common_Restricted, Properties.Resources.Error_Storage_VhdRunning, ControlAppearance.Danger, SymbolRegular.Warning24);
                 return;
             }
 
             string filter = driveItem.DriveType == "DvdDrive"
-                ? "镜像文件 (*.iso)|*.iso|所有文件 (*.*)|*.*"
-                : "虚拟磁盘 (*.vhdx;*.vhd)|*.vhdx;*.vhd|所有文件 (*.*)|*.*";
+                ? Properties.Resources.Filter_Iso
+                : Properties.Resources.Filter_Vhd;
 
             var openFileDialog = new Microsoft.Win32.OpenFileDialog
             {
-                Title = driveItem.DriveType == "DvdDrive" ? "选择 ISO 镜像" : "选择虚拟磁盘文件",
+                Title = driveItem.DriveType == "DvdDrive" ? Properties.Resources.Title_SelectIso : Properties.Resources.Title_SelectVhd,
                 Filter = filter
             };
 
@@ -979,17 +979,17 @@ namespace ExHyperV.ViewModels
 
                     if (result.Success)
                     {
-                        ShowSnackbar("修改成功", "存储路径已更新", ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
+                        ShowSnackbar(Properties.Resources.Msg_Common_ModSuccess, Properties.Resources.Msg_Storage_PathUpdated, ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
                         await _storageService.LoadVmStorageItemsAsync(SelectedVm);
                     }
                     else
                     {
-                        ShowSnackbar("修改失败", result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                        ShowSnackbar(Properties.Resources.Error_Common_ModFailShort, result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                     }
                 }
                 catch (Exception ex)
                 {
-                    ShowSnackbar("错误", Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                    ShowSnackbar(Properties.Resources.Common_Error, Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                 }
                 finally
                 {
@@ -1039,10 +1039,10 @@ namespace ExHyperV.ViewModels
         public int NewDiskSizeInt => int.TryParse(NewDiskSize, out int size) && size > 0 ? size : 128;
 
         public string FilePathPlaceholder => DeviceType == "HardDisk"
-            ? "选择或输入 .vhdx / .vhd 文件路径"
-            : "选择或输入 .iso 镜像文件路径";
+            ? Properties.Resources.Placeholder_Vhd
+            : Properties.Resources.Placeholder_Iso;
 
-        public string BrowseButtonText => IsNewDisk ? "保存到..." : "浏览...";
+        public string BrowseButtonText => IsNewDisk ? Properties.Resources.Button_SaveTo : Properties.Resources.Button_Browse;
 
         // 属性变更监听 - 自动分配插槽
         partial void OnAutoAssignChanged(bool value)
@@ -1154,7 +1154,7 @@ namespace ExHyperV.ViewModels
 
             if (collision)
             {
-                ShowSnackbar("位置冲突", "该插槽已被占用，请选择其他位置。", ControlAppearance.Danger, SymbolRegular.Warning24);
+                ShowSnackbar(Properties.Resources.Error_Storage_Collision, Properties.Resources.Error_Storage_Occupied, ControlAppearance.Danger, SymbolRegular.Warning24);
                 return;
             }
 
@@ -1163,7 +1163,7 @@ namespace ExHyperV.ViewModels
 
             if (string.IsNullOrEmpty(target) && !IsNewDisk)
             {
-                ShowSnackbar("缺少参数", "请选择存储设备或文件。", ControlAppearance.Caution, SymbolRegular.Warning24);
+                ShowSnackbar(Properties.Resources.Error_Common_Args, Properties.Resources.Error_Storage_SelectTarget, ControlAppearance.Caution, SymbolRegular.Warning24);
                 return;
             }
 
@@ -1172,13 +1172,13 @@ namespace ExHyperV.ViewModels
             {
                 if (string.IsNullOrWhiteSpace(IsoSourceFolderPath))
                 {
-                    ShowSnackbar("缺少参数", "创建 ISO 时必须指定源文件夹。", ControlAppearance.Caution, SymbolRegular.Warning24);
+                    ShowSnackbar(Properties.Resources.Error_Common_Args, Properties.Resources.Error_Storage_IsoSource, ControlAppearance.Caution, SymbolRegular.Warning24);
                     return;
                 }
 
                 if (string.IsNullOrWhiteSpace(IsoOutputPath))
                 {
-                    ShowSnackbar("缺少参数", "创建 ISO 时必须指定保存路径。", ControlAppearance.Caution, SymbolRegular.Warning24);
+                    ShowSnackbar(Properties.Resources.Error_Common_Args, Properties.Resources.Error_Storage_IsoPath, ControlAppearance.Caution, SymbolRegular.Warning24);
                     return;
                 }
 
@@ -1193,14 +1193,14 @@ namespace ExHyperV.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        ShowSnackbar("错误", $"无法创建输出目录: {ex.Message}", ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                        ShowSnackbar(Properties.Resources.Common_Error, $"无法创建输出目录: {ex.Message}", ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                         return;
                     }
                 }
 
                 if (!Directory.Exists(IsoSourceFolderPath))
                 {
-                    ShowSnackbar("错误", "源文件夹不存在。", ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                    ShowSnackbar(Properties.Resources.Common_Error, Properties.Resources.Error_Storage_SourceNoExist, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                     return;
                 }
             }
@@ -1231,10 +1231,10 @@ namespace ExHyperV.ViewModels
             {
                 var saveDialog = new Microsoft.Win32.SaveFileDialog
                 {
-                    Title = "创建虚拟磁盘",
-                    Filter = "虚拟磁盘 (*.vhdx)|*.vhdx|旧版虚拟磁盘 (*.vhd)|*.vhd",
+                    Title = Properties.Resources.Title_CreateVhd,
+                    Filter = Properties.Resources.Filter_VhdExt,
                     DefaultExt = ".vhdx",
-                    FileName = "新建虚拟磁盘.vhdx"
+                    FileName = Properties.Resources.Default_VhdName
                 };
 
                 if (saveDialog.ShowDialog() == true)
@@ -1246,10 +1246,10 @@ namespace ExHyperV.ViewModels
             {
                 var openDialog = new Microsoft.Win32.OpenFileDialog
                 {
-                    Title = DeviceType == "HardDisk" ? "选择虚拟磁盘" : "选择 ISO 镜像",
+                    Title = DeviceType == "HardDisk" ? Properties.Resources.Title_OpenVhd : Properties.Resources.Title_SelectIso,
                     Filter = DeviceType == "HardDisk" ?
-                             "虚拟磁盘 (*.vhdx;*.vhd)|*.vhdx;*.vhd" :
-                             "镜像文件 (*.iso)|*.iso"
+                             Properties.Resources.Filter_VhdOnly :
+                             Properties.Resources.Filter_IsoOnly
                 };
 
                 if (openDialog.ShowDialog() == true)
@@ -1271,7 +1271,7 @@ namespace ExHyperV.ViewModels
         [RelayCommand]
         private void BrowseParentFile()
         {
-            var dialog = new Microsoft.Win32.OpenFileDialog { Filter = "虚拟磁盘 (*.vhdx;*.vhd)|*.vhdx;*.vhd" };
+            var dialog = new Microsoft.Win32.OpenFileDialog { Filter = Properties.Resources.Filter_VhdOnly };
             if (dialog.ShowDialog() == true) ParentPath = dialog.FileName;
         }
 
@@ -1281,8 +1281,8 @@ namespace ExHyperV.ViewModels
         {
             var saveDialog = new Microsoft.Win32.SaveFileDialog
             {
-                Title = "保存 ISO 镜像文件",
-                Filter = "ISO 镜像 (*.iso)|*.iso",
+                Title = Properties.Resources.Title_SaveIso,
+                Filter = Properties.Resources.Filter_IsoExt,
                 DefaultExt = ".iso",
                 FileName = $"{IsoVolumeLabel}.iso"
             };
@@ -1330,17 +1330,17 @@ namespace ExHyperV.ViewModels
 
                 if (result.Success)
                 {
-                    ShowSnackbar("添加成功", $"设备已连接到 {result.ActualType} {result.ActualNumber}:{result.ActualLocation}", ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
+                    ShowSnackbar(Properties.Resources.Msg_Common_AddSuccess, $"设备已连接到 {result.ActualType} {result.ActualNumber}:{result.ActualLocation}", ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
                     await _storageService.LoadVmStorageItemsAsync(SelectedVm);
                 }
                 else
                 {
-                    ShowSnackbar("添加失败", result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                    ShowSnackbar(Properties.Resources.Error_Storage_AddFail, result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                 }
             }
             catch (Exception ex)
             {
-                ShowSnackbar("异常", Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Properties.Resources.Common_ExceptionLabel, Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
             finally
             {
@@ -1366,7 +1366,7 @@ namespace ExHyperV.ViewModels
                 if (isRunning)
                 {
                     IsSlotValid = false;
-                    SlotWarningMessage = "第 1 代虚拟机的光盘无法在运行状态下添加（IDE 不支持热插拔）。请先关机。";
+                    SlotWarningMessage = Properties.Resources.Error_Storage_Gen1Dvd;
                     return;
                 }
 
@@ -1378,7 +1378,7 @@ namespace ExHyperV.ViewModels
                     }
                 }
                 IsSlotValid = false;
-                SlotWarningMessage = "第 1 代虚拟机的 IDE 控制器已满，无法添加光盘。";
+                SlotWarningMessage = Properties.Resources.Error_Storage_Gen1IdeFull;
                 return;
             }
 
@@ -1393,7 +1393,7 @@ namespace ExHyperV.ViewModels
                     }
                 }
                 IsSlotValid = false;
-                SlotWarningMessage = isRunning ? "运行中的虚拟机没有可用的 SCSI 插槽。" : "没有可用的 SCSI 插槽。";
+                SlotWarningMessage = isRunning ? Properties.Resources.Error_Storage_NoScsiRunning : Properties.Resources.Error_Storage_NoScsi;
                 return;
             }
 
@@ -1419,7 +1419,7 @@ namespace ExHyperV.ViewModels
             }
 
             IsSlotValid = false;
-            SlotWarningMessage = "该虚拟机没有可用的存储插槽。";
+            SlotWarningMessage = Properties.Resources.Error_Storage_NoSlots;
         }
         // 检查插槽是否被占用
         private bool IsSlotOccupied(string type, int ctrlNum, int loc)
@@ -1602,25 +1602,25 @@ namespace ExHyperV.ViewModels
         // 1. VLAN 主模式映射
         public List<object> VlanModeOptions { get; } = new()
 {
-    new { Value = VlanOperationMode.Access, Name = "接入" },
-    new { Value = VlanOperationMode.Trunk, Name = "中继" },
-    new { Value = VlanOperationMode.Private, Name = "专用" }
+    new { Value = VlanOperationMode.Access, Name = Properties.Resources.Net_Mode_Access },
+    new { Value = VlanOperationMode.Trunk, Name = Properties.Resources.Net_Mode_Trunk },
+    new { Value = VlanOperationMode.Private, Name = Properties.Resources.Net_Mode_Private }
 };
 
         // 2. Private VLAN 类型 (角色) 映射
         public List<object> PvlanModeOptions { get; } = new()
 {
-    new { Value = PvlanMode.Isolated, Name = "隔离" },
-    new { Value = PvlanMode.Community, Name = "社区" },
-    new { Value = PvlanMode.Promiscuous, Name = "混杂" }
+    new { Value = PvlanMode.Isolated, Name = Properties.Resources.Net_Pvlan_Isolated },
+    new { Value = PvlanMode.Community, Name = Properties.Resources.Net_Pvlan_Community },
+    new { Value = PvlanMode.Promiscuous, Name = Properties.Resources.Net_Pvlan_Promiscuous }
 };
 
         // 3. 端口镜像模式映射
         public List<object> PortMirroringOptions { get; } = new()
 {
-    new { Value = PortMonitorMode.None, Name = "禁用" },
-    new { Value = PortMonitorMode.Source, Name = "加入发送组" },
-    new { Value = PortMonitorMode.Destination, Name = "加入接收组" }
+    new { Value = PortMonitorMode.None, Name = Properties.Resources.Common_Disabled },
+    new { Value = PortMonitorMode.Source, Name = Properties.Resources.Net_Mirror_Source },
+    new { Value = PortMonitorMode.Destination, Name = Properties.Resources.Net_Mirror_Dest }
 };
 
         // 导航至网络设置
@@ -1658,7 +1658,7 @@ namespace ExHyperV.ViewModels
             }
             catch (Exception ex)
             {
-                ShowSnackbar("加载失败", ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Properties.Resources.Error_Common_LoadFail, ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
             finally
             {
@@ -1740,17 +1740,17 @@ namespace ExHyperV.ViewModels
 
                 if (result.Success)
                 {
-                    ShowSnackbar("添加成功", "已添加新的网络适配器", ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
+                    ShowSnackbar(Properties.Resources.Msg_Common_AddSuccess, Properties.Resources.Msg_Net_Added, ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
                     await GoToNetworkSettings();
                 }
                 else
                 {
-                    ShowSnackbar("添加失败", Utils.GetFriendlyErrorMessages(result.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                    ShowSnackbar(Properties.Resources.Error_Storage_AddFail, Utils.GetFriendlyErrorMessages(result.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                 }
             }
             catch (Exception ex)
             {
-                ShowSnackbar("添加异常", Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Properties.Resources.Error_Net_AddExc, Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
             finally
             {
@@ -1771,17 +1771,17 @@ namespace ExHyperV.ViewModels
 
                 if (result.Success)
                 {
-                    ShowSnackbar("移除成功", "网络适配器已移除", ControlAppearance.Success, SymbolRegular.Delete24);
+                    ShowSnackbar(Properties.Resources.Msg_Net_Removed, Properties.Resources.Msg_Net_AdapterRemoved, ControlAppearance.Success, SymbolRegular.Delete24);
                     await GoToNetworkSettings();
                 }
                 else
                 {
-                    ShowSnackbar("移除失败", Utils.GetFriendlyErrorMessages(result.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                    ShowSnackbar(Properties.Resources.Error_Storage_RemoveFail, Utils.GetFriendlyErrorMessages(result.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                 }
             }
             catch (Exception ex)
             {
-                ShowSnackbar("移除异常", Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Properties.Resources.Error_Net_RemoveExc, Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
             finally
             {
@@ -1800,7 +1800,7 @@ namespace ExHyperV.ViewModels
                 var result = await _vmNetworkService.UpdateConnectionAsync(SelectedVm.Name, adapter);
                 if (!result.Success)
                 {
-                    ShowSnackbar("操作失败", result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                    ShowSnackbar(Properties.Resources.Error_Common_OpFail, result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                     adapter.IsConnected = !adapter.IsConnected;
                 }
             }
@@ -1819,8 +1819,8 @@ namespace ExHyperV.ViewModels
             try
             {
                 var result = await _vmNetworkService.ApplyVlanSettingsAsync(SelectedVm.Name, adapter);
-                if (result.Success) ShowSnackbar("成功", "VLAN 设置已应用", ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
-                else ShowSnackbar("失败", result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                if (result.Success) ShowSnackbar(Properties.Resources.Common_Success, Properties.Resources.Msg_Net_VlanApplied, ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
+                else ShowSnackbar(Properties.Resources.Common_Failed, result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
             finally
             {
@@ -1837,8 +1837,8 @@ namespace ExHyperV.ViewModels
             try
             {
                 var result = await _vmNetworkService.ApplyBandwidthSettingsAsync(SelectedVm.Name, adapter);
-                if (result.Success) ShowSnackbar("成功", "流量控制设置已应用", ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
-                else ShowSnackbar("失败", result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                if (result.Success) ShowSnackbar(Properties.Resources.Common_Success, Properties.Resources.Msg_Net_QosApplied, ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
+                else ShowSnackbar(Properties.Resources.Common_Failed, result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
             finally
             {
@@ -1857,18 +1857,18 @@ namespace ExHyperV.ViewModels
                 var secResult = await _vmNetworkService.ApplySecuritySettingsAsync(SelectedVm.Name, adapter);
                 if (!secResult.Success)
                 {
-                    ShowSnackbar("失败", $"安全设置应用失败: {secResult.Message}", ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                    ShowSnackbar(Properties.Resources.Common_Failed, $"安全设置应用失败: {secResult.Message}", ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                     return;
                 }
 
                 var offloadResult = await _vmNetworkService.ApplyOffloadSettingsAsync(SelectedVm.Name, adapter);
                 if (!offloadResult.Success)
                 {
-                    ShowSnackbar("失败", $"硬件加速设置应用失败: {offloadResult.Message}", ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                    ShowSnackbar(Properties.Resources.Common_Failed, $"硬件加速设置应用失败: {offloadResult.Message}", ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                     return;
                 }
 
-                ShowSnackbar("成功", "设置已应用", ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
+                ShowSnackbar(Properties.Resources.Common_Success, Properties.Resources.Msg_Common_Applied, ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
             }
             finally
             {
@@ -1884,7 +1884,7 @@ namespace ExHyperV.ViewModels
             var result = await _vmNetworkService.ApplyOffloadSettingsAsync(SelectedVm.Name, adapter);
             if (!result.Success)
             {
-                ShowSnackbar("设置应用失败", result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Properties.Resources.Error_Net_ApplyFail, result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
         }
 
@@ -1896,7 +1896,7 @@ namespace ExHyperV.ViewModels
             var result = await _vmNetworkService.ApplySecuritySettingsAsync(SelectedVm.Name, adapter);
             if (!result.Success)
             {
-                ShowSnackbar("安全设置应用失败", result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Properties.Resources.Error_Net_SecurityFail, result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
         }
 
@@ -1918,7 +1918,7 @@ namespace ExHyperV.ViewModels
             }
             catch (Exception ex)
             {
-                ShowSnackbar("加载失败", "无法读取 GPU 配置信息: " + ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Properties.Resources.Error_Common_LoadFail, Properties.Resources.Error_Gpu_ReadInfo + ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
             finally
             {
@@ -1994,7 +1994,7 @@ namespace ExHyperV.ViewModels
             }
             catch (Exception ex)
             {
-                ShowSnackbar("刷新显卡失败", ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Properties.Resources.Error_Gpu_RefreshFail, ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
         }
 
@@ -2022,19 +2022,19 @@ namespace ExHyperV.ViewModels
                         }
                     });
 
-                    ShowSnackbar("成功", "GPU 分区已从虚拟机移除。", ControlAppearance.Success, SymbolRegular.Checkmark24);
+                    ShowSnackbar(Properties.Resources.Common_Success, Properties.Resources.Msg_Gpu_PartitionRemoved, ControlAppearance.Success, SymbolRegular.Checkmark24);
 
                     await Task.Delay(2000);
                     await RefreshCurrentVmGpuAssignments();
                 }
                 else
                 {
-                    ShowSnackbar("移除失败", "未能成功移除 GPU 分区，请检查权限。", ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                    ShowSnackbar(Properties.Resources.Error_Storage_RemoveFail, Properties.Resources.Error_Gpu_RemoveFail, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                 }
             }
             catch (Exception ex)
             {
-                ShowSnackbar("操作异常", ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Properties.Resources.Error_Common_OpException, ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
             finally
             {
@@ -2063,7 +2063,7 @@ namespace ExHyperV.ViewModels
             }
             catch (Exception ex)
             {
-                ShowSnackbar("错误", "无法加载宿主机显卡: " + ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Properties.Resources.Common_Error, Properties.Resources.Error_Gpu_LoadHost + ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
             finally
             {
@@ -2134,36 +2134,36 @@ namespace ExHyperV.ViewModels
             GpuTasks.Add(new TaskItem
             {
                 TaskType = GpuTaskType.Prepare,
-                Name = "环境准备",
-                Description = "正在准备宿主机环境...",
+                Name = Properties.Resources.Task_Gpu_Prepare,
+                Description = Properties.Resources.Msg_Gpu_PreparingHost,
                 Status = ExHyperV.Models.TaskStatus.Pending  // 这里写全称
             });
 
             GpuTasks.Add(new TaskItem
             {
                 TaskType = GpuTaskType.PowerCheck,
-                Name = "电源检查",
-                Description = "检查虚拟机电源状态...",
+                Name = Properties.Resources.Task_Gpu_Power,
+                Description = Properties.Resources.Msg_Gpu_CheckingPower,
                 Status = ExHyperV.Models.TaskStatus.Pending  // 这里写全称
             });
 
             GpuTasks.Add(new TaskItem
             {
                 TaskType = GpuTaskType.Optimization,
-                Name = "系统优化",
-                Description = "正在配置 MMIO 地址空间...",
+                Name = Properties.Resources.Task_Gpu_Opt,
+                Description = Properties.Resources.Msg_Gpu_Mmio,
                 Status = ExHyperV.Models.TaskStatus.Pending  // 这里写全称
             });
 
             GpuTasks.Add(new TaskItem
             {
                 TaskType = GpuTaskType.Assign,
-                Name = "分配显卡",
-                Description = "正在创建 GPU 分区...",
+                Name = Properties.Resources.Task_Gpu_Assign,
+                Description = Properties.Resources.Msg_Gpu_Creating,
                 Status = ExHyperV.Models.TaskStatus.Pending  // 这里写全称
             }); if (AutoInstallDrivers)
             {
-                GpuTasks.Add(new TaskItem { Name = "驱动安装", Description = "等待扫描分区...", Status = ExHyperV.Models.TaskStatus.Pending });
+                GpuTasks.Add(new TaskItem { Name = Properties.Resources.Task_Gpu_Driver, Description = Properties.Resources.Msg_Gpu_WaitingScan, Status = ExHyperV.Models.TaskStatus.Pending });
             }
 
             await RunRealGpuWorkflowAsync(0);
@@ -2187,7 +2187,7 @@ namespace ExHyperV.ViewModels
                     {
                         case GpuTaskType.Prepare:
                             await _vmGpuService.PrepareHostEnvironmentAsync();
-                            task.Description = "策略已成功应用。";
+                            task.Description = Properties.Resources.Msg_Gpu_Policy;
                             break;
 
                         case GpuTaskType.PowerCheck:
@@ -2202,12 +2202,12 @@ namespace ExHyperV.ViewModels
                                     await Task.Delay(100);
                                 }
                             }
-                            task.Description = "虚拟机已关机。";
+                            task.Description = Properties.Resources.Msg_Gpu_Off;
                             break;
 
                         case GpuTaskType.Optimization:
                             bool optOk = await _vmGpuService.OptimizeVmForGpuAsync(SelectedVm.Name);
-                            task.Description = optOk ? "MMIO 地址空间配置完成。" : "优化配置失败，将尝试继续。";
+                            task.Description = optOk ? Properties.Resources.Msg_Gpu_MmioOk : Properties.Resources.Error_Gpu_OptFail;
                             break;
 
                         case GpuTaskType.Assign:
@@ -2217,7 +2217,7 @@ namespace ExHyperV.ViewModels
 
                             var assignRes = await _vmGpuService.AssignGpuPartitionAsync(SelectedVm.Name, targetPath);
                             if (!assignRes.Success) throw new Exception(assignRes.Message);
-                            task.Description = "GPU 分区已成功创建。";
+                            task.Description = Properties.Resources.Msg_Gpu_AssignOk;
                             await Task.Delay(100);
                             var currentAdapters = await _vmGpuService.GetVmGpuAdaptersAsync(SelectedVm.Name);
                             // 记录下来，以便后续步骤（如驱动安装）失败时删除
@@ -2227,7 +2227,7 @@ namespace ExHyperV.ViewModels
                         case GpuTaskType.Driver:
                             try
                             {
-                                task.Description = "正在扫描所有挂载硬盘的分区...";
+                                task.Description = Properties.Resources.Msg_Gpu_Scanning;
                                 AppendLog(task.Description);
 
                                 // 获取所有硬盘的所有分区
@@ -2235,7 +2235,7 @@ namespace ExHyperV.ViewModels
 
                                 if (allPartitions == null || allPartitions.Count == 0)
                                 {
-                                    throw new Exception("未能在任何硬盘上识别到有效分区。请确保系统已安装。");
+                                    throw new Exception(Properties.Resources.Error_Gpu_NoPartFound);
                                 }
 
                                 // 计算涉及到的物理磁盘数量
@@ -2245,7 +2245,7 @@ namespace ExHyperV.ViewModels
                                 // 自动注入逻辑
                                 if (distinctDisks == 1 && allPartitions.Count == 1 && allPartitions[0].OsType == OperatingSystemType.Windows)
                                 {
-                                    task.Description = "检测到唯一的 Windows 系统分区，正在同步驱动...";
+                                    task.Description = Properties.Resources.Msg_Gpu_DetectWin;
                                     var syncRes = await _vmGpuService.SyncWindowsDriversAsync(
                                         SelectedVm.Name,
                                         SelectedHostGpu.Pname,
@@ -2258,7 +2258,7 @@ namespace ExHyperV.ViewModels
                                         });
 
                                     if (!syncRes.Success) throw new Exception(syncRes.Message);
-                                    task.Description = "Windows 驱动安装成功。";
+                                    task.Description = Properties.Resources.Msg_Gpu_DriverOk;
                                 }
                                 else
                                 {
@@ -2269,7 +2269,7 @@ namespace ExHyperV.ViewModels
                                         ShowPartitionSelector = true;
                                         ShowSshForm = false;
                                     });
-                                    task.Description = "请手动选择操作系统所在的分区...";
+                                    task.Description = Properties.Resources.Msg_Gpu_ManualSelect;
                                     AppendLog(task.Description);
 
                                     // 停止当前循环工作流，等待用户点击 UI
@@ -2298,7 +2298,7 @@ namespace ExHyperV.ViewModels
                         AppendLog(">>> 已成功移除失效的 GPU 分区。");
                     }
 
-                    ShowSnackbar("操作失败", $"{task.Name} 环节出现异常", ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                    ShowSnackbar(Properties.Resources.Error_Common_OpFail, $"{task.Name} 环节出现异常", ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                     return;
                 }
             }
@@ -2310,7 +2310,7 @@ namespace ExHyperV.ViewModels
         [RelayCommand]
         private async Task SelectPartitionAndContinue(PartitionInfo partition)
         {
-            var driveTask = GpuTasks.FirstOrDefault(t => t.Name == "驱动安装");
+            var driveTask = GpuTasks.FirstOrDefault(t => t.Name == Properties.Resources.Task_Gpu_Driver);
             if (driveTask == null) return;
 
             if (partition.OsType == OperatingSystemType.Windows)
@@ -2357,7 +2357,7 @@ namespace ExHyperV.ViewModels
                 ShowPartitionSelector = false;
                 ShowSshForm = true;
 
-                driveTask.Description = "检测到 Linux 分区，正在等待虚拟机启动...";
+                driveTask.Description = Properties.Resources.Msg_Gpu_LinuxVm;
                 AppendLog($">>> 自动选中 Linux 分区: {partition.DisplayName}，进入自动流程。");
 
                 try
@@ -2370,13 +2370,13 @@ namespace ExHyperV.ViewModels
                     var status = await _vmGpuService.IsVmPoweredOffAsync(SelectedVm.Name);
                     if (status.IsOff)
                     {
-                        driveTask.Description = "正在自动启动虚拟机以初始化网络...";
+                        driveTask.Description = Properties.Resources.Msg_Gpu_IpSniff;
                         AppendLog(driveTask.Description);
                         await _powerService.ExecuteControlActionAsync(SelectedVm.Name, "Start");
                         await Task.Delay(3000);
                     }
 
-                    driveTask.Description = "正在嗅探虚拟机 IP 地址...";
+                    driveTask.Description = Properties.Resources.Msg_Gpu_IpScanning;
                     AppendLog(driveTask.Description);
 
                     string vmIp = await Task.Run(async () =>
@@ -2411,15 +2411,15 @@ namespace ExHyperV.ViewModels
                     }
                     else
                     {
-                        AppendLog("未能自动获取到 IP，请手动输入。");
+                        AppendLog(Properties.Resources.Error_Gpu_IpManual);
                     }
 
                     ShowSshForm = true;
-                    driveTask.Description = "请确认 SSH 凭据以开始部署...";
+                    driveTask.Description = Properties.Resources.Msg_Gpu_SshConfirm;
                 }
                 catch (Exception ex)
                 {
-                    ShowSnackbar("环境获取失败", ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                    ShowSnackbar(Properties.Resources.Error_Gpu_EnvFail, ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                     AppendLog($"[警告] 获取环境异常: {ex.Message}");
                     ShowSshForm = true;
                 }
@@ -2435,16 +2435,16 @@ namespace ExHyperV.ViewModels
         [RelayCommand]
         private async Task StartLinuxDeploy()
         {
-            var driveTask = GpuTasks.FirstOrDefault(t => t.Name == "驱动安装");
+            var driveTask = GpuTasks.FirstOrDefault(t => t.Name == Properties.Resources.Task_Gpu_Driver);
             if (driveTask == null) return;
 
             if (string.IsNullOrWhiteSpace(SshHost))
             {
-                ShowSnackbar("验证失败", "主机 IP 地址不能为空", ControlAppearance.Danger, SymbolRegular.Warning24);
+                ShowSnackbar(Properties.Resources.Error_Common_Verify, Properties.Resources.Error_Gpu_IpEmpty, ControlAppearance.Danger, SymbolRegular.Warning24);
                 return;
             }
 
-            AppendLog($">>> 开始 Linux 部署流程");
+            AppendLog(Properties.Resources.Msg_Gpu_DeployStart);
             AppendLog($"连接参数 - Host: {SshHost}, Port: {SshPort}, User: {SshUsername}");
             if (!string.IsNullOrEmpty(SshProxyHost)) AppendLog($"使用代理: {SshProxyHost}:{SshProxyPort}");
 
@@ -2479,14 +2479,14 @@ namespace ExHyperV.ViewModels
             {
                 driveTask.Status = ExHyperV.Models.TaskStatus.Success;
                 _currentProcessingGpuAdapterId = null;
-                AppendLog(">>> Linux 部署任务全部完成。");
+                AppendLog(Properties.Resources.Msg_Gpu_LinuxDeployDone);
                 await FinishWorkflowAsync();
             }
             else
             {
                 if (!string.IsNullOrEmpty(_currentProcessingGpuAdapterId))
                 {
-                    AppendLog($"[回滚] Linux 部署失败，正在移除 GPU 分区...");
+                    AppendLog(Properties.Resources.Error_Gpu_LinuxRollback);
                     await _vmGpuService.RemoveGpuPartitionAsync(SelectedVm.Name, _currentProcessingGpuAdapterId);
                     _currentProcessingGpuAdapterId = null;
                 }
@@ -2502,10 +2502,10 @@ namespace ExHyperV.ViewModels
         private void GoBackToPartitionList()
         {
             ShowSshForm = false;
-            var driveTask = GpuTasks.FirstOrDefault(t => t.Name == "驱动安装");
+            var driveTask = GpuTasks.FirstOrDefault(t => t.Name == Properties.Resources.Task_Gpu_Driver);
             if (driveTask != null)
             {
-                driveTask.Description = "请选择目标分区进行适配...";
+                driveTask.Description = Properties.Resources.Msg_Gpu_SelectPart;
             }
         }
 
@@ -2515,7 +2515,7 @@ namespace ExHyperV.ViewModels
             await Task.Delay(1000);
             await RefreshCurrentVmGpuAssignments();
             CurrentViewType = VmDetailViewType.GpuSettings;
-            ShowSnackbar("配置成功", $"{SelectedHostGpu.Name} 已准备就绪", ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
+            ShowSnackbar(Properties.Resources.Msg_Common_ConfigSuccess, $"{SelectedHostGpu.Name} 已准备就绪", ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
         }
 
         // 设备 ID 格式化辅助
@@ -2547,7 +2547,7 @@ namespace ExHyperV.ViewModels
         }
 
         // 获取操作状态的乐观显示文本
-        private string GetOptimisticText(string action) => action switch { "Start" => "正在启动", "Restart" => "正在重启", "Stop" => "正在关闭", "TurnOff" => "已关机", "Save" => "正在保存", "Suspend" => "正在暂停", _ => "处理中..." };
+        private string GetOptimisticText(string action) => action switch { "Start" => Properties.Resources.Status_Starting, "Restart" => Properties.Resources.Status_Restarting, "Stop" => Properties.Resources.Status_StoppingPresent, "TurnOff" => Properties.Resources.Status_Off, "Save" => Properties.Resources.Status_Saving, "Suspend" => Properties.Resources.Status_Suspending, _ => Properties.Resources.Status_Processing };
 
         // 追加日志到控制台
         private void AppendLog(string message)
@@ -2566,7 +2566,7 @@ namespace ExHyperV.ViewModels
             if (!string.IsNullOrEmpty(GpuDeploymentLog))
             {
                 Clipboard.SetText(GpuDeploymentLog);
-                ShowSnackbar("复制成功", "配置日志已拷贝到剪贴板", ControlAppearance.Success, SymbolRegular.Copy24);
+                ShowSnackbar(Properties.Resources.Msg_Common_CopyOk, Properties.Resources.Msg_Gpu_LogCopy, ControlAppearance.Success, SymbolRegular.Copy24);
             }
         }
 

@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ExHyperV.Services;
 using ExHyperV.Tools;
@@ -40,9 +40,9 @@ namespace ExHyperV.ViewModels
         // 调度器选项列表
         public ObservableCollection<SchedulerMode> SchedulerModes { get; } = new()
         {
-            new SchedulerMode("经典 (Classic)", HyperVSchedulerType.Classic),
-            new SchedulerMode("核心 (Core)", HyperVSchedulerType.Core),
-            new SchedulerMode("根 (Root)", HyperVSchedulerType.Root)
+            new SchedulerMode(Properties.Resources.Scheduler_Classic, HyperVSchedulerType.Classic),
+            new SchedulerMode(Properties.Resources.Scheduler_Core, HyperVSchedulerType.Core),
+            new SchedulerMode(Properties.Resources.Scheduler_Root, HyperVSchedulerType.Root)
         };
         // ------------------------------------
 
@@ -211,12 +211,12 @@ namespace ExHyperV.ViewModels
             // 修复 CS0266：bool? 必须显式比较，不能直接用 !Status.IsSuccess
             if (AdminStatus.IsSuccess != true)
             {
-                ShowSnackbar(Translate("Status_Title_Error"), "需要管理员权限才能执行此操作。", ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Translate("Status_Title_Error"), Properties.Resources.Error_Common_Admin, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                 return;
             }
 
             // 提示用户正在处理
-            ShowSnackbar(Translate("Status_Title_Info"), "正在启用 Hyper-V 服务，请稍候...", ControlAppearance.Info, SymbolRegular.Settings24);
+            ShowSnackbar(Translate("Status_Title_Info"), Properties.Resources.Msg_Host_EnableHyperV, ControlAppearance.Info, SymbolRegular.Settings24);
 
             bool success = await Task.Run(() =>
             {
@@ -235,12 +235,12 @@ namespace ExHyperV.ViewModels
 
             if (success)
             {
-                ShowRestartPrompt("Hyper-V 服务已启用，重启系统后生效。");
+                ShowRestartPrompt(Properties.Resources.Msg_Host_EnableSuccess);
                 HyperVStatus.IsChecking = true; // 临时更新状态
             }
             else
             {
-                ShowSnackbar(Translate("Status_Title_Error"), "启用 Hyper-V 服务失败，请尝试在“启用或关闭 Windows 功能”中手动开启。", ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Translate("Status_Title_Error"), Properties.Resources.Error_Host_EnableFail, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
         }
 
@@ -316,11 +316,11 @@ namespace ExHyperV.ViewModels
                 bool result = await HyperVSchedulerService.SetSchedulerTypeAsync(value);
                 if (result)
                 {
-                    ShowSnackbar(Translate("Status_Title_Info"), "调度器类型已更改，请重启系统生效。", ControlAppearance.Info, SymbolRegular.Info24);
+                    ShowSnackbar(Translate("Status_Title_Info"), Properties.Resources.Msg_Host_SchedulerChanged, ControlAppearance.Info, SymbolRegular.Info24);
                 }
                 else
                 {
-                    ShowSnackbar(Translate("Status_Title_Error"), "设置调度器类型失败。", ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                    ShowSnackbar(Translate("Status_Title_Error"), Properties.Resources.Error_Host_SchedulerFail, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                 }
             });
         }

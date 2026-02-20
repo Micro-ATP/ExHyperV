@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="ExHyperV.Views.Pages.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -87,8 +87,8 @@
                     </Grid.ColumnDefinitions>
                     <ui:FontIcon Grid.Column="0" FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xF5ED;" FontSize="24" Margin="0,0,15,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="虚拟机管理" FontSize="16"/>
-                        <TextBlock Text="创建、配置并运行 Hyper-V 虚拟机" FontSize="13" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock Text="{x:Static properties:Resources.Menu_VMManagement}" FontSize="16"/>
+                        <TextBlock Text="{x:Static properties:Resources.Desc_VMManagement}" FontSize="13" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
             </ui:CardAction>
@@ -102,8 +102,8 @@
                     </Grid.ColumnDefinitions>
                     <ui:FontIcon Grid.Column="0" FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xE737;" FontSize="24" Margin="0,0,15,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="主机配置" FontSize="16"/>
-                        <TextBlock Text="检查主机运行环境及高级设定" FontSize="13" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock Text="{x:Static properties:Resources.Menu_HostConfig}" FontSize="16"/>
+                        <TextBlock Text="{x:Static properties:Resources.Desc_HostConfig}" FontSize="13" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
             </ui:CardAction>
@@ -117,8 +117,8 @@
                     </Grid.ColumnDefinitions>
                     <ui:FontIcon Grid.Column="0" FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xF0B9;" FontSize="24" Margin="0,0,15,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="PCIe 直通" FontSize="16"/>
-                        <TextBlock Text="将物理显卡等设备直接分配给虚拟机" FontSize="13" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock Text="{x:Static properties:Resources.Menu_Pcie}" FontSize="16"/>
+                        <TextBlock Text="{x:Static properties:Resources.Desc_Pcie}" FontSize="13" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
             </ui:CardAction>
@@ -132,8 +132,8 @@
                     </Grid.ColumnDefinitions>
                     <ui:FontIcon Grid.Column="0" FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xE774;" FontSize="24" Margin="0,0,15,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="虚拟交换机" FontSize="16"/>
-                        <TextBlock Text="管理虚拟交换机、网络模式和上游网络" FontSize="13" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock Text="{x:Static properties:Resources.Menu_NetSwitch}" FontSize="16"/>
+                        <TextBlock Text="{x:Static properties:Resources.Desc_NetSwitch}" FontSize="13" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
             </ui:CardAction>

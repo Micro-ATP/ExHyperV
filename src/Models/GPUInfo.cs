@@ -1,4 +1,4 @@
-﻿namespace ExHyperV.Models
+namespace ExHyperV.Models
 {
     public class GPUInfo
     {
@@ -18,12 +18,12 @@
             {
                 if (long.TryParse(Ram, out long bytes))
                 {
-                    if (bytes == 0) return "未知";
+                    if (bytes == 0) return Properties.Resources.Common_Unknown;
                     double gb = bytes / (1024.0 * 1024.0 * 1024.0);
                     if (gb >= 1.0) return $"{gb:0.##} GB";
                     return $"{bytes / (1024.0 * 1024.0):0.##} MB";
                 }
-                return "未知";
+                return Properties.Resources.Common_Unknown;
             }
         }
 
@@ -34,7 +34,7 @@
                 // 优先使用 Pname (分区路径)，如果没有则用 InstanceId
                 string rawPath = !string.IsNullOrEmpty(Pname) ? Pname : InstanceId;
 
-                if (string.IsNullOrWhiteSpace(rawPath)) return "未知路径";
+                if (string.IsNullOrWhiteSpace(rawPath)) return Properties.Resources.Common_UnknownPath;
 
                 try
                 {

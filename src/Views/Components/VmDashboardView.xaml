@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="ExHyperV.Views.Components.VmDashboardView"
+<UserControl xmlns:properties="clr-namespace:ExHyperV.Properties" x:Class="ExHyperV.Views.Components.VmDashboardView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -51,8 +51,8 @@
                                 </ui:FontIcon.RenderTransform>
                             </ui:FontIcon>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="处理器" FontSize="16" />
-                                <TextBlock Text="核心配置与实时监控" FontSize="12" Opacity="0.6" Margin="0,2,0,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="{x:Static properties:Resources.Label_Processor}" FontSize="16" />
+                                <TextBlock Text="{x:Static properties:Resources.Desc_CpuMonitoring}" FontSize="12" Opacity="0.6" Margin="0,2,0,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
                         </StackPanel>
                         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
@@ -124,8 +124,8 @@
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:FontIcon FontSize="24" FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xEEA0;" Margin="-5,0,12,0"/>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="内存" FontSize="16" />
-                                <TextBlock Text="内存配置与使用趋势" FontSize="12" Opacity="0.6" Margin="0,2,0,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="{x:Static properties:Resources.Label_Memory}" FontSize="16" />
+                                <TextBlock Text="{x:Static properties:Resources.Desc_MemoryMonitoring}" FontSize="12" Opacity="0.6" Margin="0,2,0,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
                         </StackPanel>
 
@@ -158,7 +158,7 @@
                                     <Polygon Points="{Binding SelectedVm.MemoryHistoryPoints}" Fill="#FF54C7FC"/>
                                 </Grid>
                             </Viewbox>
-                            <TextBlock Text="内存使用趋势" 
+                            <TextBlock Text="{x:Static properties:Resources.Label_MemoryTrends}" 
                                        FontSize="12" 
                                        Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"
                                        HorizontalAlignment="Left" 
@@ -185,8 +185,8 @@
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:FontIcon FontSize="22" FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xEDA2;" Margin="-5,0,12,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="存储" FontSize="16"  Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
-                                <TextBlock Text="磁盘空间与读写速率" FontSize="12" Opacity="0.6" Margin="0,2,0,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="{x:Static properties:Resources.Label_Storage}" FontSize="16"  Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="{x:Static properties:Resources.Desc_StorageMonitoring}" FontSize="12" Opacity="0.6" Margin="0,2,0,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
                         </StackPanel>
 
@@ -305,7 +305,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <TextBlock Text="未挂载虚拟磁盘" HorizontalAlignment="Center" Opacity="0.4" Margin="20" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}">
+                    <TextBlock Text="{x:Static properties:Resources.Warn_NoVhd}" HorizontalAlignment="Center" Opacity="0.4" Margin="20" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
                                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -336,8 +336,8 @@
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:FontIcon FontSize="22" FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xF211;" Margin="-5,0,12,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="显卡" FontSize="16" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
-                                <TextBlock Text="GPU 配置与引擎负载" FontSize="12" Opacity="0.6" Margin="0,2,0,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="{x:Static properties:Resources.Label_Gpu}" FontSize="16" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="{x:Static properties:Resources.Desc_GpuMonitoring}" FontSize="12" Opacity="0.6" Margin="0,2,0,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
                         </StackPanel>
 
@@ -396,7 +396,7 @@
                                             <Polyline Points="{Binding SelectedVm.Gpu3dHistoryPoints}" Stroke="#FF54C7FC" StrokeThickness="1.5"/>
                                         </Grid>
                                     </Viewbox>
-                                    <TextBlock Text="3D 渲染" FontSize="10" Margin="5,3" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="{x:Static properties:Resources.Label_3DRender}" FontSize="10" Margin="5,3" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="{Binding SelectedVm.Gpu3dUsage, StringFormat='{}{0:N1}%'}" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"  Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                                 </Grid>
                             </Border>
@@ -412,7 +412,7 @@
                                             <Polyline Points="{Binding SelectedVm.GpuCopyHistoryPoints}" Stroke="#FF54C7FC" StrokeThickness="1.5"/>
                                         </Grid>
                                     </Viewbox>
-                                    <TextBlock Text="数据复制" FontSize="10" Margin="5,3" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="{x:Static properties:Resources.Label_CopyData}" FontSize="10" Margin="5,3" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="{Binding SelectedVm.GpuCopyUsage, StringFormat='{}{0:N1}%'}" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"  Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                                 </Grid>
                             </Border>
@@ -428,7 +428,7 @@
                                             <Polyline Points="{Binding SelectedVm.GpuEncodeHistoryPoints}" Stroke="#FF54C7FC" StrokeThickness="1.5"/>
                                         </Grid>
                                     </Viewbox>
-                                    <TextBlock Text="视频编码" FontSize="10" Margin="5,3" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="{x:Static properties:Resources.Label_EncVideo}" FontSize="10" Margin="5,3" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="{Binding SelectedVm.GpuEncodeUsage, StringFormat='{}{0:N1}%'}" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"  Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                                 </Grid>
                             </Border>
@@ -444,7 +444,7 @@
                                             <Polyline Points="{Binding SelectedVm.GpuDecodeHistoryPoints}" Stroke="#FF54C7FC" StrokeThickness="1.5"/>
                                         </Grid>
                                     </Viewbox>
-                                    <TextBlock Text="视频解码" FontSize="10" Margin="5,3" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="{x:Static properties:Resources.Label_DecVideo}" FontSize="10" Margin="5,3" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="{Binding SelectedVm.GpuDecodeUsage, StringFormat='{}{0:N1}%'}" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"  Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                                 </Grid>
                             </Border>
@@ -469,7 +469,7 @@
                             </Style>
                         </Border.Style>
                         <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="显卡驱动未就绪" HorizontalAlignment="Center" Opacity="0.6" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="{x:Static properties:Resources.Warn_GpuNoDriver}" HorizontalAlignment="Center" Opacity="0.6" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                         </StackPanel>
                     </Border>
 
@@ -489,7 +489,7 @@
                                 </Style.Triggers>
                             </Style>
                         </Border.Style>
-                        <TextBlock Text="虚拟机未启动" HorizontalAlignment="Center" Opacity="0.4" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="{x:Static properties:Resources.Warn_VmNotStarted}" HorizontalAlignment="Center" Opacity="0.4" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                     </Border>
 
                     <!-- 4. 未分配状态 -->
@@ -504,7 +504,7 @@
                                 </Style.Triggers>
                             </Style>
                         </Border.Style>
-                        <TextBlock Text="虚拟机未分配显卡" HorizontalAlignment="Center" Opacity="0.4" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="{x:Static properties:Resources.Warn_NoGpu}" HorizontalAlignment="Center" Opacity="0.4" FontSize="14" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                     </Border>
                 </Grid>
             </ui:CardExpander>
@@ -525,8 +525,8 @@
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:FontIcon FontSize="22" FontFamily="{DynamicResource SegoeFluentIcons}" Glyph="&#xE774;" Margin="-5,0,12,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="网络" FontSize="16" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
-                                <TextBlock Text="网络设置与连接信息" FontSize="12" Opacity="0.6" Margin="0,2,0,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="{x:Static properties:Resources.Label_Net}" FontSize="16" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="{x:Static properties:Resources.Desc_NetInfo}" FontSize="12" Opacity="0.6" Margin="0,2,0,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
                         </StackPanel>
 
@@ -592,7 +592,7 @@
                                                 <TextBlock Text="{Binding Name}" FontSize="12" Opacity="0.8" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                                                 <TextBlock Text=" - " FontSize="12" Opacity="0.5" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                                                 <Border Background="#15FFFFFF" CornerRadius="3" Padding="4,0" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding SwitchName, FallbackValue='未连接'}" FontSize="11" />
+                                                    <TextBlock Text="{Binding SwitchName, FallbackValue='{x:Static properties:Resources.Status_Unconnected}'}" FontSize="11" />
                                                 </Border>
                                             </StackPanel>
 
@@ -608,7 +608,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <TextBlock Text="未配置网络适配器" HorizontalAlignment="Center" Opacity="0.4" Margin="20" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}">
+                    <TextBlock Text="{x:Static properties:Resources.Warn_NoAdapter}" HorizontalAlignment="Center" Opacity="0.4" Margin="20" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
                                 <Setter Property="Visibility" Value="Collapsed"/>
