@@ -235,7 +235,6 @@ Hyper-V 要求您将虚拟文件或物理设备挂载到IDE控制器或SCSI控�
 
 5.对于2代虚拟机，总共有4个SCSI控制器x64=256个位置可以使用。
 
-（可能有遗漏的规则，UI还没完善，忘了没做踢我）
 
 #### 媒体设置
 
@@ -315,6 +314,7 @@ GPU-PV (或称 GPU-P) 是一种半虚拟化技术，它允许多个虚拟机共�
 | :--- | :--- | :--- | :--- |:--- | :--- | :--- | :--- | :--- | :--- |
 | **Nvidia** | RTX 4090 | Ada Lovelace | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | |
 | **Nvidia** | RTX 4080 Super | Ada Lovelace | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | |
+| **Nvidia** | RTX 2080 Super | Turing | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | |
 | **Nvidia** | GTX 1050 | Pascal | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | |
 | **Nvidia** | GT 210 | Tesla | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | 不支持 |
 | **Intel**| Iris Xe Graphics| Xe-LP | ⚠️ | ✅ | ✅ | ✅ | ✅ | ❌ | 硬件识别残缺| 
@@ -418,6 +418,7 @@ DDA以PCIe设备为单位划分可分配设备。如果设备未显示在列表�
 | **Nvidia** | RTX 5090 | Blackwell 2.0 | ✅ | ✅ | ✅ |
 | **Nvidia** | RTX 4090 | Ada Lovelace | ✅ | ✅ | ✅ |
 | **Nvidia** | RTX 4080 Super | Ada Lovelace | ✅ | ✅ | ✅ |
+| **Nvidia** | RTX 2080 Super | Turing | ✅ | ✅ | ✅ |
 | **Nvidia** | RTX 4070 | Ada Lovelace | ✅ | ✅ | ✅ |
 | **Nvidia** | GTX 1660 Super | Turing | ✅ | ✅ | ✅ |
 | **Nvidia** | GTX 1050 | Pascal | ✅ | ✅ | ✅ |
