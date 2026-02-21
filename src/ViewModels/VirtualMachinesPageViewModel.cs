@@ -281,6 +281,10 @@ namespace ExHyperV.ViewModels
                             {
                                 await _powerService.ExecuteControlActionAsync(instance.Name, action);
                                 await SyncSingleVmStateAsync(instance);
+                                if (action == "Start" || action == "Restart")
+                                {
+                                    TryApplyAffinityForRootScheduler(instance);
+                                }
                             }
                             catch (Exception ex)
                             {
@@ -303,6 +307,11 @@ namespace ExHyperV.ViewModels
                 });
 
                 VmList = finalCollection;
+
+                foreach (var vm in VmList.Where(v => v.IsRunning))
+                {
+                    TryApplyAffinityForRootScheduler(vm);
+                }
 
                 // 配置排序规则
                 var view = CollectionViewSource.GetDefaultView(VmList);
@@ -422,45 +431,6 @@ namespace ExHyperV.ViewModels
 
                                 vm.SyncBackendData(update.State, update.RawUptime);
 
-                                if (wasRunning != vm.IsRunning && vm.IsRunning)
-                                {
-                                    needsResort = true;
-
-                                    // Root 调度器自动同步补丁：增加重试逻辑
-                                    if (HyperVSchedulerService.GetSchedulerType() == HyperVSchedulerType.Root)
-                                    {
-                                        string savedAffinity = Utils.GetTagValue(vm.Notes, "Affinity");
-                                        if (!string.IsNullOrEmpty(savedAffinity))
-                                        {
-                                            _ = Task.Run(async () => {
-                                                try
-                                                {
-                                                    var coreIds = savedAffinity.Split(',')
-                                                                             .Select(s => int.Parse(s.Trim()))
-                                                                             .ToList();
-
-                                                    // 启动后最多尝试 10 次，每 3 秒一次
-                                                    for (int i = 0; i < 10; i++)
-                                                    {
-                                                        await Task.Delay(3000); // 给 WMI 和进程初始化留出时间
-
-                                                        bool success = ProcessAffinityManager.SetVmProcessAffinity(vm.Id, coreIds);
-                                                        if (success)
-                                                        {
-                                                            Debug.WriteLine($"[Affinity] 自动应用成功: {vm.Name} 在第 {i + 1} 次尝试时绑定。");
-                                                            break;
-                                                        }
-                                                        Debug.WriteLine($"[Affinity] 自动应用尝试中 ({i + 1}/10): {vm.Name} 进程尚未就绪。");
-                                                    }
-                                                }
-                                                catch (Exception ex)
-                                                {
-                                                    Debug.WriteLine($"[Affinity] 自动应用异常: {ex.Message}");
-                                                }
-                                            });
-                                        }
-                                    }
-                                }
                                 if (CurrentViewType != VmDetailViewType.NetworkSettings && !IsLoadingSettings)
                                 {
                                     SyncNetworkAdaptersInternal(vm.NetworkAdapters, update.NetworkAdapters.ToList());
@@ -803,6 +773,55 @@ namespace ExHyperV.ViewModels
             {
                 IsLoadingSettings = false;
             }
+        }
+
+        // 自动应用亲和性
+
+        private void TryApplyAffinityForRootScheduler(VmInstanceInfo vm)
+        {
+            // 仅针对 Root 调度器且虚拟机正在运行的情况
+            if (HyperVSchedulerService.GetSchedulerType() != HyperVSchedulerType.Root || !vm.IsRunning)
+                return;
+
+            string savedAffinity = Utils.GetTagValue(vm.Notes, "Affinity");
+            if (string.IsNullOrEmpty(savedAffinity))
+                return;
+
+            // 异步执行，避免阻塞 UI
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var coreIds = savedAffinity.Split(',')
+                                             .Select(s => int.Parse(s.Trim()))
+                                             .ToList();
+
+                    // 尝试多次，因为 vmmem 进程可能启动较慢，或者为了确保应用成功
+                    // 如果是软件刚启动检测到虚拟机已运行，通常一次就能成功，但保留重试机制更稳健
+                    for (int i = 0; i < 5; i++)
+                    {
+                        // 如果是刚启动 VM，进程可能还没出来，等待一下；如果是已运行，这个等待不影响
+                        if (i == 0) await Task.Delay(1000);
+                        else await Task.Delay(2000);
+
+                        // 再次检查是否还在运行，防止中途关机
+                        if (!vm.IsRunning) break;
+
+                        // 调用核心方法
+                        bool success = ProcessAffinityManager.SetVmProcessAffinity(vm.Id, coreIds);
+                        if (success)
+                        {
+                            Debug.WriteLine($"[Affinity] 自动应用成功: {vm.Name}");
+                            break;
+                        }
+                        Debug.WriteLine($"[Affinity] 尝试应用失败 ({i + 1}/5): {vm.Name} - 进程可能未就绪或无权限");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[Affinity] 自动应用异常: {ex.Message}");
+                }
+            });
         }
 
         // ----------------------------------------------------------------------------------
