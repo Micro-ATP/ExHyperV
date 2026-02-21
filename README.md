@@ -45,6 +45,10 @@ The interface uses the [WPF-UI](https://github.com/lepoco/wpfui) framework, prov
 ![Features](https://github.com/Justsenger/ExHyperV/blob/main/img/06.png)
 ![Features](https://github.com/Justsenger/ExHyperV/blob/main/img/07.png)
 ![Features](https://github.com/Justsenger/ExHyperV/blob/main/img/08.png)
+![Features](https://github.com/Justsenger/ExHyperV/blob/main/img/09.png)
+![Features](https://github.com/Justsenger/ExHyperV/blob/main/img/10.png)
+![Features](https://github.com/Justsenger/ExHyperV/blob/main/img/11.png)
+![Features](https://github.com/Justsenger/ExHyperV/blob/main/img/12.png)
 
 </details>
 
