@@ -531,41 +531,29 @@ return 'OK'
                     return string.Format(Properties.Resources.Error_Gpu_InvalidSystemPart, assignedDriveLetter);
                 }
 
-                // --- 阶段 3：同步驱动文件 ---
-                string sourceFolder = FindGpuDriverSourcePath(gpuInstancePath);
-                if (string.IsNullOrEmpty(sourceFolder)) sourceFolder = @"C:\Windows\System32\DriverStore\FileRepository";
+                // --- 阶段 3：全量同步驱动文件 ---
+                // 直接锁定宿主机驱动库根目录
+                string sourceFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "DriverStore", "FileRepository");
 
-                // [修复路径逻辑]：构建目标路径
-                // 目标基准路径: Z:\Windows\System32\HostDriverStore\FileRepository
-                string destBase = Path.Combine(assignedDriveLetter, "Windows", "System32", "HostDriverStore", "FileRepository");
-                string sourceDirName = new DirectoryInfo(sourceFolder).Name;
-                string destFolder;
-
-                // 如果源是根目录 "FileRepository"，不要再追加一层 "FileRepository"
-                if (sourceDirName.Equals("FileRepository", StringComparison.OrdinalIgnoreCase))
-                {
-                    destFolder = destBase;
-                }
-                else
-                {
-                    // 如果源是具体驱动目录 (如 nv_disp...)，则追加该目录名
-                    destFolder = Path.Combine(destBase, sourceDirName);
-                }
+                // 目标路径固定为：Z:\Windows\System32\HostDriverStore\FileRepository
+                string destFolder = Path.Combine(assignedDriveLetter, "Windows", "System32", "HostDriverStore", "FileRepository");
 
                 if (!Directory.Exists(destFolder)) Directory.CreateDirectory(destFolder);
 
-                // [修复状态显示]：在耗时操作前更新 Log
                 Log(Properties.Resources.Msg_Gpu_SyncingFiles);
-                Log(string.Format(Properties.Resources.Msg_Gpu_Source, sourceFolder)); // 可选：打印源路径方便调试
 
                 using (Process p = Process.Start(new ProcessStartInfo
                 {
                     FileName = "robocopy.exe",
-                    // 注意：Robocopy 默认行为是将 Source 目录下的【内容】复制到 Destination 目录下
+                    // 使用 /E 全量同步，/MT:32 开启多线程加速
                     Arguments = $"\"{sourceFolder}\" \"{destFolder}\" /E /R:1 /W:1 /MT:32 /NDL /NJH /NJS /NC /NS",
                     CreateNoWindow = true,
                     UseShellExecute = false
-                })) { await p.WaitForExitAsync(); }
+                }))
+                {
+                    await p.WaitForExitAsync();
+                }
+
 
                 // NVIDIA 注册表注入
                 if (gpuManu.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase))
@@ -939,52 +927,17 @@ return 'OK'
 
         private string FindGpuDriverSourcePath(string gpuInstancePath)
         {
-            string sourceFolder = null;
-            string fastScript = $@"
-    $ErrorActionPreference = 'Stop';
-    try {{
-        $targetId = '{gpuInstancePath}'.Trim();
-        $wmi = Get-CimInstance Win32_VideoController | Where-Object {{ $_.PNPDeviceID -like ""*$targetId*"" }} | Select-Object -First 1;
-        
-        if ($wmi -and $wmi.InstalledDisplayDrivers) {{
-            $drivers = $wmi.InstalledDisplayDrivers -split ',';
-            $repoDriver = $drivers | Where-Object {{ $_ -match 'FileRepository' }} | Select-Object -First 1;
-            
-            if ($repoDriver) {{
-                $currentPath = Split-Path -Parent $repoDriver.Trim();
-                while ($true) {{
-                    if (Get-ChildItem -Path $currentPath -Filter *.inf -ErrorAction SilentlyContinue) {{
-                        return $currentPath;
-                    }}
-                    $parentPath = Split-Path -Parent $currentPath;
-                    $parentName = Split-Path -Leaf $parentPath;
-                    if ($parentName -eq 'FileRepository') {{
-                        return $currentPath;
-                    }}
-                    if ($parentPath -eq $currentPath) {{ break; }}
-                    $currentPath = $parentPath;
-                }}
-                return (Split-Path -Parent $repoDriver.Trim());
-            }}
-        }}
-    }} catch {{ }}";
+            // 不再进行复杂的 WMI 查询，直接返回系统驱动仓库根目录
+            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "DriverStore", "FileRepository");
 
-            try
+            if (Directory.Exists(path))
             {
-                var fastRes = Utils.Run(fastScript);
-                if (fastRes != null && fastRes.Count > 0 && fastRes[0] != null)
-                {
-                    string resultPath = fastRes[0].ToString().Trim();
-                    if (!string.IsNullOrEmpty(resultPath) && Directory.Exists(resultPath))
-                    {
-                        sourceFolder = resultPath;
-                    }
-                }
+                return path;
             }
-            catch { }
-            return sourceFolder;
-        }
 
+            // 万一环境变量拿不到，硬编码兜底
+            return @"C:\Windows\System32\DriverStore\FileRepository";
+        }
 
 
         // ----------------------------------------------------------------------------------
