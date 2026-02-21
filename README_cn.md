@@ -360,6 +360,21 @@ GPU-PV 模型中，虚拟机的 GPU-PV 显卡作为“渲染设备”，还需�
     - 使用 Parsec, Sunshine, 或 Moonlight 等串流软件，配对并设置好开机启动，在关闭RDP以及其他远程桌面的情况下连接，从而获得高分辨率、高刷新率的流畅体验。
     - ![Sunshine+PV 示例](https://github.com/user-attachments/assets/e25fce26-6158-4052-9759-6d5d1ebf1c5d)
 
+> [!NOTE]
+> 这里是一份简单的 Sunshine + GPU-PV 操作指南。
+
+· 将 GPU-PV 添加到虚拟机并正常工作。
+
+· 将 [Virtual-Display-Driver](https://github.com/VirtualDrivers/Virtual-Display-Driver)  安装到虚拟机，并确保监视器出现了“Generic Monitor (VDD by MTT)”，通过显示设置设定好分辨率和刷新率。
+
+· 将 Sunshine 安装到虚拟机，并将 Moonlight 与 Sunshine 配对。
+
+· 将 Sunshine 设定为以管理员权限开机自动启动。
+
+· 重启虚拟机，不要打开控制台或者任何远程桌面。
+
+· Moonlight 连接虚拟机，如果一切顺利，此时画面和声音都将传输到 Moonlight 客户端。
+
 3.  **USB 显卡 + GPU-PV**
     - **思路**: 通过 PCIe 直通分配一个 USB 控制器给虚拟机，再连接一个 USB 显卡（如基于 [DisplayLink DL-6950](https://www.synaptics.com/cn/products/displaylink-graphics/integrated-chipsets/dl-6000) 或 [Silicon Motion SM768](https://www.siliconmotion.com/product/cht/Graphics-Display-SoCs.html) 芯片的产品）作为显示设备。
     - **状态**: 此方案与大显存显卡可能存在内存资源冲突问题，还需要更多测试。
