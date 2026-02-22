@@ -36,7 +36,7 @@
            />
                 <TextBlock Text="{x:Static properties:Resources.exhyperv}"
                            FontFamily="pack://application:,,,/Assets/fonts/#Audiowide"
-                           FontWeight="Bold" FontSize="18" Foreground="#CCFFFFFF" Margin="5,5,0,0"/>
+                           FontWeight="Bold" FontSize="18" Foreground="#CCFFFFFF" Margin="5,10,0,0"/>
             </StackPanel>
         </Grid>
 
