@@ -33,6 +33,8 @@ ExHyperV 通过深入研究 Hyper-V 文档、 [WMI](https://github.com/Justsenge
 
 ExHyperV 使用 [WPF-UI](https://github.com/lepoco/wpfui) 框架，提供流畅现代的用户界面体验和科幻的视觉效果。支持黑色主题和白色主题，并且会根据系统主题自动切换。
 
+目前支持的语言：简体中文、英文。
+
 ![主界面](https://github.com/Justsenger/ExHyperV/blob/main/img/01.png)
 
 <details>
@@ -569,3 +571,28 @@ NAT 模式：宿主和虚拟机将连接在同一个内部虚拟交换机下面�
 如果你觉得这个项目对你有帮助，欢迎考虑赞助我！
 
 [![Ko-fi](https://img.shields.io/badge/Sponsor-Ko--fi-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/saniye) &nbsp;&nbsp; [![爱发电](https://img.shields.io/badge/Sponsor-爱发电-633991?style=for-the-badge&logo=afdian&logoColor=white)](https://afdian.com/a/saniye)
+
+## 🎖️ 致谢名单
+
+非常感谢所有赞助者的支持！你们的慷慨资助是 ExHyperV 持续进化的核心动力。
+
+### 👑 神
+<a href="https://afdian.com/a/saniye"><img src="https://img.shields.io/badge/GOD-User--1A4FE-black?style=for-the-badge&logo=kingstontechnology&logoColor=FFD700&labelColor=black&color=FFD700" width="300px" /></a> <a href="https://afdian.com/a/saniye"><img src="https://img.shields.io/badge/GOD-ANONYMOUS-333333?style=for-the-badge&logo=cyberdefenders&logoColor=C0C0C0&labelColor=black&color=C0C0C0" width="300px" /></a>
+
+---
+
+### 🌌 传说
+![](https://img.shields.io/badge/LEGEND-USER--09837-24292e?style=for-the-badge&logo=starship&logoColor=BE64FF&labelColor=24292e&color=BE64FF)
+
+---
+
+### 🏅 达人
+![](https://img.shields.io/badge/EXPERT-虚位以待-24292e?style=for-the-badge&logo=expertsexchange&logoColor=FFBF00&labelColor=24292e&color=FFBF00)
+
+---
+
+### 🔹 初心
+![](https://img.shields.io/badge/初心-激进娘-0078D4?style=flat-square&logo=hyperledger&logoColor=white) 
+![](https://img.shields.io/badge/初心-User--FaTM-0078D4?style=flat-square&logo=hyperledger&logoColor=white) 
+<a href="mailto:miooiio@outlook.jp"><img src="https://img.shields.io/badge/初心-User--53EDF-0078D4?style=flat-square&logo=hyperledger&logoColor=white" /></a> 
+![](https://img.shields.io/badge/初心-User--56652-0078D4?style=flat-square&logo=hyperledger&logoColor=white)
