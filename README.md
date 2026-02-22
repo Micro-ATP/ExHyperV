@@ -577,7 +577,7 @@ A huge thank you to our sponsors! Your generous support is the driving force beh
 ---
 
 ### 🌌 Legend Tier
-![](https://img.shields.io/badge/LEGEND-Your--Name--Here-24292e?style=for-the-badge&logo=starship&logoColor=BE64FF&labelColor=24292e&color=BE64FF)
+![](https://img.shields.io/badge/LEGEND-USER--09837-24292e?style=for-the-badge&logo=starship&logoColor=BE64FF&labelColor=24292e&color=BE64FF)
 
 ---
 
