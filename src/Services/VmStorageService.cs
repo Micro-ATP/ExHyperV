@@ -486,9 +486,17 @@ namespace ExHyperV.Services
         public async Task<(bool Success, string Message)> ModifyHardDrivePathAsync(string vmName, string controllerType, int controllerNumber, int controllerLocation, string newPath)
         {
             string psPath = string.IsNullOrWhiteSpace(newPath) ? "$null" : $"'{newPath}'";
+
+            // 核心逻辑：如果是运行中的虚拟机，采用“先删再加”策略，这是实现 SCSI 热交换(Hot-Swap)的唯一可靠方式
             string script = $@"
         $ErrorActionPreference = 'Stop'
-        Set-VMHardDiskDrive -VMName '{vmName}' -ControllerType '{controllerType}' -ControllerNumber {controllerNumber} -ControllerLocation {controllerLocation} -Path {psPath} -ErrorAction Stop";
+        $vm = Get-VM -Name '{vmName}'
+        if ($vm.State -eq 'Running') {{
+            Remove-VMHardDiskDrive -VMName '{vmName}' -ControllerType '{controllerType}' -ControllerNumber {controllerNumber} -ControllerLocation {controllerLocation} -ErrorAction Stop
+            Add-VMHardDiskDrive -VMName '{vmName}' -ControllerType '{controllerType}' -ControllerNumber {controllerNumber} -ControllerLocation {controllerLocation} -Path {psPath} -ErrorAction Stop
+        }} else {{
+            Set-VMHardDiskDrive -VMName '{vmName}' -ControllerType '{controllerType}' -ControllerNumber {controllerNumber} -ControllerLocation {controllerLocation} -Path {psPath} -ErrorAction Stop
+        }}";
 
             return await RunCommandAsync(script);
         }

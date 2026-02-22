@@ -1047,7 +1047,7 @@ namespace ExHyperV.ViewModels
                 return;
             }
 
-            if (driveItem.DriveType == "HardDisk" && SelectedVm.IsRunning)
+            if (driveItem.DriveType == "HardDisk" && SelectedVm.IsRunning && driveItem.ControllerType == "IDE")
             {
                 ShowSnackbar(Properties.Resources.Common_Restricted, Properties.Resources.Error_Storage_VhdRunning, ControlAppearance.Danger, SymbolRegular.Warning24);
                 return;
