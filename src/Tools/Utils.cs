@@ -575,7 +575,7 @@ public class Utils
         catch { }
         return (string.Empty, string.Empty);
     }
-    public static string Version => "V1.4.0-Beta2";
+    public static string Version => "V1.4.0-Beta3";
     public static string Author => "Saniye";
 
 }
