@@ -582,7 +582,7 @@ NAT 模式：宿主和虚拟机将连接在同一个内部虚拟交换机下面�
 ---
 
 ### 🌌 传说
-![](https://img.shields.io/badge/LEGEND-虚位以待-24292e?style=for-the-badge&logo=starship&logoColor=BE64FF&labelColor=24292e&color=BE64FF)
+![](https://img.shields.io/badge/LEGEND-USER--09837-24292e?style=for-the-badge&logo=starship&logoColor=BE64FF&labelColor=24292e&color=BE64FF)
 
 ---
 
