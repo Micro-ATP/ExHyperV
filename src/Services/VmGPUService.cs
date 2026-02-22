@@ -560,6 +560,11 @@ return 'OK'
                 {
                     Log(Properties.Resources.Msg_Gpu_InjectingReg);
                     NvidiaReg(assignedDriveLetter);
+
+                    // --- 新增：提拔文件到 System32 ---
+                    Log("Configuring NVIDIA tool links...");
+                    PromoteNvidiaFiles(assignedDriveLetter);
+
                 }
 
                 return "OK";
@@ -615,6 +620,104 @@ return 'OK'
                 }
             }
         }
+        // ----------------------------------------------------------------------------------
+        // N卡提拔逻辑：从仓库中找到关键文件并链接到 System32/SysWOW64
+        // ----------------------------------------------------------------------------------
+        // ----------------------------------------------------------------------------------
+        // NVIDIA 提拔逻辑：根据 CopyToVm 清单建立符号链接，解决本体 DLL 缺失问题
+        // ----------------------------------------------------------------------------------
+        private void PromoteNvidiaFiles(string assignedDriveLetter)
+        {
+            string classGuidPath = @"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}";
+
+            try
+            {
+                using var baseKey = Microsoft.Win32.RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, Microsoft.Win32.RegistryView.Registry64);
+                using var classKey = baseKey.OpenSubKey(classGuidPath);
+                if (classKey == null) return;
+
+                foreach (var subKeyName in classKey.GetSubKeyNames())
+                {
+                    using var subKey = classKey.OpenSubKey(subKeyName);
+                    var provider = subKey?.GetValue("ProviderName")?.ToString();
+                    if (provider != null && provider.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // 处理 64位 (System32)
+                        ProcessPromotionRegistryKey(subKey, "CopyToVmWhenNewer", assignedDriveLetter, "System32");
+                        ProcessPromotionRegistryKey(subKey, "CopyToVmOverwrite", assignedDriveLetter, "System32");
+
+                        // 处理 32位 (SysWOW64)
+                        if (Directory.Exists(Path.Combine(assignedDriveLetter, "Windows", "SysWOW64")))
+                        {
+                            ProcessPromotionRegistryKey(subKey, "CopyToVmWhenNewerWow64", assignedDriveLetter, "SysWOW64");
+                            ProcessPromotionRegistryKey(subKey, "CopyToVmOverwriteWow64", assignedDriveLetter, "SysWOW64");
+                        }
+
+                        // 额外提拔：强制链接 nvidia-smi.exe
+                        LinkSingleFile(assignedDriveLetter, "nvidia-smi.exe", "nvidia-smi.exe", "System32");
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex) { Debug.WriteLine($"NVIDIA Promotion error: {ex.Message}"); }
+        }
+
+        private void ProcessPromotionRegistryKey(Microsoft.Win32.RegistryKey adapterKey, string subKeyName, string assignedDriveLetter, string targetSubDir)
+        {
+            using var promotionKey = adapterKey.OpenSubKey(subKeyName);
+            if (promotionKey == null) return;
+
+            foreach (var valName in promotionKey.GetValueNames())
+            {
+                var val = promotionKey.GetValue(valName);
+                string sourceSearch = null;
+                string targetLinkName = null;
+
+                if (val is string[] pairs && pairs.Length > 0)
+                {
+                    // 关键：配对逻辑。pairs[0] 是库里的文件名，pairs[1] 是 System32 里的名字
+                    sourceSearch = pairs[0];
+                    targetLinkName = (pairs.Length > 1) ? pairs[1] : pairs[0];
+                }
+                else if (val is string single)
+                {
+                    sourceSearch = targetLinkName = single;
+                }
+
+                if (!string.IsNullOrEmpty(sourceSearch))
+                {
+                    LinkSingleFile(assignedDriveLetter, sourceSearch, targetLinkName, targetSubDir);
+                }
+            }
+        }
+
+        private void LinkSingleFile(string assignedDriveLetter, string sourceName, string targetName, string targetSubDir)
+        {
+            try
+            {
+                string guestRepo = Path.Combine(assignedDriveLetter, "Windows", "System32", "HostDriverStore", "FileRepository");
+                string hostDestDir = Path.Combine(assignedDriveLetter, "Windows", targetSubDir);
+
+                // 优化点：搜索所有匹配文件，并按最后修改时间倒序排列（取最新的）
+                var foundFiles = new DirectoryInfo(guestRepo)
+                                    .GetFiles(sourceName, SearchOption.AllDirectories)
+                                    .OrderByDescending(f => f.LastWriteTime)
+                                    .ToList();
+
+                if (foundFiles.Count == 0) return;
+
+                // 拿到最新版文件的完整路径
+                string hostSourceFile = foundFiles[0].FullName;
+                string guestInternalTarget = hostSourceFile.Replace(assignedDriveLetter, "C:");
+                string hostLinkPath = Path.Combine(hostDestDir, targetName);
+
+                // 强制刷新链接
+                if (File.Exists(hostLinkPath)) File.Delete(hostLinkPath);
+                ExecuteCommand($"cmd /c mklink \"{hostLinkPath}\" \"{guestInternalTarget}\"");
+            }
+            catch { /* 忽略单个失败 */ }
+        }
+
         private void StartSleep(int ms) => Thread.Sleep(ms);
         public Task<string> AddGpuPartitionAsync(string vmName, string gpuInstancePath, string gpuManu, PartitionInfo selectedPartition, string id, SshCredentials credentials = null, Action<string> progressCallback = null, CancellationToken cancellationToken = default)
         {
