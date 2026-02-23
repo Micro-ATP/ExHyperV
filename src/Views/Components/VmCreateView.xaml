@@ -18,13 +18,24 @@
         <ScrollViewer Padding="24,24,24,24" VerticalScrollBarVisibility="Auto">
             <StackPanel>
 
-                <!-- 1. 标题 -->
-                <TextBlock Text="新建虚拟机" 
-                           FontSize="24" 
-                           Margin="0,0,0,24"
-                           Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                <!-- 1. 标题栏 -->
+                <Grid Margin="0,0,0,24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                <!-- 常规 -->
+                    <TextBlock Text="新建虚拟机" 
+                               FontSize="24" 
+                               Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"
+                               VerticalAlignment="Center"/>
+
+                    <ui:Button Grid.Column="1" Appearance="Transparent" Padding="8" Command="{Binding CancelCreateCommand}">
+                        <ui:SymbolIcon Symbol="ArrowLeft24" FontSize="18"/>
+                    </ui:Button>
+                </Grid>
+
+                <!-- === 常规 === -->
                 <TextBlock Text="常规" FontSize="16" FontWeight="Medium" Margin="0,0,0,12"
                            Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
 
@@ -99,6 +110,15 @@
                     <ui:ToggleSwitch IsChecked="{Binding NewVmDynamicMemory}"/>
                 </ui:CardControl>
 
+                <!-- 安全特性 (仅第2代可用) -->
+                <ui:CardControl Header="安全特性" Icon="{ui:SymbolIcon Symbol=ShieldCheckmark24}" Margin="0,0,0,8"
+                                IsEnabled="{Binding NewVmGeneration, Converter={StaticResource EqualityConverter}, ConverterParameter=2}">
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox Content="启用安全启动" IsChecked="{Binding NewVmEnableSecureBoot}" Margin="0,0,24,0"/>
+                        <CheckBox Content="启用 TPM (受信任的平台模块)" IsChecked="{Binding NewVmEnableTpm}"/>
+                    </StackPanel>
+                </ui:CardControl>
+
                 <ui:CardControl Header="机密计算" Icon="{ui:SymbolIcon Symbol=ShieldLock24}" Margin="0,0,0,24"
                                 IsEnabled="{Binding NewVmGeneration, Converter={StaticResource EqualityConverter}, ConverterParameter=2}">
                     <StackPanel Orientation="Horizontal">
@@ -116,10 +136,10 @@
                 <TextBlock Text="存储资源" FontSize="16" FontWeight="Medium" Margin="0,12,0,12" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
 
                 <Border Background="{ui:ThemeResource CardBackgroundFillColorDefaultBrush}" 
-        BorderBrush="{ui:ThemeResource CardStrokeColorDefaultBrush}" 
-        BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,16">
+                        BorderBrush="{ui:ThemeResource CardStrokeColorDefaultBrush}" 
+                        BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,16">
                     <StackPanel>
-                        <!-- 1. 顶部：图标、标题和单选按钮 -->
+                        <!-- 模式切换 -->
                         <Grid Margin="0,0,0,20">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -130,105 +150,47 @@
                                 <TextBlock Text="虚拟硬盘" FontSize="16" VerticalAlignment="Center" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
-                                <RadioButton Content="新建磁盘" IsChecked="{Binding NewVmDiskMode, Converter={StaticResource EqualityConverter}, ConverterParameter=0}" Margin="0,0,16,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
-                                <RadioButton Content="现有磁盘" IsChecked="{Binding NewVmDiskMode, Converter={StaticResource EqualityConverter}, ConverterParameter=1}" Margin="0,0,16,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
-                                <RadioButton Content="稍后附加" IsChecked="{Binding NewVmDiskMode, Converter={StaticResource EqualityConverter}, ConverterParameter=2}" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                                <RadioButton Content="新建磁盘" IsChecked="{Binding NewVmDiskMode, Converter={StaticResource EqualityConverter}, ConverterParameter=0}" Margin="0,0,16,0"/>
+                                <RadioButton Content="现有磁盘" IsChecked="{Binding NewVmDiskMode, Converter={StaticResource EqualityConverter}, ConverterParameter=1}" Margin="0,0,16,0"/>
+                                <RadioButton Content="稍后附加" IsChecked="{Binding NewVmDiskMode, Converter={StaticResource EqualityConverter}, ConverterParameter=2}"/>
                             </StackPanel>
                         </Grid>
 
-                        <!-- 2. 分支内容：新建磁盘参数 (四列横向排版) -->
-                        <StackPanel Visibility="{Binding NewVmDiskMode, Converter={StaticResource EqualityToVis}, ConverterParameter=0}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="20"/>
-                                    <!-- 增大列间距 -->
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="20"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="20"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
+                        <!-- 模式0：新建磁盘 (容量与路径同行) -->
+                        <Grid Visibility="{Binding NewVmDiskMode, Converter={StaticResource EqualityToVis}, ConverterParameter=0}" Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="160"/>
+                                <ColumnDefinition Width="24"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-                                <!-- 容量 -->
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="容量 (GB)" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,6"/>
-                                    <ComboBox IsEditable="True" Text="{Binding NewVmDiskSizeGb, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch">
-                                        <sys:String>32</sys:String>
-                                        <sys:String>64</sys:String>
-                                        <sys:String>128</sys:String>
-                                        <sys:String>256</sys:String>
-                                        <sys:String>512</sys:String>
-                                        <sys:String>1024</sys:String>
-                                    </ComboBox>
-                                </StackPanel>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="容量 (GB)" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,8"/>
+                                <ComboBox IsEditable="True" Text="{Binding NewVmDiskSizeGb, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch">
+                                    <sys:String>60</sys:String>
+                                    <sys:String>127</sys:String>
+                                    <sys:String>256</sys:String>
+                                    <sys:String>512</sys:String>
+                                </ComboBox>
+                            </StackPanel>
 
-                                <!-- 磁盘类型 -->
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="磁盘类型" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,6"/>
-                                    <ComboBox SelectedValuePath="Tag" SelectedValue="{Binding NewVmDiskType}" HorizontalAlignment="Stretch">
-                                        <ComboBoxItem Content="动态磁盘" Tag="Dynamic"/>
-                                        <ComboBoxItem Content="固定磁盘" Tag="Fixed"/>
-                                        <ComboBoxItem Content="差异磁盘" Tag="Differencing"/>
-                                    </ComboBox>
-                                </StackPanel>
-
-                                <!-- 扇区格式 -->
-                                <StackPanel Grid.Column="4">
-                                    <TextBlock Text="扇区格式" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,6"/>
-                                    <ComboBox SelectedValuePath="Tag" SelectedValue="{Binding NewVmDiskSectorFormat}" HorizontalAlignment="Stretch">
-                                        <ComboBoxItem Content="默认" Tag="Default"/>
-                                        <ComboBoxItem Content="512n" Tag="512n"/>
-                                        <ComboBoxItem Content="512e" Tag="512e"/>
-                                        <ComboBoxItem Content="4Kn" Tag="4kn"/>
-                                    </ComboBox>
-                                </StackPanel>
-
-                                <!-- 块大小 -->
-                                <StackPanel Grid.Column="6">
-                                    <TextBlock Text="块大小" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,6"/>
-                                    <ComboBox SelectedValuePath="Tag" SelectedValue="{Binding NewVmDiskBlockSize}" HorizontalAlignment="Stretch">
-                                        <ComboBoxItem Content="默认" Tag="Default"/>
-                                        <ComboBoxItem Content="1 MB" Tag="1048576"/>
-                                        <ComboBoxItem Content="2 MB" Tag="2097152"/>
-                                        <ComboBoxItem Content="4 MB" Tag="4194304"/>
-                                        <ComboBoxItem Content="8 MB" Tag="8388608"/>
-                                        <ComboBoxItem Content="16 MB" Tag="16777216"/>
-                                        <ComboBoxItem Content="32 MB" Tag="33554432"/>
-                                        <ComboBoxItem Content="64 MB" Tag="67108864"/>
-                                        <ComboBoxItem Content="128 MB" Tag="134217728"/>
-                                        <ComboBoxItem Content="256 MB" Tag="268435456"/>
-                                    </ComboBox>
-                                </StackPanel>
-                            </Grid>
-
-                            <!-- 差分磁盘的父路径 (仅在选择差分时显示，逻辑同步存储页) -->
-                            <StackPanel Margin="0,16,0,0">
-                                <StackPanel.Style>
-                                    <Style TargetType="StackPanel">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding NewVmDiskType}" Value="Differencing">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </StackPanel.Style>
-                                <TextBlock Text="父磁盘路径" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,6"/>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="保存位置" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,8"/>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <ui:TextBox Text="{Binding NewVmParentDiskPath}" PlaceholderText="选择父 .vhdx 文件"/>
-                                    <ui:Button Grid.Column="1" Content="浏览" Margin="8,0,0,0" Width="80" Command="{Binding BrowseParentDiskCommand}"/>
+                                    <ui:TextBox Text="{Binding NewVmNewDiskPath}" PlaceholderText="选择新 .vhdx 文件的存放位置"/>
+                                    <ui:Button Grid.Column="1" Content="浏览" Margin="8,0,0,0" Width="80" Command="{Binding BrowseNewDiskLocationCommand}"/>
                                 </Grid>
                             </StackPanel>
-                        </StackPanel>
+                        </Grid>
 
-                        <!-- 3. 分支内容：现有磁盘路径 -->
-                        <StackPanel Visibility="{Binding NewVmDiskMode, Converter={StaticResource EqualityToVis}, ConverterParameter=1}">
-                            <Grid Margin="0,10,0,0">
+                        <!-- 模式1：现有磁盘 -->
+                        <StackPanel Visibility="{Binding NewVmDiskMode, Converter={StaticResource EqualityToVis}, ConverterParameter=1}" Margin="0,10,0,0">
+                            <TextBlock Text="现有磁盘路径" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,8"/>
+                            <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
@@ -237,13 +199,18 @@
                                 <ui:Button Grid.Column="1" Content="浏览" Margin="8,0,0,0" Width="80" Command="{Binding BrowseExistingDiskCommand}"/>
                             </Grid>
                         </StackPanel>
+
+                        <!-- 模式2：稍后附加 -->
+                        <TextBlock Text="虚拟机将在没有虚拟硬盘的情况下创建。您可以稍后手动添加。" 
+                                   Visibility="{Binding NewVmDiskMode, Converter={StaticResource EqualityToVis}, ConverterParameter=2}"
+                                   Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" FontSize="13" Margin="0,10,0,0"/>
                     </StackPanel>
                 </Border>
 
-                <!-- 4. 安装镜像 (独立卡片) -->
+                <!-- === 安装介质 === -->
                 <Border Background="{ui:ThemeResource CardBackgroundFillColorDefaultBrush}" 
-        BorderBrush="{ui:ThemeResource CardStrokeColorDefaultBrush}" 
-        BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,24">
+                        BorderBrush="{ui:ThemeResource CardStrokeColorDefaultBrush}" 
+                        BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,24">
                     <StackPanel>
                         <Grid Margin="0,0,0,16">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -272,12 +239,11 @@
                     <ComboBox ItemsSource="{Binding AvailableSwitchNames}" SelectedItem="{Binding NewVmSelectedSwitch}"/>
                 </ui:CardControl>
 
-                <!-- 3. 操作栏（已移动至 ScrollViewer 内部，不再悬浮） -->
+                <!-- 3. 操作栏 -->
                 <Border Background="Transparent" BorderBrush="{ui:ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0" Padding="0,24,0,0">
                     <Grid>
                         <CheckBox Content="创建后启动" IsChecked="{Binding StartVmAfterCreation}" VerticalAlignment="Center"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <ui:Button Content="取消" Appearance="Secondary" Width="100" Margin="0,0,12,0" Command="{Binding CancelCreateCommand}"/>
                             <ui:Button Content="创建虚拟机" Appearance="Primary" Width="150" Icon="{ui:SymbolIcon Symbol=Add24}" Command="{Binding ConfirmCreateCommand}"/>
                         </StackPanel>
                     </Grid>
