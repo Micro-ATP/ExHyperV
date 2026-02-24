@@ -582,6 +582,34 @@ namespace ExHyperV.ViewModels
         // 虚拟机列表管理与核心操作
         // ----------------------------------------------------------------------------------
 
+        [RelayCommand]
+        private async Task DeleteVmAsync(VmInstanceInfo vm)
+        {
+            if (vm == null) return;
+            IsLoading = true;
+
+            try
+            {
+                await Task.Run(() =>
+                {
+                    // 组合命令：
+                    // 1. Stop-VM -TurnOff: 强制关闭电源（不管当前什么状态，报错也继续执行下一步）
+                    // 2. Remove-VM -Force: 删除配置
+                    string script = $"Stop-VM -Name '{vm.Name}' -TurnOff -ErrorAction SilentlyContinue; Remove-VM -Name '{vm.Name}' -Force";
+                    Utils.Run(script);
+                });
+
+                VmList.Remove(vm);
+                if (SelectedVm == vm) SelectedVm = VmList.FirstOrDefault();
+
+                ShowSnackbar("删除成功", $"虚拟机 {vm.Name} 已移除。", ControlAppearance.Success, SymbolRegular.Delete24);
+            }
+            catch (Exception ex)
+            {
+                ShowSnackbar("删除失败", Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+            }
+            finally { IsLoading = false; }
+        }
         // 当选中的虚拟机发生变化时重置视图
         partial void OnSelectedVmChanged(VmInstanceInfo value)
         {

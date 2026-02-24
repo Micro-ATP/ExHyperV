@@ -45,36 +45,69 @@
         <DataTemplate x:Key="VmBlankTemplate">
             <Grid Background="Transparent"/>
         </DataTemplate>
-        
-        <DataTemplate x:Key="VmListItemTemplate">
-            <Grid Margin="2,6">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Border Grid.Column="0" Width="6" Height="6" CornerRadius="2" VerticalAlignment="Center" Margin="0,0,8,0">
-                    <Border.Style>
-                        <Style TargetType="Border">
-                            <Setter Property="Background" Value="{ui:ThemeResource TextFillColorTertiaryBrush}"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsRunning}" Value="True">
-                                    <Setter Property="Background" Value="{ui:ThemeResource SystemFillColorSuccessBrush}"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
-                </Border>
-                <ui:FontIcon Grid.Column="1" FontFamily="{DynamicResource SegoeFluentIcons}" 
-                             Glyph="{Binding Name, Converter={StaticResource VmNameToIconConverter}}" 
-                             FontSize="16" Margin="0,0,8,0"
-                             Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
-                <TextBlock Grid.Column="2" Text="{Binding Name}" VerticalAlignment="Center" FontSize="13" 
-                           TextTrimming="CharacterEllipsis"
-                           Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
-            </Grid>
-        </DataTemplate>
 
+        <DataTemplate x:Key="VmListItemTemplate">
+            <!-- 1. 使用 Tag 存储 Page 的 DataContext (ViewModel) -->
+            <!-- 2. 使用 RelativeSource 找到 Page，这在设计器里比 x:Reference 稳定得多 -->
+            <Border Background="Transparent" 
+            Padding="2,6" 
+            Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Page}}">
+
+                <Border.ContextMenu>
+                    <!-- 此时 ContextMenu 的 PlacementTarget 就是上面的 Border -->
+                    <ContextMenu>
+                        <ui:MenuItem Header="重命名" 
+                             Command="{Binding PlacementTarget.Tag.RenameVmCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                             CommandParameter="{Binding}">
+                            <ui:MenuItem.Icon>
+                                <ui:SymbolIcon Symbol="Rename24" />
+                            </ui:MenuItem.Icon>
+                        </ui:MenuItem>
+
+                        <ui:MenuItem Header="删除" 
+             Command="{Binding PlacementTarget.Tag.DeleteVmCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+             CommandParameter="{Binding}"
+             Foreground="{ui:ThemeResource SystemFillColorCriticalBrush}">
+                            <ui:MenuItem.Icon>
+                                <ui:SymbolIcon Symbol="Delete24" Foreground="{ui:ThemeResource SystemFillColorCriticalBrush}" />
+                            </ui:MenuItem.Icon>
+                        </ui:MenuItem>
+                        
+                    </ContextMenu>
+                </Border.ContextMenu>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Width="6" Height="6" CornerRadius="2" VerticalAlignment="Center" Margin="0,0,8,0">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Background" Value="{ui:ThemeResource TextFillColorTertiaryBrush}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                        <Setter Property="Background" Value="{ui:ThemeResource SystemFillColorSuccessBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                    </Border>
+
+                    <ui:FontIcon Grid.Column="1" FontFamily="{DynamicResource SegoeFluentIcons}" 
+                         Glyph="{Binding Name, Converter={StaticResource VmNameToIconConverter}}" 
+                         FontSize="16" Margin="0,0,8,0"
+                         Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+
+                    <TextBlock Grid.Column="2" Text="{Binding Name}" VerticalAlignment="Center" FontSize="13" 
+                       TextTrimming="CharacterEllipsis"
+                       Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                </Grid>
+            </Border>
+        </DataTemplate>
+        
         <DataTemplate x:Key="VmDetailTemplate">
             <Grid x:Name="DetailRootGrid">
                 <Grid.RowDefinitions>
