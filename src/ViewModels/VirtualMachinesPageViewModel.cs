@@ -879,8 +879,22 @@ namespace ExHyperV.ViewModels
                             var vm = VmList.FirstOrDefault(v => v.Id == update.Id);
                             if (vm != null)
                             {
-                                // 如果名字变了，更新名字
+                                // 1. 如果名字变了，更新名字
                                 if (vm.Name != update.Name) vm.Name = update.Name;
+
+                                // 2. 同步配置信息 (CPU 和 内存)
+                                if (vm.CpuCount != update.CpuCount)
+                                    vm.CpuCount = update.CpuCount;
+
+                                if (vm.MemoryGb != update.MemoryGb)
+                                    vm.MemoryGb = update.MemoryGb;
+
+                                // 如果你的 ConfigSummary 还依赖代数或版本，建议也同步一下（虽然这些通常变动较少）
+                                if (vm.Generation != update.Generation)
+                                    vm.Generation = update.Generation;
+
+                                if (vm.Version != update.Version)
+                                    vm.Version = update.Version;
 
                                 bool wasRunning = vm.IsRunning;
                                 vm.Notes = update.Notes;
