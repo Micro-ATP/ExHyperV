@@ -11,6 +11,7 @@
     xmlns:components="clr-namespace:ExHyperV.Views.Components"
     Title="VirtualMachinesPage" mc:Ignorable="d" d:DesignHeight="750" d:DesignWidth="1100"
     tools:ScrollHelper.LockParentScroll="True"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors" 
     x:Name="RootPage">
 
     <Page.Resources>
@@ -47,15 +48,17 @@
         </DataTemplate>
 
         <DataTemplate x:Key="VmListItemTemplate">
-            <!-- 1. 使用 Tag 存储 Page 的 DataContext (ViewModel) -->
-            <!-- 2. 使用 RelativeSource 找到 Page，这在设计器里比 x:Reference 稳定得多 -->
-            <Border Background="Transparent" 
-            Padding="2,6" 
+            <Border Background="Transparent" Padding="2,6" 
             Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Page}}">
-
+                <Border.InputBindings>
+                    <MouseBinding MouseAction="LeftDoubleClick" 
+                          Command="{Binding DataContext.RenameVmCommand, ElementName=RootPage}" 
+                          CommandParameter="{Binding}" />
+                </Border.InputBindings>
+                
                 <Border.ContextMenu>
-                    <!-- 此时 ContextMenu 的 PlacementTarget 就是上面的 Border -->
                     <ContextMenu>
+                        <!-- 重命名选项 -->
                         <ui:MenuItem Header="重命名" 
                              Command="{Binding PlacementTarget.Tag.RenameVmCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                              CommandParameter="{Binding}">
@@ -64,19 +67,20 @@
                             </ui:MenuItem.Icon>
                         </ui:MenuItem>
 
+                        <!-- 删除选项 (重新添加) -->
                         <ui:MenuItem Header="删除" 
-             Command="{Binding PlacementTarget.Tag.DeleteVmCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-             CommandParameter="{Binding}"
-             Foreground="{ui:ThemeResource SystemFillColorCriticalBrush}">
+                             Command="{Binding PlacementTarget.Tag.DeleteVmCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                             CommandParameter="{Binding}"
+                             Foreground="{ui:ThemeResource SystemFillColorCriticalBrush}">
                             <ui:MenuItem.Icon>
                                 <ui:SymbolIcon Symbol="Delete24" Foreground="{ui:ThemeResource SystemFillColorCriticalBrush}" />
                             </ui:MenuItem.Icon>
                         </ui:MenuItem>
-                        
                     </ContextMenu>
                 </Border.ContextMenu>
 
                 <Grid>
+                    <!-- 此处保持你现在的 Grid 内容不变（状态点、图标、名字区域等） -->
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
@@ -101,13 +105,48 @@
                          FontSize="16" Margin="0,0,8,0"
                          Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
 
-                    <TextBlock Grid.Column="2" Text="{Binding Name}" VerticalAlignment="Center" FontSize="13" 
-                       TextTrimming="CharacterEllipsis"
-                       Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                    <Grid Grid.Column="2">
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontSize="13" 
+                           TextTrimming="CharacterEllipsis" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <ui:TextBox Text="{Binding EditedName, UpdateSourceTrigger=PropertyChanged}"
+                            tools:FocusHelper.IsFocused="{Binding IsEditing}"
+                            FontSize="12" MinHeight="24" Padding="4,2" Margin="-4,0,0,0">
+                            <ui:TextBox.Style>
+                                <Style TargetType="ui:TextBox" BasedOn="{StaticResource {x:Type ui:TextBox}}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ui:TextBox.Style>
+                            <ui:TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding DataContext.CommitRenameCommand, RelativeSource={RelativeSource AncestorType=Page}}" CommandParameter="{Binding}"/>
+                                <KeyBinding Key="Esc" Command="{Binding DataContext.CancelRenameCommand, RelativeSource={RelativeSource AncestorType=Page}}" CommandParameter="{Binding}"/>
+                            </ui:TextBox.InputBindings>
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="LostFocus">
+                                    <i:InvokeCommandAction Command="{Binding DataContext.CommitRenameCommand, RelativeSource={RelativeSource AncestorType=Page}}" CommandParameter="{Binding}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </ui:TextBox>
+                    </Grid>
                 </Grid>
             </Border>
         </DataTemplate>
-        
         <DataTemplate x:Key="VmDetailTemplate">
             <Grid x:Name="DetailRootGrid">
                 <Grid.RowDefinitions>

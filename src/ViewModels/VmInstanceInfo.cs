@@ -232,6 +232,21 @@ namespace ExHyperV.Models
 
     public partial class VmInstanceInfo : ObservableObject
     {
+
+        // 修改名称
+
+        [ObservableProperty] private bool _isEditing;
+        [ObservableProperty] private string _editedName;
+
+        // 在进入编辑模式时调用
+        public void StartEditing()
+        {
+            EditedName = Name;
+            IsEditing = true;
+        }
+
+
+
         // ----------------------------------------------------------------------------------
         // 基础信息与状态
         // ----------------------------------------------------------------------------------

@@ -37,6 +37,7 @@ namespace ExHyperV.ViewModels
         private readonly VmGPUService _vmGpuService;
         private readonly VmNetworkService _vmNetworkService;
         private readonly VmCreateService _vmCreateService = new();
+        private readonly VmEditService _vmEditService = new();
 
         // ----------------------------------------------------------------------------------
         // 监控与后台任务字段
@@ -47,6 +48,8 @@ namespace ExHyperV.ViewModels
         private Task _stateTask;
         private DispatcherTimer _uiTimer;
         private DispatcherTimer? _thumbnailTimer;
+
+        private readonly Dictionary<Guid, (string NewName, DateTime Expiry)> _renameLockouts = new();
 
         // ----------------------------------------------------------------------------------
         // 缓存与状态字段
@@ -232,7 +235,7 @@ namespace ExHyperV.ViewModels
         }
 
         // ----------------------------------------------------------------------------------
-        // [完整替换] 视图模型属性 - 创建虚拟机表单
+        // 视图模型属性 - 创建虚拟机表单
         // ----------------------------------------------------------------------------------
 
         // 控制右侧界面切换
@@ -273,11 +276,72 @@ namespace ExHyperV.ViewModels
         }
 
 
+        // 重命名
+
+        // 1. 触发重命名模式
+        [RelayCommand]
+        private void RenameVm(VmInstanceInfo vm)
+        {
+            if (vm == null) return;
+            vm.StartEditing();
+        }
+
+        // 2. 取消重命名
+        [RelayCommand]
+        private void CancelRename(VmInstanceInfo vm)
+        {
+            if (vm == null) return;
+            vm.IsEditing = false;
+        }
+
+        [RelayCommand]
+        private async Task CommitRenameAsync(VmInstanceInfo vm)
+        {
+            if (vm == null || !vm.IsEditing) return;
+            vm.IsEditing = false;
+
+            if (string.IsNullOrWhiteSpace(vm.EditedName) || vm.EditedName == vm.Name) return;
+
+            string oldName = vm.Name;
+            string newName = vm.EditedName;
+            Guid vmId = vm.Id; // 使用唯一 ID
+
+            IsLoading = true;
+            try
+            {
+                // --- 修复点：传入 vmId 而不是 oldName ---
+                var result = await _vmEditService.RenameVmAsync(vmId, newName);
+
+                if (result.Success)
+                {
+                    lock (_renameLockouts)
+                    {
+                        _renameLockouts[vmId] = (newName, DateTime.Now.AddSeconds(5));
+                    }
+                    vm.Name = newName;
+                    ShowSnackbar("重命名成功", $"已更名为 {newName}", ControlAppearance.Success, SymbolRegular.Checkmark24);
+                }
+                else
+                {
+                    ShowSnackbar("重命名失败", result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowSnackbar("系统异常", ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+
         // --- 1. 常规设置 ---
         [ObservableProperty] private string _newVmName = "NewVM";
         [ObservableProperty] private string _newVmStoragePath = string.Empty;
-        [ObservableProperty] private ObservableCollection<string> _supportedVersions = new() { "12.0", "11.0", "10.0", "9.3", "9.0", "8.0" };
-        [ObservableProperty] private string _selectedVersion = "12.0";
+        [ObservableProperty] private ObservableCollection<string> _supportedVersions = new() { "12.0", "11.0", "10.0", "9.0", "8.0" };
+        [ObservableProperty] private string _selectedVersion = "8.0";
 
         // --- 2. 计算资源 ---
         [ObservableProperty] private string _newVmProcessorCount = "4"; // ComboBox IsEditable="True" 绑定 string
@@ -879,17 +943,41 @@ namespace ExHyperV.ViewModels
                             var vm = VmList.FirstOrDefault(v => v.Id == update.Id);
                             if (vm != null)
                             {
-                                // 1. 如果名字变了，更新名字
-                                if (vm.Name != update.Name) vm.Name = update.Name;
+                                // --- [新增] 重命名锁定保护拦截逻辑 ---
+                                bool skipNameUpdate = false;
+                                lock (_renameLockouts)
+                                {
+                                    if (_renameLockouts.TryGetValue(vm.Id, out var lockout))
+                                    {
+                                        // 检查：1. 后端数据是否已经同步为新名字？ 2. 是否已经超过了 5 秒保护期？
+                                        if (update.Name.Equals(lockout.NewName, StringComparison.OrdinalIgnoreCase) ||
+                                            DateTime.Now > lockout.Expiry)
+                                        {
+                                            // 满足上述任一条件，解除锁定
+                                            _renameLockouts.Remove(vm.Id);
+                                        }
+                                        else
+                                        {
+                                            // 后端传回的依然是旧名字且在保护期内，拦截本次更新
+                                            skipNameUpdate = true;
+                                        }
+                                    }
+                                }
 
-                                // 2. 同步配置信息 (CPU 和 内存)
+                                // 1. 如果名字变了且没有被锁定，更新名字
+                                if (!skipNameUpdate)
+                                {
+                                    if (vm.Name != update.Name) vm.Name = update.Name;
+                                }
+
+                                // 2. 同步配置信息 (CPU 和 内存) - 这些不受名字锁定影响，正常同步
                                 if (vm.CpuCount != update.CpuCount)
                                     vm.CpuCount = update.CpuCount;
 
                                 if (vm.MemoryGb != update.MemoryGb)
                                     vm.MemoryGb = update.MemoryGb;
 
-                                // 如果你的 ConfigSummary 还依赖代数或版本，建议也同步一下（虽然这些通常变动较少）
+                                // 如果你的 ConfigSummary 还依赖代数或版本，建议也同步一下
                                 if (vm.Generation != update.Generation)
                                     vm.Generation = update.Generation;
 
@@ -989,7 +1077,6 @@ namespace ExHyperV.ViewModels
                                     vm.UpdateMemoryStatus(0, 0);
                             }
                         }
-
                         foreach (var vm in VmList)
                         {
                             if (gpuUsageMap.TryGetValue(vm.Id, out var gpuData))
