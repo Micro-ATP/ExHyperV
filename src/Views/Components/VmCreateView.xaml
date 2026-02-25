@@ -78,22 +78,28 @@
 
                 <ui:CardControl Header="处理器核心数" Margin="0,0,0,8">
                     <ui:CardControl.Icon>
-                        <ui:FontIcon Glyph="&#xE950;" FontSize="20" FontFamily="{DynamicResource SegoeFluentIcons}" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                        <ui:FontIcon Glyph="&#xF58E;" FontSize="20" FontFamily="{DynamicResource SegoeFluentIcons}" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" RenderTransformOrigin="0.5,0.5">
+                            <ui:FontIcon.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform/>
+                                    <SkewTransform/>
+                                    <RotateTransform Angle="90"/>
+                                    <TranslateTransform/>
+                                </TransformGroup>
+                            </ui:FontIcon.RenderTransform>
+                        </ui:FontIcon>
+
                     </ui:CardControl.Icon>
                     <StackPanel Orientation="Horizontal">
-                        <ComboBox IsEditable="True" Text="{Binding NewVmProcessorCount, UpdateSourceTrigger=PropertyChanged}" Width="85">
-                            <sys:String>1</sys:String>
-                            <sys:String>2</sys:String>
-                            <sys:String>4</sys:String>
-                            <sys:String>8</sys:String>
-                            <sys:String>16</sys:String>
-                            <sys:String>32</sys:String>
-                            <sys:String>64</sys:String>
+                        <!-- 核心修改：ItemsSource 绑定到 PossibleVCpuCounts -->
+                        <ComboBox IsEditable="True" 
+                  ItemsSource="{Binding PossibleVCpuCounts}"
+                  Text="{Binding NewVmProcessorCount, UpdateSourceTrigger=PropertyChanged}" 
+                  Width="85">
                         </ComboBox>
                         <TextBlock Text="核心" VerticalAlignment="Center" Margin="12,0,0,0" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
                 </ui:CardControl>
-
                 <ui:CardControl Header="启动内存" Margin="0,0,0,8">
                     <ui:CardControl.Icon>
                         <ui:FontIcon Glyph="&#xEEA0;" FontSize="22" FontFamily="{DynamicResource SegoeFluentIcons}" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
@@ -111,7 +117,10 @@
                     </StackPanel>
                 </ui:CardControl>
 
-                <ui:CardControl Header="动态内存" Icon="{ui:SymbolIcon Symbol=CheckmarkCircle24}" Margin="0,0,0,8">
+                <ui:CardControl Header="动态内存" Margin="0,0,0,8">
+                    <ui:CardControl.Icon>
+                        <ui:FontIcon Glyph="&#xEB05;" FontSize="22" FontFamily="{DynamicResource SegoeFluentIcons}" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                    </ui:CardControl.Icon>
                     <ui:ToggleSwitch IsChecked="{Binding NewVmDynamicMemory}"/>
                 </ui:CardControl>
 
@@ -156,7 +165,7 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <ui:SymbolIcon Symbol="Storage24" Margin="0,0,12,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                                <ui:SymbolIcon Symbol="Storage24" FontSize="28" Margin="0,0,12,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                                 <TextBlock Text="虚拟硬盘" FontSize="16" VerticalAlignment="Center" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
@@ -224,7 +233,11 @@
                     <StackPanel>
                         <Grid Margin="0,0,0,16">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <ui:SymbolIcon Symbol="FolderZip24" Margin="0,0,12,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                                <ui:FontIcon Glyph="&#xE958;" 
+                     FontFamily="{DynamicResource SegoeFluentIcons}" 
+                     FontSize="28" 
+                     Margin="0,0,12,0" 
+                     Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                                 <TextBlock Text="安装介质" FontSize="16" VerticalAlignment="Center" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
                         </Grid>

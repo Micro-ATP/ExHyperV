@@ -319,7 +319,6 @@ namespace ExHyperV.ViewModels
                         _renameLockouts[vmId] = (newName, DateTime.Now.AddSeconds(5));
                     }
                     vm.Name = newName;
-                    ShowSnackbar("重命名成功", $"已更名为 {newName}", ControlAppearance.Success, SymbolRegular.Checkmark24);
                 }
                 else
                 {
@@ -414,7 +413,9 @@ namespace ExHyperV.ViewModels
             // --- 2. 基础配置默认值初始化 ---
             NewVmGeneration = 2;
             NewVmMemoryMb = "4096";
-            NewVmProcessorCount = "4";
+            int hostCores = Environment.ProcessorCount;
+            NewVmProcessorCount = (hostCores >= 4 ? 4 : hostCores).ToString();
+
             NewVmDiskMode = 0;
             NewVmDiskSizeGb = "128";
             NewVmDynamicMemory = true;
@@ -435,7 +436,7 @@ namespace ExHyperV.ViewModels
 
                 // --- 4. 初始化名称并触发路径联动 ---
                 // 获取当前系统中不冲突的名称 (如 NewVM, NewVM (2))
-                NewVmName = GetUniqueNewVmName();
+                NewVmName = GetNextAvailableName("NewVM");
 
                 // 执行路径联动逻辑，确保 NewVmNewDiskPath 此时已经指向：
                 // [默认路径]\[NewVM]\[NewVM].vhdx
@@ -462,21 +463,29 @@ namespace ExHyperV.ViewModels
 
                 // --- 7. 加载虚拟交换机列表 ---
                 var switches = await _vmNetworkService.GetAvailableSwitchesAsync();
-                AvailableSwitchNames = new ObservableCollection<string>(switches);
 
-                // 自动选择交换机：优先寻找包含 "Default" 的，否则选第一个
-                // (此处采用字符串包含判断，以适配不同语言下的 "Default Switch" 或 "默认交换机")
-                NewVmSelectedSwitch = AvailableSwitchNames.FirstOrDefault(s =>
+                // 创建一个新的列表，第一项为“未连接”
+                var switchList = new List<string> { Properties.Resources.none }; // 使用资源文件中的“未连接”
+                if (switches != null) switchList.AddRange(switches);
+
+                AvailableSwitchNames = new ObservableCollection<string>(switchList);
+
+                // 自动选择逻辑：
+                // 优先找“Default”，如果没有，则默认选中“未连接”（即列表第一项）
+                var defaultSwitch = AvailableSwitchNames.FirstOrDefault(s =>
                     s.Contains("Default", StringComparison.OrdinalIgnoreCase) ||
-                    s.Contains("默认", StringComparison.OrdinalIgnoreCase))
-                    ?? AvailableSwitchNames.FirstOrDefault()
-                    ?? "Default Switch";
+                    s.Contains("默认", StringComparison.OrdinalIgnoreCase));
+
+                NewVmSelectedSwitch = defaultSwitch ?? AvailableSwitchNames.FirstOrDefault();
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[CREATE-VM-INIT-ERROR] {ex.Message}");
-                ShowSnackbar("环境检查失败", "无法从 Hyper-V 宿主机获取必要配置信息", ControlAppearance.Caution, SymbolRegular.Warning24);
+                // 如果报错（比如宿主没装 Hyper-V 网络组件），至少保证有一个“未连接”可选
+                AvailableSwitchNames = new ObservableCollection<string> { Properties.Resources.none };
+                NewVmSelectedSwitch = AvailableSwitchNames[0];
+                Debug.WriteLine($"[CREATE-VM-NET-ERROR] {ex.Message}");
             }
+
             finally
             {
                 // 延迟一小会儿关闭加载状态，确保 UI 绑定完成
@@ -548,19 +557,58 @@ namespace ExHyperV.ViewModels
         [RelayCommand]
         private async Task ConfirmCreate()
         {
-            // --- 1. 基础验证 ---
+            // --- 1. 基础验证：名称 ---
             if (string.IsNullOrWhiteSpace(NewVmName))
             {
                 ShowSnackbar("创建失败", "虚拟机名称不能为空", ControlAppearance.Caution, SymbolRegular.Warning24);
                 return;
             }
 
-            if (NewVmDiskMode == 0 && string.IsNullOrWhiteSpace(NewVmNewDiskPath))
+            // --- 2. 存储路径验证 ---
+            string rootPath = string.IsNullOrWhiteSpace(NewVmStoragePath) ? @"C:\Virtual Machines" : NewVmStoragePath;
+            string targetVmDir = Path.Combine(rootPath, NewVmName);
+
+            // 检查：如果目标文件夹已存在且里面有文件，弹出警告（防止覆盖或混乱）
+            if (Directory.Exists(targetVmDir))
             {
-                ShowSnackbar("创建失败", "请选择新硬盘的保存位置", ControlAppearance.Caution, SymbolRegular.Warning24);
-                return;
+                if (Directory.EnumerateFileSystemEntries(targetVmDir).Any())
+                {
+                    // 这里可以根据需求决定是阻断还是仅提示。通常建议阻断以防止文件冲突。
+                    ShowSnackbar("创建警告", "目标存储文件夹已存在且不为空，请更换名称或清理目录。", ControlAppearance.Caution, SymbolRegular.Warning24);
+                    return;
+                }
             }
 
+            // --- 3. 磁盘模式深度验证 ---
+            if (NewVmDiskMode == 0) // 新建磁盘
+            {
+                if (string.IsNullOrWhiteSpace(NewVmNewDiskPath))
+                {
+                    ShowSnackbar("创建失败", "请选择新硬盘的保存位置", ControlAppearance.Caution, SymbolRegular.Warning24);
+                    return;
+                }
+            }
+            else if (NewVmDiskMode == 1) // 现有磁盘 (修复点)
+            {
+                if (string.IsNullOrWhiteSpace(NewVmExistingDiskPath))
+                {
+                    ShowSnackbar("创建失败", "请选择现有的虚拟硬盘文件 (.vhdx)", ControlAppearance.Caution, SymbolRegular.Warning24);
+                    return;
+                }
+
+                if (!File.Exists(NewVmExistingDiskPath))
+                {
+                    ShowSnackbar("创建失败", "指定的现有虚拟硬盘文件不存在，请检查路径。", ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                    return;
+                }
+            }
+
+            // --- 4. ISO 镜像验证 (如果有输入) ---
+            if (!string.IsNullOrWhiteSpace(NewVmIsoPath) && !File.Exists(NewVmIsoPath))
+            {
+                ShowSnackbar("创建失败", "指定的 ISO 镜像文件不存在", ControlAppearance.Caution, SymbolRegular.Warning24);
+                return;
+            }
             // --- 2. 组装专用 Model ---
             var request = new VmCreationParams
             {
@@ -599,8 +647,12 @@ namespace ExHyperV.ViewModels
 
                 if (result.Success)
                 {
-                    ShowSnackbar("创建成功", $"虚拟机 {NewVmName} 已成功创建并配置。", ControlAppearance.Success, SymbolRegular.CheckmarkCircle24);
-
+                    string actualCreatedName = result.Message;
+                    ShowSnackbar(
+                         "创建成功",
+                         $"虚拟机 {actualCreatedName} 已成功创建并配置。", // 使用真实名称
+                         ControlAppearance.Success,
+                         SymbolRegular.CheckmarkCircle24);
                     // 退出创建模式
                     IsCreatingVm = false;
 
@@ -608,7 +660,7 @@ namespace ExHyperV.ViewModels
                     await LoadVmsCommand.ExecuteAsync(null);
 
                     // 尝试选中新创建的虚拟机
-                    var newVm = VmList.FirstOrDefault(v => v.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
+                    var newVm = VmList.FirstOrDefault(v => v.Name.Equals(actualCreatedName, StringComparison.OrdinalIgnoreCase));
                     if (newVm != null) SelectedVm = newVm;
                 }
                 else
@@ -627,10 +679,10 @@ namespace ExHyperV.ViewModels
         }
         // --- 辅助私有方法 ---
 
-        private string GetUniqueNewVmName()
+        private string GetNextAvailableName(string baseName)
         {
-            string baseName = "NewVM";
-            if (!VmList.Any(v => v.Name.Equals(baseName, StringComparison.OrdinalIgnoreCase))) return baseName;
+            if (!VmList.Any(v => v.Name.Equals(baseName, StringComparison.OrdinalIgnoreCase)))
+                return baseName;
 
             int i = 2;
             while (VmList.Any(v => v.Name.Equals($"{baseName} ({i})", StringComparison.OrdinalIgnoreCase)))
@@ -665,8 +717,6 @@ namespace ExHyperV.ViewModels
 
                 VmList.Remove(vm);
                 if (SelectedVm == vm) SelectedVm = VmList.FirstOrDefault();
-
-                ShowSnackbar("删除成功", $"虚拟机 {vm.Name} 已移除。", ControlAppearance.Success, SymbolRegular.Delete24);
             }
             catch (Exception ex)
             {

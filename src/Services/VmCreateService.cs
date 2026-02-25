@@ -56,7 +56,7 @@ namespace ExHyperV.Services
 
         public async Task<(bool Success, string Message)> CreateVirtualMachineAsync(VmCreationParams p)
         {
-            string finalVmName = p.IsManualName ? p.Name : $"{p.Name}_{Guid.NewGuid().ToString("N").Substring(0, 4).ToUpper()}";
+            string finalVmName = p.Name;
 
             return await Task.Run(() =>
             {
@@ -67,6 +67,14 @@ namespace ExHyperV.Services
 
                     if (p.DiskMode == 0) p.VhdPath = Path.Combine(vmHomeFolder, $"{finalVmName}.vhdx");
 
+                    string switchParam = string.Empty;
+
+                    if (!string.IsNullOrWhiteSpace(p.SwitchName) &&
+                        p.SwitchName != ExHyperV.Properties.Resources.none)
+                    {
+                        switchParam = $"-SwitchName '{p.SwitchName}'";
+                    }
+
                     long memoryBytes = p.MemoryMb * 1024 * 1024;
                     string diskParam = p.DiskMode switch
                     {
@@ -74,8 +82,7 @@ namespace ExHyperV.Services
                         1 => $"-VHDPath '{p.VhdPath}'",
                         _ => "-NoVHD"
                     };
-
-                    string createScript = $"New-VM -Name '{finalVmName}' -MemoryStartupBytes {memoryBytes} -Generation {p.Generation} -Path '{p.Path}' -Version {p.Version} -SwitchName '{p.SwitchName}' {diskParam} -ErrorAction Stop";
+                    string createScript = $"New-VM -Name '{finalVmName}' -MemoryStartupBytes {memoryBytes} -Generation {p.Generation} -Path '{p.Path}' -Version {p.Version} {switchParam} {diskParam} -ErrorAction Stop";
 
                     double.TryParse(p.Version, out double ver);
                     if (p.Generation == 2 && ver >= 10.0 && p.IsolationType != "Disabled")
@@ -111,7 +118,7 @@ namespace ExHyperV.Services
 
                     if (p.StartAfterCreation) Utils.Run($"Start-VM -Name '{finalVmName}' -ErrorAction Stop");
 
-                    return (true, "Success");
+                    return (true, finalVmName);
                 }
                 catch (Exception ex)
                 {
