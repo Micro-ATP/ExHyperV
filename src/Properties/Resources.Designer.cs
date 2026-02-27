@@ -2515,7 +2515,7 @@ namespace ExHyperV.Properties {
         }
         
         /// <summary>
-        ///   查找类似 PowerShell executed but no partition found. Ensure host GPU supports DDA/Partitioning. 的本地化字符串。
+        ///   查找类似 This GPU does not support partitioning. 的本地化字符串。
         /// </summary>
         public static string Error_Gpu_NoPartition {
             get {
@@ -4319,7 +4319,7 @@ namespace ExHyperV.Properties {
         }
         
         /// <summary>
-        ///   查找类似 Primary ID 的本地化字符串。
+        ///   查找类似 Primary 的本地化字符串。
         /// </summary>
         public static string Label_PrimaryId {
             get {
@@ -4436,7 +4436,7 @@ namespace ExHyperV.Properties {
         }
         
         /// <summary>
-        ///   查找类似 Secondary ID 的本地化字符串。
+        ///   查找类似 Secondary 的本地化字符串。
         /// </summary>
         public static string Label_SecondaryId {
             get {

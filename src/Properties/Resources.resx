@@ -1632,7 +1632,7 @@ This operation sends a shutdown signal to the guest OS.</value>
     <value>Preparing target disk...</value>
   </data>
   <data name="Error_Gpu_NoPartition" xml:space="preserve">
-    <value>PowerShell executed but no partition found. Ensure host GPU supports DDA/Partitioning.</value>
+    <value>This GPU does not support partitioning.</value>
   </data>
   <data name="Error_Common_NoPartitionSelected" xml:space="preserve">
     <value>No partition selected</value>
@@ -2664,10 +2664,10 @@ This operation sends a shutdown signal to the guest OS.</value>
     <value>Type</value>
   </data>
   <data name="Label_PrimaryId" xml:space="preserve">
-    <value>Primary ID</value>
+    <value>Primary</value>
   </data>
   <data name="Label_SecondaryId" xml:space="preserve">
-    <value>Secondary ID</value>
+    <value>Secondary</value>
   </data>
   <data name="Label_Qos" xml:space="preserve">
     <value>QoS</value>

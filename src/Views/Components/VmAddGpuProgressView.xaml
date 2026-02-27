@@ -275,20 +275,26 @@
                         <!-- 日志内容区域 (Row 1) -->
                         <Border Grid.Row="1" Background="#0C0C0C" CornerRadius="0,0,8,8">
                             <TextBox x:Name="LogTextBox" 
-                     Text="{Binding GpuDeploymentLog, Mode=OneWay}"
-                     IsReadOnly="True"
-                     AcceptsReturn="True"
-                     TextWrapping="Wrap"
-                     BorderThickness="0"
-                     Background="Transparent"
-                     Foreground="#D0D0D0"
-                     FontFamily="Consolas, Monospace"
-                     FontSize="12"
-                     Padding="12"
-                     VerticalScrollBarVisibility="Auto"
-                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                     TextChanged="LogTextBox_TextChanged">
-                                <!-- 这是一个干净的控制台窗口 -->
+         Text="{Binding GpuDeploymentLog, Mode=OneWay}"
+         IsReadOnly="True"
+         AcceptsReturn="True"
+         TextWrapping="Wrap"
+         Style="{x:Null}"
+         Background="#0C0C0C"
+         Foreground="#D0D0D0"
+         BorderThickness="0"
+         SelectionBrush="#0078D7"
+         SelectionOpacity="0.4"
+         CaretBrush="White"
+         FontFamily="Consolas, Monospace"
+         FontSize="12"
+         Padding="12"
+         VerticalScrollBarVisibility="Auto"
+         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+         TextChanged="LogTextBox_TextChanged">
+                                <TextBox.Resources>
+                                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#330078D7"/>
+                                </TextBox.Resources>
                             </TextBox>
                         </Border>
                     </Grid>

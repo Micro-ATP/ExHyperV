@@ -1612,7 +1612,7 @@
     <value>正在准备目标磁盘...</value>
   </data>
   <data name="Error_Gpu_NoPartition" xml:space="preserve">
-    <value>PowerShell 命令已执行但未产生分区。请检查宿主机 GPU 是否支持分区，以及是否以管理员权限运行。</value>
+    <value>该 GPU 不支持分区。</value>
   </data>
   <data name="Error_Common_NoPartitionSelected" xml:space="preserve">
     <value>未选择分区</value>
