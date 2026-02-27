@@ -485,12 +485,9 @@ install_dkms() {
     
     echo ""
     echo "Installing module..."
-    # 【关键修改点 1】: 后面加 || true。 
-    # 即使签名工具(kmodsign)因为 EFI 变量访问不到而报非0状态码，也不会触发 set -e 导致脚本提前退出。
+
     dkms -k ${TARGET_KERNEL_VERSION} install dxgkrnl/$VERSION --force || echo "Notice: DKMS install reported an error. This is often a signing issue on Secure Boot systems and can usually be ignored."
 
-    # 【关键修改点 2】: 增加物理文件探测逻辑。
-    # 只要安装路径下出现了 dxgkrnl.ko (或者其压缩格式)，就说明安装动作完成了。
     MODULE_FOUND=false
     # 常见的 DKMS 安装路径
     SEARCH_LOCS=(
