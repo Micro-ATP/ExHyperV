@@ -500,7 +500,7 @@ public class Utils
 
     public static readonly List<string> SupportedOsTypes = new()
         {
-            "Windows","Ubuntu","Debian","CentOS","Kali", "Linux", "Android", "ChromeOS", "FydeOS",
+            "Windows","Ubuntu","Archlinux","Debian","CentOS","Kali", "Linux", "Android", "ChromeOS", "FydeOS",
             "MacOS", "FreeBSD", "OpenWrt", "FnOS","iStoreOS","TrueNAS","Unraid"
         };
 
