@@ -2578,7 +2578,7 @@
     <value>虚拟机未启动</value>
   </data>
   <data name="Warn_NoGpu" xml:space="preserve">
-    <value>虚拟机未分配显卡</value>
+    <value>未分配显卡</value>
   </data>
   <data name="Label_Net" xml:space="preserve">
     <value>网络</value>
@@ -2790,27 +2790,6 @@
   <data name="Status_Msg_GpuPvNotSupported" xml:space="preserve">
     <value>（不支持 GPU-PV）</value>
   </data>
-  <data name="Status_Msg_CurrentVer_Duplicate" xml:space="preserve">
-    <value>当前识别为</value>
-  </data>
-  <data name="Status_Msg_OperationPending_Duplicate" xml:space="preserve">
-    <value>变更已挂起，重启后生效。</value>
-  </data>
-  <data name="Status_Msg_RestartNow_Duplicate" xml:space="preserve">
-    <value>系统标识已修改。是否立即重启？</value>
-  </data>
-  <data name="Status_Title_Success_Duplicate" xml:space="preserve">
-    <value>操作成功</value>
-  </data>
-  <data name="Status_Title_Info_Duplicate" xml:space="preserve">
-    <value>提示</value>
-  </data>
-  <data name="Status_Title_Error_Duplicate" xml:space="preserve">
-    <value>错误</value>
-  </data>
-  <data name="Global_Restart_Duplicate" xml:space="preserve">
-    <value>立即重启</value>
-  </data>
   <data name="VmEdit_InstanceNotFound" xml:space="preserve">
     <value>找不到指定的虚拟机实例。</value>
   </data>
@@ -2830,19 +2809,19 @@
     <value>高级设置应用异常: {0}</value>
   </data>
   <data name="VmNet_StartGetInfo" xml:space="preserve">
-    <value>开始为虚拟机 &apos;{0}&apos; 获取网卡信息...</value>
+    <value>开始为虚拟机 '{0}' 获取网卡信息...</value>
   </data>
   <data name="VmNet_QueryGuid" xml:space="preserve">
-    <value>[1/4] 正在查询虚拟机 &apos;{0}&apos; 的 GUID...</value>
+    <value>[1/4] 正在查询虚拟机 '{0}' 的 GUID...</value>
   </data>
   <data name="VmNet_VmNotFound" xml:space="preserve">
-    <value>[错误] 找不到名为 &apos;{0}&apos; 的虚拟机。请检查虚拟机名称是否正确。</value>
+    <value>[错误] 找不到名为 '{0}' 的虚拟机。请检查虚拟机名称是否正确。</value>
   </data>
   <data name="VmNet_GotGuid" xml:space="preserve">
     <value>[成功] 获取到 VM GUID: {0}</value>
   </data>
   <data name="VmNet_QueryPorts" xml:space="preserve">
-    <value>[2/4] 正在并发查询属于 GUID &apos;{0}&apos; 的网卡端口和分配设置...</value>
+    <value>[2/4] 正在并发查询属于 GUID '{0}' 的网卡端口和分配设置...</value>
   </data>
   <data name="VmNet_QueryComplete" xml:space="preserve">
     <value>[成功] 查询完成: 找到 {0} 个网卡端口, {1} 个分配设置。</value>
@@ -2899,7 +2878,7 @@
     <value>替换失败: 错误码 {0}</value>
   </data>
   <data name="Utils_UnknownNetMode" xml:space="preserve">
-    <value>错误：未知的网络模式 &apos;{0}&apos;</value>
+    <value>错误：未知的网络模式 '{0}'</value>
   </data>
   <data name="Wmi_TaskFail" xml:space="preserve">
     <value>任务执行失败 (状态码: {0})</value>
@@ -3089,5 +3068,26 @@
   </data>
   <data name="Xaml_Placeholder_IsoOptional" xml:space="preserve">
     <value>选择操作系统安装 ISO 镜像 (可选)</value>
+  </data>
+  <data name="Status_Msg_CurrentVer_Duplicate" xml:space="preserve">
+    <value>当前识别为</value>
+  </data>
+  <data name="Status_Msg_OperationPending_Duplicate" xml:space="preserve">
+    <value>变更已挂起，重启后生效。</value>
+  </data>
+  <data name="Status_Msg_RestartNow_Duplicate" xml:space="preserve">
+    <value>系统标识已修改。是否立即重启？</value>
+  </data>
+  <data name="Status_Title_Success_Duplicate" xml:space="preserve">
+    <value>操作成功</value>
+  </data>
+  <data name="Status_Title_Info_Duplicate" xml:space="preserve">
+    <value>提示</value>
+  </data>
+  <data name="Status_Title_Error_Duplicate" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="Global_Restart_Duplicate" xml:space="preserve">
+    <value>立即重启</value>
   </data>
 </root>
