@@ -568,11 +568,11 @@ else
     exit 1
 fi
 
-
-echo "========================================"
-echo "  Installation Completed Successfully!"
-echo "========================================"
 echo "Kernel version: ${TARGET_KERNEL_VERSION}"
 echo "Module installed: dxgkrnl/${VERSION}"
 
 echo "STATUS: SUCCESS"
+
+echo "========================================"
+echo "  Installation Completed Successfully!"
+echo "========================================"
