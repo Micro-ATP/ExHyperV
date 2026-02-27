@@ -14,8 +14,15 @@
     </UserControl.Resources>
 
     <Grid Background="{ui:ThemeResource ApplicationBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <!-- 滚动内容区 -->
+            <RowDefinition Height="*"/>
+            <!-- 底部固定操作栏 -->
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
         <!-- 内容区域 -->
-        <ScrollViewer Padding="24,24,24,24" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="0" Padding="24,24,24,0" VerticalScrollBarVisibility="Auto">
             <StackPanel>
 
                 <!-- 1. 标题栏 -->
@@ -42,10 +49,9 @@
                 <ui:CardControl Header="名称" Icon="{ui:SymbolIcon Symbol=Edit24}" Margin="0,0,0,8" HorizontalContentAlignment="Stretch">
                     <!-- 添加 Width="450" 以防止收缩，并保持与下方“配置文件位置”对齐 -->
                     <ui:TextBox Text="{Binding NewVmName, UpdateSourceTrigger=PropertyChanged}" 
-                PlaceholderText="例如: Windows_Server_2025"
-                Width="210"
-                HorizontalAlignment="Right"/>
-
+                                PlaceholderText="例如: Windows_Server_2025"
+                                Width="210"
+                                HorizontalAlignment="Right"/>
                 </ui:CardControl>
 
                 <ui:CardControl Header="配置文件位置" Icon="{ui:SymbolIcon Symbol=FolderOpen24}" Margin="0,0,0,8" HorizontalContentAlignment="Stretch">
@@ -88,16 +94,15 @@
                                 </TransformGroup>
                             </ui:FontIcon.RenderTransform>
                         </ui:FontIcon>
-
                     </ui:CardControl.Icon>
                     <StackPanel Orientation="Horizontal">
                         <!-- 核心修改：ItemsSource 绑定到 PossibleVCpuCounts -->
                         <ComboBox IsEditable="True" 
-                  ItemsSource="{Binding PossibleVCpuCounts}"
-                  Text="{Binding NewVmProcessorCount, UpdateSourceTrigger=PropertyChanged}" 
-                  Width="85">
+                                  ItemsSource="{Binding PossibleVCpuCounts}"
+                                  Text="{Binding NewVmProcessorCount, UpdateSourceTrigger=PropertyChanged}" 
+                                  Width="85">
                         </ComboBox>
-                        <TextBlock Text="核心" VerticalAlignment="Center" Margin="12,0,0,0" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="核心" VerticalAlignment="Center" Margin="12,0,0,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                     </StackPanel>
                 </ui:CardControl>
                 <ui:CardControl Header="启动内存" Margin="0,0,0,8">
@@ -113,7 +118,7 @@
                             <sys:String>16384</sys:String>
                             <sys:String>32768</sys:String>
                         </ComboBox>
-                        <TextBlock Text="MB" VerticalAlignment="Center" Margin="12,0,0,0" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="MB" VerticalAlignment="Center" Margin="12,0,0,0" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                     </StackPanel>
                 </ui:CardControl>
 
@@ -134,23 +139,23 @@
                 </ui:CardControl>
 
                 <ui:CardControl Header="机密计算" 
-                Icon="{ui:SymbolIcon Symbol=ShieldLock24}" 
-                Margin="0,0,0,24"
-                IsEnabled="{Binding CanEnableIsolation}">
+                                Icon="{ui:SymbolIcon Symbol=ShieldLock24}" 
+                                Margin="0,0,0,24"
+                                IsEnabled="{Binding CanEnableIsolation}">
 
                     <StackPanel Orientation="Horizontal">
                         <ComboBox ItemsSource="{Binding SupportedIsolationTypes}" 
-                  SelectedItem="{Binding NewVmIsolationType}" 
-                  Width="200"/>
+                                  SelectedItem="{Binding NewVmIsolationType}" 
+                                  Width="200"/>
 
                         <!-- 修复点：只有当 IsIsolationSupported 等于 False 时，才显示这个警告文本 -->
                         <TextBlock Text="当前宿主机不支持机密计算" 
-                   VerticalAlignment="Center" Margin="12,0,0,0"
-                   Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
-                   Visibility="{Binding IsIsolationSupported, Converter={StaticResource EqualityToVis}, ConverterParameter=False}"/>
+                                   VerticalAlignment="Center" Margin="12,0,0,0"
+                                   Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}"
+                                   Visibility="{Binding IsIsolationSupported, Converter={StaticResource EqualityToVis}, ConverterParameter=False}"/>
                     </StackPanel>
                 </ui:CardControl>
-                
+
                 <!-- === 存储资源 === -->
                 <TextBlock Text="存储资源" FontSize="16" FontWeight="Medium" Margin="0,12,0,12" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
 
@@ -184,7 +189,7 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="容量 (GB)" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,8"/>
+                                <TextBlock Text="容量 (GB)" FontSize="12" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,8"/>
                                 <ComboBox IsEditable="True" Text="{Binding NewVmDiskSizeGb, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch">
                                     <sys:String>60</sys:String>
                                     <sys:String>127</sys:String>
@@ -194,7 +199,7 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="保存位置" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,8"/>
+                                <TextBlock Text="保存位置" FontSize="12" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,8"/>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -208,7 +213,7 @@
 
                         <!-- 模式1：现有磁盘 -->
                         <StackPanel Visibility="{Binding NewVmDiskMode, Converter={StaticResource EqualityToVis}, ConverterParameter=1}" Margin="0,10,0,0">
-                            <TextBlock Text="现有磁盘路径" FontSize="12" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,8"/>
+                            <TextBlock Text="现有磁盘路径" FontSize="12" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}" Margin="0,0,0,8"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -234,10 +239,10 @@
                         <Grid Margin="0,0,0,16">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:FontIcon Glyph="&#xE958;" 
-                     FontFamily="{DynamicResource SegoeFluentIcons}" 
-                     FontSize="28" 
-                     Margin="0,0,12,0" 
-                     Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
+                                             FontFamily="{DynamicResource SegoeFluentIcons}" 
+                                             FontSize="28" 
+                                             Margin="0,0,12,0" 
+                                             Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                                 <TextBlock Text="安装介质" FontSize="16" VerticalAlignment="Center" Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
                         </Grid>
@@ -262,17 +267,18 @@
                     <ComboBox ItemsSource="{Binding AvailableSwitchNames}" SelectedItem="{Binding NewVmSelectedSwitch}"/>
                 </ui:CardControl>
 
-                <!-- 3. 操作栏 -->
-                <Border Background="Transparent" BorderBrush="{ui:ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0" Padding="0,24,0,0">
-                    <Grid>
-                        <CheckBox Content="创建后启动" IsChecked="{Binding StartVmAfterCreation}" VerticalAlignment="Center"/>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <ui:Button Content="创建虚拟机" Appearance="Primary" Width="150" Icon="{ui:SymbolIcon Symbol=Add24}" Command="{Binding ConfirmCreateCommand}"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
             </StackPanel>
         </ScrollViewer>
+
+        <!-- 3. 固定悬浮操作栏 (移出 ScrollViewer) -->
+        <Border Grid.Row="1" Background="{ui:ThemeResource ApplicationBackgroundBrush}" BorderBrush="{ui:ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0" Padding="24,8">
+            <Grid>
+                <CheckBox Content="创建后启动" IsChecked="{Binding StartVmAfterCreation}" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <ui:Button Content="创建虚拟机" Appearance="Primary" Width="150" Icon="{ui:SymbolIcon Symbol=Add24}" Command="{Binding ConfirmCreateCommand}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
     </Grid>
 </UserControl>

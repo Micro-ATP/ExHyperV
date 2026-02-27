@@ -78,10 +78,6 @@ namespace ExHyperV.Services
 
                 foreach (var item in collection)
                 {
-                    // AvailableSecurityProperties 是一个 int 数组
-                    // 1: Hypervisor Enforced Code Integrity
-                    // 2: Local VBS
-                    // 3: DMA Protection (IOMMU)
                     if (item["AvailableSecurityProperties"] is int[] props)
                     {
                         return props.Contains(3);
@@ -139,13 +135,11 @@ namespace ExHyperV.Services
                 using var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\ProductOptions");
                 var type = key?.GetValue("ProductType")?.ToString();
 
-                // 核心逻辑：排除法。只要不是 WinNT (工作站)，就是 Server。
-                // 这样既支持了域控制器，也支持了即时修改注册表后的状态。
+                // 只要不是 WinNT (工作站)，就是 Server。
                 return type != null && !type.Equals("WinNT", StringComparison.OrdinalIgnoreCase);
             }
             catch
             {
-                // 读取失败默认为 False (保守策略)
                 return false;
             }
         }
