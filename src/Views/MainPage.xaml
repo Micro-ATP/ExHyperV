@@ -35,10 +35,10 @@
                    FontSize="42" 
                    Foreground="White"
                    FontFamily="pack://application:,,,/Assets/fonts/#Audiowide" 
-                   FontWeight="Bold"/>
+                   />
                 <TextBlock Text="{x:Static properties:Resources.exhyperv}"
-                   FontFamily="pack://application:,,,/Assets/fonts/#Audiowide"
-                   FontWeight="Bold" 
+                   
+                   
                    FontSize="18" 
                    Foreground="#CCFFFFFF" 
                    Margin="5,10,0,0"/>
