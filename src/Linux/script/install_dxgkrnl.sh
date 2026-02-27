@@ -522,6 +522,7 @@ install_dkms() {
 
     
     echo "✓ DKMS module process finished"
+    echo "STATUS: SUCCESS"
 }
 
 all() {
@@ -567,9 +568,3 @@ else
     echo "  $0 6.1.0-41-amd64"
     exit 1
 fi
-
-
-echo "========================================"
-echo "  Installation Completed Successfully!"
-echo "========================================"
-echo "STATUS: SUCCESS"
