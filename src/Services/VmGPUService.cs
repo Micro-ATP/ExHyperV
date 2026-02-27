@@ -502,7 +502,6 @@ return 'OK'
                 {
                     Log(Properties.Resources.Msg_Gpu_InjectingReg);
                     NvidiaReg(assignedDriveLetter);
-                    Log("Configuring NVIDIA tool links...");
                     PromoteNvidiaFiles(assignedDriveLetter);
                 }
 
@@ -1075,9 +1074,6 @@ return 'OK'
             return result == "OK" ? (true, "OK") : (false, result);
         }
 
-        // ----------------------------------------------------------------------------------
-        // C# 端终极降维打击适配：强容错模式
-        // ----------------------------------------------------------------------------------
         public Task<string> ProvisionLinuxGpuAsync(string vmName, string gpuInstancePath, SshCredentials credentials, Action<string> progressCallback, CancellationToken cancellationToken)
         {
             return Task.Run(async () =>
@@ -1163,7 +1159,7 @@ return 'OK'
                     string sourceFolderName = new DirectoryInfo(sourceDriverPath).Name;
                     string remoteDriverTarget;
 
-                    // 如果源路径是根仓库 FileRepository，我们直接把内容传到 /drivers 下
+                    // 如果源路径是根仓库 FileRepository，直接把内容传到 /drivers 下
                     // 如果是特定驱动文件夹（如 nv_dispi.inf...），则保留该文件夹名
                     if (sourceFolderName.Equals("FileRepository", StringComparison.OrdinalIgnoreCase))
                     {
@@ -1190,14 +1186,13 @@ return 'OK'
                     await sshService.ExecuteSingleCommandAsync(credentials, $"chmod +x {remoteTempDir}/*.sh", Log);
 
                     // ==============================================================================
-                    // 9. 编译 dxgkrnl - 强容错适配版
+                    // 9. 编译 dxgkrnl
                     // ==============================================================================
                     Log(Properties.Resources.Msg_Gpu_LinuxCompilingDxg);
 
                     bool isDxgSuccess = false;
                     bool isRebootRequired = false;
 
-                    // 定义雷达拦截器：无论 Bash 脚本怎么死，只要我们眼尖看到了文件落地的日志，就强行视为成功
                     Action<string> interceptLog = msg =>
                     {
                         Log(msg);
@@ -1216,8 +1211,6 @@ return 'OK'
 
                     try
                     {
-                        // 核心魔法注入：在 C# 端调用前强行塞入 DEBIAN_FRONTEND=noninteractive
-                        // 这样即使是不带环境变量的原始 bash 脚本，在执行时也不会弹出会导致 SSH 卡死的交互对话框
                         string scriptCmd = $"DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true {remoteTempDir}/install_dxgkrnl.sh";
                         var dxgResult = await sshService.ExecuteCommandAndCaptureOutputAsync(credentials, withSudo(scriptCmd), interceptLog, TimeSpan.FromMinutes(60));
 
@@ -1229,15 +1222,12 @@ return 'OK'
                     }
                     catch (Exception ex)
                     {
-                        // 拦截 SSH 库因脚本非0退出（比如 set -e）抛出的异常
                         if (!isDxgSuccess && !isRebootRequired)
                         {
-                            // 真的连 .ko 文件都没生成，那就只能判死刑了
                             throw new Exception($"Script Execution Failed: {ex.Message}");
                         }
                         else
                         {
-                            // 脚本虽然抛错了，但是我们在拦截器里确实看到了文件已生成的字样，直接强行赦免！
                             Log($"[Fault Tolerance] Ignored exception because success signature was detected.");
                         }
                     }
@@ -1247,7 +1237,7 @@ return 'OK'
                         Log(Properties.Resources.Msg_Gpu_LinuxKernelUpdated);
                         try { await sshService.ExecuteSingleCommandAsync(credentials, withSudo("reboot"), Log); } catch { }
                         Log("VM is rebooting to load new kernel modules...");
-                        await Task.Delay(10000); // 先等 10 秒让它关机
+                        await Task.Delay(10000);
 
                         if (!await WaitForVmToBeResponsiveAsync(credentials.Host, credentials.Port, cancellationToken))
                         {
@@ -1263,7 +1253,7 @@ return 'OK'
                     }
 
                     // ==============================================================================
-                    // 10. 配置图形和系统 - 同样带上容错帽
+                    // 10. 配置图形和系统
                     // ==============================================================================
                     if (credentials.InstallGraphics)
                     {
@@ -1287,7 +1277,6 @@ return 'OK'
                     Log(Properties.Resources.Msg_Gpu_LinuxConfigDone);
                     try { await sshService.ExecuteSingleCommandAsync(credentials, withSudo("reboot"), Log); } catch { }
 
-                    // 只要活着走到这里，必须是坚如磐石的 "OK"
                     return "OK";
                 }
                 catch (OperationCanceledException)
@@ -1296,7 +1285,6 @@ return 'OK'
                 }
                 catch (Exception ex)
                 {
-                    // 只有真真切切的致命错误，才会从这里返回错误字符串给外层去删分区
                     return string.Format(Properties.Resources.Error_Gpu_LinuxDeployFail, ex.Message);
                 }
             });
