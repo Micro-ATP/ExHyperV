@@ -96,7 +96,7 @@ public static class WmiTools
                 {
                     string err = job["ErrorDescription"]?.ToString();
                     if (string.IsNullOrEmpty(err)) err = job["Description"]?.ToString();
-                    return (false, err ?? $"任务执行失败 (状态码: {jobState})");
+                    return (false, err ?? string.Format(Properties.Resources.Wmi_TaskFail, jobState));
                 }
 
                 Thread.Sleep(500);
@@ -104,7 +104,7 @@ public static class WmiTools
         }
         catch (Exception ex)
         {
-            return (false, $"等待任务时异常: {ex.Message}");
+            return (false, string.Format(Properties.Resources.Wmi_WaitExp, ex.Message));
         }
     }
 }

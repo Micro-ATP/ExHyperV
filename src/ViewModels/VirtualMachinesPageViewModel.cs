@@ -650,7 +650,7 @@ namespace ExHyperV.ViewModels
                     string actualCreatedName = result.Message;
                     ShowSnackbar(
                          Properties.Resources.VmPage_CreateSuccess,
-                         $"虚拟机 {actualCreatedName} 已成功创建并配置。", // 使用真实名称
+                         string.Format(Properties.Resources.VmPage_VmCreated, actualCreatedName), // 使用真实名称
                          ControlAppearance.Success,
                          SymbolRegular.CheckmarkCircle24);
                     // 退出创建模式

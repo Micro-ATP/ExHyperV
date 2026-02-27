@@ -3074,4 +3074,19 @@ This operation sends a shutdown signal to the guest OS.</value>
   <data name="Xaml_StartAfterCreate" xml:space="preserve">
     <value>Start after creation</value>
   </data>
+  <data name="Xaml_SelectIsoSaveLoc" xml:space="preserve">
+    <value>Select ISO file save location</value>
+  </data>
+  <data name="Xaml_Placeholder_VmName" xml:space="preserve">
+    <value>e.g., Windows_Server_2025</value>
+  </data>
+  <data name="Xaml_Placeholder_NewVhdxLoc" xml:space="preserve">
+    <value>Select location for the new .vhdx file</value>
+  </data>
+  <data name="Xaml_Placeholder_ExistVhd" xml:space="preserve">
+    <value>Select .vhdx or .avhdx file</value>
+  </data>
+  <data name="Xaml_Placeholder_IsoOptional" xml:space="preserve">
+    <value>Select OS installation ISO image (optional)</value>
+  </data>
 </root>

@@ -276,7 +276,7 @@ public class Utils
                 break;
 
             default:
-                throw new ArgumentException($"错误：未知的网络模式 '{mode}'");
+                throw new ArgumentException(string.Format(Properties.Resources.Utils_UnknownNetMode, mode));
         }
         await RunScriptSTA(script);
         if (enabledhcp) { }
@@ -575,7 +575,7 @@ public class Utils
         catch { }
         return (string.Empty, string.Empty);
     }
-    public static string Version => "V1.4.0-Beta4";
+    public static string Version => "V1.4.1";
     public static string Author => "Saniye";
 
 }

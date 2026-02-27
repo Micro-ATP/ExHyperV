@@ -49,7 +49,7 @@
                 <ui:CardControl Header="{x:Static properties:Resources.Xaml_Name}" Icon="{ui:SymbolIcon Symbol=Edit24}" Margin="0,0,0,8" HorizontalContentAlignment="Stretch">
                     <!-- 添加 Width="450" 以防止收缩，并保持与下方“配置文件位置”对齐 -->
                     <ui:TextBox Text="{Binding NewVmName, UpdateSourceTrigger=PropertyChanged}" 
-                                PlaceholderText="例如: Windows_Server_2025"
+                                PlaceholderText="{x:Static properties:Resources.Xaml_Placeholder_VmName}"
                                 Width="210"
                                 HorizontalAlignment="Right"/>
                 </ui:CardControl>
@@ -205,7 +205,7 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <ui:TextBox Text="{Binding NewVmNewDiskPath}" PlaceholderText="选择新 .vhdx 文件的存放位置"/>
+                                    <ui:TextBox Text="{Binding NewVmNewDiskPath}" PlaceholderText="{x:Static properties:Resources.Xaml_Placeholder_NewVhdxLoc}"/>
                                     <ui:Button Grid.Column="1" Content="{x:Static properties:Resources.Xaml_Browse}" Margin="8,0,0,0" Width="80" Command="{Binding BrowseNewDiskLocationCommand}"/>
                                 </Grid>
                             </StackPanel>
@@ -219,7 +219,7 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <ui:TextBox Text="{Binding NewVmExistingDiskPath}" PlaceholderText="选择 .vhdx 或 .avhdx 文件"/>
+                                <ui:TextBox Text="{Binding NewVmExistingDiskPath}" PlaceholderText="{x:Static properties:Resources.Xaml_Placeholder_ExistVhd}"/>
                                 <ui:Button Grid.Column="1" Content="{x:Static properties:Resources.Xaml_Browse}" Margin="8,0,0,0" Width="80" Command="{Binding BrowseExistingDiskCommand}"/>
                             </Grid>
                         </StackPanel>
@@ -251,7 +251,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <ui:TextBox Text="{Binding NewVmIsoPath}" PlaceholderText="选择操作系统安装 ISO 镜像 (可选)"/>
+                            <ui:TextBox Text="{Binding NewVmIsoPath}" PlaceholderText="{x:Static properties:Resources.Xaml_Placeholder_IsoOptional}"/>
                             <ui:Button Grid.Column="1" Content="{x:Static properties:Resources.Xaml_Browse}" Margin="8,0,0,0" Width="80" Command="{Binding BrowseIsoImageCommand}"/>
                         </Grid>
                     </StackPanel>

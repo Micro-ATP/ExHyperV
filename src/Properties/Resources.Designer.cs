@@ -8784,6 +8784,42 @@ namespace ExHyperV.Properties {
         }
         
         /// <summary>
+        ///   查找类似 Select .vhdx or .avhdx file 的本地化字符串。
+        /// </summary>
+        public static string Xaml_Placeholder_ExistVhd {
+            get {
+                return ResourceManager.GetString("Xaml_Placeholder_ExistVhd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Select OS installation ISO image (optional) 的本地化字符串。
+        /// </summary>
+        public static string Xaml_Placeholder_IsoOptional {
+            get {
+                return ResourceManager.GetString("Xaml_Placeholder_IsoOptional", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Select location for the new .vhdx file 的本地化字符串。
+        /// </summary>
+        public static string Xaml_Placeholder_NewVhdxLoc {
+            get {
+                return ResourceManager.GetString("Xaml_Placeholder_NewVhdxLoc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 e.g., Windows_Server_2025 的本地化字符串。
+        /// </summary>
+        public static string Xaml_Placeholder_VmName {
+            get {
+                return ResourceManager.GetString("Xaml_Placeholder_VmName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Processor Cores 的本地化字符串。
         /// </summary>
         public static string Xaml_ProcessorCores {
@@ -8816,6 +8852,15 @@ namespace ExHyperV.Properties {
         public static string Xaml_SecurityFeat {
             get {
                 return ResourceManager.GetString("Xaml_SecurityFeat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Select ISO file save location 的本地化字符串。
+        /// </summary>
+        public static string Xaml_SelectIsoSaveLoc {
+            get {
+                return ResourceManager.GetString("Xaml_SelectIsoSaveLoc", resourceCulture);
             }
         }
         

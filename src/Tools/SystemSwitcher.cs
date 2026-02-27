@@ -97,13 +97,13 @@ namespace ExHyperV.Tools
                 // 在 28000 中，导出 Hive 必须使用 READ_CONTROL (0x00020000)
                 const uint READ_CONTROL = 0x00020000;
                 int openRet = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "SYSTEM", 0, (int)READ_CONTROL, out IntPtr hKey);
-                if (openRet != 0) return $"打不开 SYSTEM 键, 错误码: {openRet}";
+                if (openRet != 0) return string.Format(Properties.Resources.SysSwitch_KeyOpenFail, openRet);
 
                 // 4. 导出 Hive
                 int saveRet = RegSaveKey(hKey, hiveFile, IntPtr.Zero);
                 RegCloseKey(hKey); // 导出完立即关闭句柄
 
-                if (saveRet != 0) return $"导出 Hive 失败: {saveRet} (检查是否有杀毒软件拦截)";
+                if (saveRet != 0) return string.Format(Properties.Resources.SysSwitch_HiveExportFail, saveRet);
 
                 // 5. 关键验证：检查导出的文件是否有效（必须大于 5MB）
                 FileInfo fi = new FileInfo(hiveFile);
@@ -126,16 +126,16 @@ namespace ExHyperV.Tools
                 }
                 else if (replaceRet == 5)
                 {
-                    return "替换失败: 拒绝访问 (Build 28000 内核已锁定 SYSTEM 蜂巢。请尝试在 PE 环境下替换程序导出的 C:\\temp\\sys_mod_exec.hiv)";
+                    return Properties.Resources.SysSwitch_ReplaceFailLocked;
                 }
                 else
                 {
-                    return $"替换失败: 错误码 {replaceRet}";
+                    return string.Format(Properties.Resources.SysSwitch_ReplaceFailCode, replaceRet);
                 }
             }
             catch (Exception ex)
             {
-                return $"异常: {ex.Message}";
+                return string.Format(Properties.Resources.VmProcessor_Exception, ex.Message);
             }
         }
         private static bool PatchHiveOffline(string hivePath, string targetType)

@@ -3075,4 +3075,19 @@
   <data name="Xaml_StartAfterCreate" xml:space="preserve">
     <value>创建后启动</value>
   </data>
+  <data name="Xaml_SelectIsoSaveLoc" xml:space="preserve">
+    <value>选择 ISO 文件保存位置</value>
+  </data>
+  <data name="Xaml_Placeholder_VmName" xml:space="preserve">
+    <value>例如: Windows_Server_2025</value>
+  </data>
+  <data name="Xaml_Placeholder_NewVhdxLoc" xml:space="preserve">
+    <value>选择新 .vhdx 文件的存放位置</value>
+  </data>
+  <data name="Xaml_Placeholder_ExistVhd" xml:space="preserve">
+    <value>选择 .vhdx 或 .avhdx 文件</value>
+  </data>
+  <data name="Xaml_Placeholder_IsoOptional" xml:space="preserve">
+    <value>选择操作系统安装 ISO 镜像 (可选)</value>
+  </data>
 </root>

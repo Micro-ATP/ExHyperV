@@ -372,7 +372,7 @@
 
                                 <ui:TextBox Grid.Column="0"
                                             Text="{Binding IsoOutputPath, UpdateSourceTrigger=PropertyChanged}"
-                                            PlaceholderText="选择 ISO 文件保存位置"
+                                            PlaceholderText="{x:Static properties:Resources.Xaml_SelectIsoSaveLoc}"
                                             VerticalAlignment="Center"/>
 
                                 <ui:Button Grid.Column="1"

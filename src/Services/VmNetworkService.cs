@@ -26,7 +26,7 @@ namespace ExHyperV.Services
         public async Task<List<VmNetworkAdapter>> GetNetworkAdaptersAsync(string vmName)
         {
             Log($"==============================================================");
-            Log($"开始为虚拟机 '{vmName}' 获取网卡信息...");
+            Log(string.Format(Properties.Resources.VmNet_StartGetInfo, vmName));
 
             var resultList = new List<VmNetworkAdapter>();
             if (string.IsNullOrEmpty(vmName))
@@ -36,7 +36,7 @@ namespace ExHyperV.Services
             }
 
             // 步骤 1: 获取 VM 的系统 GUID
-            Log($"[1/4] 正在查询虚拟机 '{vmName}' 的 GUID...");
+            Log(string.Format(Properties.Resources.VmNet_QueryGuid, vmName));
             var vmQueryResult = await WmiTools.QueryAsync(
                 $"SELECT Name FROM Msvm_ComputerSystem WHERE ElementName = '{vmName.Replace("'", "''")}'",
                 (vm) => vm["Name"]?.ToString());
@@ -44,13 +44,13 @@ namespace ExHyperV.Services
             string vmGuid = vmQueryResult.FirstOrDefault();
             if (string.IsNullOrEmpty(vmGuid))
             {
-                Log($"[错误] 找不到名为 '{vmName}' 的虚拟机。请检查虚拟机名称是否正确。");
+                Log(string.Format(Properties.Resources.VmNet_VmNotFound, vmName));
                 return resultList;
             }
-            Log($"[成功] 获取到 VM GUID: {vmGuid}");
+            Log(string.Format(Properties.Resources.VmNet_GotGuid, vmGuid));
 
             // 步骤 2: 并发查询该 VM 的所有网卡端口设置和端口分配设置
-            Log($"[2/4] 正在并发查询属于 GUID '{vmGuid}' 的网卡端口和分配设置...");
+            Log(string.Format(Properties.Resources.VmNet_QueryPorts, vmGuid));
             var portsTask = WmiTools.QueryAsync(
                 $"SELECT ElementName, InstanceID, Address, StaticMacAddress FROM Msvm_SyntheticEthernetPortSettingData WHERE InstanceID LIKE 'Microsoft:{vmGuid}%'",
                 (o) => (ManagementObject)o);
@@ -63,7 +63,7 @@ namespace ExHyperV.Services
 
             var allPorts = portsTask.Result;
             var allAllocs = allocsTask.Result;
-            Log($"[成功] 查询完成: 找到 {allPorts.Count} 个网卡端口, {allAllocs.Count} 个分配设置。");
+            Log(string.Format(Properties.Resources.VmNet_QueryComplete, allPorts.Count, allAllocs.Count));
             Log($"--------------------------------------------------------------");
 
             // 步骤 3: 遍历网卡端口，并匹配其对应的分配设置
@@ -196,7 +196,7 @@ namespace ExHyperV.Services
                 }
                 catch (Exception ex)
                 {
-                    Log($"IP获取失败: {ex.Message}");
+                    Log(string.Format(Properties.Resources.VmNet_IpFail, ex.Message));
                 }
             }
         }
@@ -223,7 +223,7 @@ namespace ExHyperV.Services
             catch (PowerShellScriptException psEx)
             {
                 // 这里会捕获到你刚才在终端看到的“一代机运行中无法添加”的具体报错
-                Log($"[PS 业务逻辑错误] {psEx.Message}");
+                Log(string.Format(Properties.Resources.VmNet_PsError, psEx.Message));
 
                 // 使用你现有的格式化工具，把冗长的 PS 报错简化
                 string friendlyMsg = Utils.GetFriendlyErrorMessages(psEx.Message);
@@ -231,7 +231,7 @@ namespace ExHyperV.Services
             }
             catch (Exception ex)
             {
-                Log($"[系统级别错误] {ex.Message}");
+                Log(string.Format(Properties.Resources.VmNet_SysError, ex.Message));
                 return (false, ex.Message);
             }
         }
@@ -281,7 +281,7 @@ namespace ExHyperV.Services
                 // 如果是网关模式，强制 UI 上的“辅 ID”跳回和“主 ID”一致
                 if (adapter.PvlanMode == PvlanMode.Promiscuous)
                 {
-                    Log($"[归一执行] 网关模式：强制辅ID {adapter.PvlanSecondaryId} -> 主ID {adapter.PvlanPrimaryId}");
+                    Log(string.Format(Properties.Resources.VmNet_GatewayModeLog, adapter.PvlanSecondaryId, adapter.PvlanPrimaryId));
                     adapter.PvlanSecondaryId = adapter.PvlanPrimaryId;
                 }
             }
@@ -333,7 +333,7 @@ namespace ExHyperV.Services
                             // 协议规定：网关能互通的 ID 必须写在数组里
                             s["SecondaryVlanIdArray"] = new ushort[] { priId };
 
-                            Log($"[WMI修正] 网关模式底层对齐：SecondaryVlanId 已设为 0，Array 已填入 {priId}");
+                            Log(string.Format(Properties.Resources.VmNet_WmiAlignmentLog, priId));
                         }
                         else
                         {
@@ -425,7 +425,7 @@ namespace ExHyperV.Services
                 string finalXml = info.Obj.GetText(TextFormat.CimDtd20);
 
                 // --- [DEBUG START] 输出 XML 到调试窗口 ---
-                Log($"正在提交 {featureClass} 设置...");
+                Log(string.Format(Properties.Resources.VmNet_SubmitSet, featureClass));
                 // 打印 XML (为了不刷屏，只打印关键部分，或者全部打印)
                 Debug.WriteLine($"-------- [WMI XML DEBUG] --------\n{finalXml}\n---------------------------------");
                 // --- [DEBUG END] ---
@@ -440,14 +440,14 @@ namespace ExHyperV.Services
 
                 if (!result.Success)
                 {
-                    Log($"[WMI 错误] 方法: {methodName}, 返回信息: {result.Message}");
+                    Log(string.Format(Properties.Resources.VmNet_WmiError, methodName, result.Message));
                 }
 
                 return result;
             }
             catch (Exception ex)
             {
-                Log($"[异常] {ex.Message}\n{ex.StackTrace}");
+                Log(string.Format(Properties.Resources.VmNet_Exception, ex.Message, ex.StackTrace));
                 return (false, ex.Message);
             }
         }

@@ -76,14 +76,14 @@ public class VmMemoryService
 
                 if (!result.Success)
                 {
-                    return (false, $"修改失败: {result.Message}");
+                    return (false, string.Format(Properties.Resources.VmMemory_ModFailed, result.Message));
                 }
 
                 return (true, Properties.Resources.Msg_Memory_Applied);
             }
             catch (Exception ex)
             {
-                return (false, $"高级设置应用异常: {ex.Message}");
+                return (false, string.Format(Properties.Resources.VmMemory_AdvSetException, ex.Message));
             }
         });
     }

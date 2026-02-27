@@ -1,4 +1,4 @@
-﻿using System.Management;
+using System.Management;
 using System.Runtime.InteropServices;
 using System.Xml;
 
@@ -31,7 +31,7 @@ namespace ExHyperV.Tools
             ManagementObject processorSetting = GetProcessorSettingData(managementScope, vmId);
             if (processorSetting == null)
             {
-                throw new Exception($"无法找到虚拟机 (ID: {vmId}) 的处理器配置。");
+                throw new Exception(string.Format(Properties.Resources.Hcs_ProcessorNotFound, vmId));
             }
 
             string originalProcessorSettingData = processorSetting.GetText(TextFormat.WmiDtd20);
@@ -82,7 +82,7 @@ namespace ExHyperV.Tools
             }
             else if (returnValue != 0)
             {
-                throw new Exception($"应用CPU组失败。错误码: {returnValue}");
+                throw new Exception(string.Format(Properties.Resources.Hcs_CpuGroupFailedCode, returnValue));
             }
         }
 

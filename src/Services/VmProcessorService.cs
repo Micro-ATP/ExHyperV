@@ -106,7 +106,7 @@ namespace ExHyperV.Services
             }
             catch (Exception ex)
             {
-                return (false, $"异常: {ex.Message}");
+                return (false, string.Format(Properties.Resources.VmProcessor_Exception, ex.Message));
             }
         }
         private static SmtMode ConvertHwThreadsToSmtMode(uint hwThreads) => hwThreads == 1 ? SmtMode.SingleThread : SmtMode.MultiThread;

@@ -45,7 +45,7 @@ namespace ExHyperV.Services
                     uint errorCode = (uint)outParams["ReturnValue"];
                     return errorCode == 0 || errorCode == 4096
                         ? (true, Properties.Resources.Msg_Success)
-                        : (false, $"WMI 错误代码: {errorCode}");
+                        : (false, string.Format(Properties.Resources.Wmi_ErrorCode, errorCode));
                 }
                 catch (Exception ex) { return (false, ex.Message); }
             });
