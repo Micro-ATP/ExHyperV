@@ -2810,4 +2810,268 @@ This operation sends a shutdown signal to the guest OS.</value>
   <data name="Status_Msg_GpuPvNotSupported" xml:space="preserve">
     <value> (GPU-PV Not Supported)</value>
   </data>
+  <data name="VmEdit_InstanceNotFound" xml:space="preserve">
+    <value>Specified virtual machine instance not found.</value>
+  </data>
+  <data name="VmEdit_ConfigDataError" xml:space="preserve">
+    <value>Unable to get configuration data.</value>
+  </data>
+  <data name="Msg_Success" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="Wmi_ErrorCode" xml:space="preserve">
+    <value>WMI Error Code: {0}</value>
+  </data>
+  <data name="VmMemory_ModFailed" xml:space="preserve">
+    <value>Modification failed: {0}</value>
+  </data>
+  <data name="VmMemory_AdvSetException" xml:space="preserve">
+    <value>Advanced settings application exception: {0}</value>
+  </data>
+  <data name="VmNet_StartGetInfo" xml:space="preserve">
+    <value>Starting to get network adapter info for virtual machine &apos;{0}&apos;...</value>
+  </data>
+  <data name="VmNet_QueryGuid" xml:space="preserve">
+    <value>[1/4] Querying GUID for virtual machine &apos;{0}&apos;...</value>
+  </data>
+  <data name="VmNet_VmNotFound" xml:space="preserve">
+    <value>[Error] Virtual machine named &apos;{0}&apos; not found. Please check if the name is correct.</value>
+  </data>
+  <data name="VmNet_GotGuid" xml:space="preserve">
+    <value>[Success] Obtained VM GUID: {0}</value>
+  </data>
+  <data name="VmNet_QueryPorts" xml:space="preserve">
+    <value>[2/4] Concurrently querying network adapter ports and allocation settings for GUID &apos;{0}&apos;...</value>
+  </data>
+  <data name="VmNet_QueryComplete" xml:space="preserve">
+    <value>[Success] Query complete: Found {0} network ports, {1} allocation settings.</value>
+  </data>
+  <data name="VmNet_AdvSetReadExp" xml:space="preserve">
+    <value>    [Advanced Settings] Read exception: {0}</value>
+  </data>
+  <data name="VmNet_IpFail" xml:space="preserve">
+    <value>IP acquisition failed: {0}</value>
+  </data>
+  <data name="VmNet_AddSuccess" xml:space="preserve">
+    <value>Network adapter added successfully</value>
+  </data>
+  <data name="VmNet_PsError" xml:space="preserve">
+    <value>[PS Business Logic Error] {0}</value>
+  </data>
+  <data name="VmNet_SysError" xml:space="preserve">
+    <value>[System Level Error] {0}</value>
+  </data>
+  <data name="VmNet_GatewayModeLog" xml:space="preserve">
+    <value>[Normalized Execution] Gateway mode: Force secondary ID {0} -&gt; primary ID {1}</value>
+  </data>
+  <data name="VmNet_WmiAlignmentLog" xml:space="preserve">
+    <value>[WMI Correction] Gateway mode underlying alignment: SecondaryVlanId set to 0, Array filled with {0}</value>
+  </data>
+  <data name="VmNet_SubmitSet" xml:space="preserve">
+    <value>Submitting {0} settings...</value>
+  </data>
+  <data name="VmNet_WmiError" xml:space="preserve">
+    <value>[WMI Error] Method: {0}, Return info: {1}</value>
+  </data>
+  <data name="VmNet_Exception" xml:space="preserve">
+    <value>[Exception] {0}\n{1}</value>
+  </data>
+  <data name="VmProcessor_Exception" xml:space="preserve">
+    <value>Exception: {0}</value>
+  </data>
+  <data name="Hcs_ProcessorNotFound" xml:space="preserve">
+    <value>Unable to find processor configuration for virtual machine (ID: {0}).</value>
+  </data>
+  <data name="Hcs_CpuGroupFailedCode" xml:space="preserve">
+    <value>Failed to apply CPU group. Error code: {0}</value>
+  </data>
+  <data name="SysSwitch_KeyOpenFail" xml:space="preserve">
+    <value>Cannot open SYSTEM key, error code: {0}</value>
+  </data>
+  <data name="SysSwitch_HiveExportFail" xml:space="preserve">
+    <value>Failed to export Hive: {0} (Check if blocked by antivirus)</value>
+  </data>
+  <data name="SysSwitch_ReplaceFailLocked" xml:space="preserve">
+    <value>Replacement failed: Access denied (Build 28000 kernel locked SYSTEM hive. Try replacing C:\temp\sys_mod_exec.hiv exported in PE)</value>
+  </data>
+  <data name="SysSwitch_ReplaceFailCode" xml:space="preserve">
+    <value>Replacement failed: Error code {0}</value>
+  </data>
+  <data name="Utils_UnknownNetMode" xml:space="preserve">
+    <value>Error: Unknown network mode &apos;{0}&apos;</value>
+  </data>
+  <data name="Wmi_TaskFail" xml:space="preserve">
+    <value>Task execution failed (Status code: {0})</value>
+  </data>
+  <data name="Wmi_WaitExp" xml:space="preserve">
+    <value>Exception while waiting for task: {0}</value>
+  </data>
+  <data name="VmPage_RenameFail" xml:space="preserve">
+    <value>Rename failed</value>
+  </data>
+  <data name="VmPage_SysExp" xml:space="preserve">
+    <value>System exception</value>
+  </data>
+  <data name="VmPage_Default" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="VmPage_SelectConfigDir" xml:space="preserve">
+    <value>Select Virtual Machine Configuration File Directory</value>
+  </data>
+  <data name="VmPage_SelectNewVhdPath" xml:space="preserve">
+    <value>Select Location to Save New Virtual Hard Disk</value>
+  </data>
+  <data name="VmPage_VhdFilter" xml:space="preserve">
+    <value>Virtual Hard Disk File|*.vhdx</value>
+  </data>
+  <data name="VmPage_SelectExistVhd" xml:space="preserve">
+    <value>Select Existing Virtual Hard Disk</value>
+  </data>
+  <data name="VmPage_VhdFilterBoth" xml:space="preserve">
+    <value>Virtual Hard Disk File|*.vhdx;*.avhdx</value>
+  </data>
+  <data name="VmPage_SelectIso" xml:space="preserve">
+    <value>Select OS ISO Image</value>
+  </data>
+  <data name="VmPage_IsoFilter" xml:space="preserve">
+    <value>ISO Image File|*.iso</value>
+  </data>
+  <data name="VmPage_CreateFail" xml:space="preserve">
+    <value>Creation Failed</value>
+  </data>
+  <data name="VmPage_NameEmpty" xml:space="preserve">
+    <value>Virtual machine name cannot be empty</value>
+  </data>
+  <data name="VmPage_CreateWarn" xml:space="preserve">
+    <value>Creation Warning</value>
+  </data>
+  <data name="VmPage_TargetExist" xml:space="preserve">
+    <value>Target storage folder already exists and is not empty. Please change the name or clean the directory.</value>
+  </data>
+  <data name="VmPage_SelectVhdSave" xml:space="preserve">
+    <value>Please select a save location for the new hard disk</value>
+  </data>
+  <data name="VmPage_SelectExistVhdPath" xml:space="preserve">
+    <value>Please select an existing virtual hard disk file (.vhdx)</value>
+  </data>
+  <data name="VmPage_ExistVhdNotFound" xml:space="preserve">
+    <value>The specified existing virtual hard disk file does not exist. Please check the path.</value>
+  </data>
+  <data name="VmPage_IsoNotFound" xml:space="preserve">
+    <value>The specified ISO image file does not exist</value>
+  </data>
+  <data name="VmPage_CreateSuccess" xml:space="preserve">
+    <value>Creation Successful</value>
+  </data>
+  <data name="VmPage_VmCreated" xml:space="preserve">
+    <value>Virtual machine {0} has been successfully created and configured.</value>
+  </data>
+  <data name="VmPage_DeleteFail" xml:space="preserve">
+    <value>Deletion failed</value>
+  </data>
+  <data name="Xaml_Rename" xml:space="preserve">
+    <value>Rename</value>
+  </data>
+  <data name="Xaml_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Xaml_CreateVm" xml:space="preserve">
+    <value>Create Virtual Machine</value>
+  </data>
+  <data name="Xaml_NewVm" xml:space="preserve">
+    <value>New Virtual Machine</value>
+  </data>
+  <data name="Xaml_General" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="Xaml_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Xaml_ConfigLoc" xml:space="preserve">
+    <value>Configuration File Location</value>
+  </data>
+  <data name="Xaml_Browse" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="Xaml_VmVersion" xml:space="preserve">
+    <value>Virtual Machine Version</value>
+  </data>
+  <data name="Xaml_Generation" xml:space="preserve">
+    <value>Generation</value>
+  </data>
+  <data name="Xaml_Gen1" xml:space="preserve">
+    <value>Generation 1 (BIOS + MBR)</value>
+  </data>
+  <data name="Xaml_Gen2" xml:space="preserve">
+    <value>Generation 2 (UEFI + GPT)</value>
+  </data>
+  <data name="Xaml_ComputeRes" xml:space="preserve">
+    <value>Compute Resources</value>
+  </data>
+  <data name="Xaml_ProcessorCores" xml:space="preserve">
+    <value>Processor Cores</value>
+  </data>
+  <data name="Xaml_Core" xml:space="preserve">
+    <value>Cores</value>
+  </data>
+  <data name="Xaml_StartupMem" xml:space="preserve">
+    <value>Startup Memory</value>
+  </data>
+  <data name="Xaml_DynamicMem" xml:space="preserve">
+    <value>Dynamic Memory</value>
+  </data>
+  <data name="Xaml_SecurityFeat" xml:space="preserve">
+    <value>Security Features</value>
+  </data>
+  <data name="Xaml_EnableSecureBoot" xml:space="preserve">
+    <value>Enable Secure Boot</value>
+  </data>
+  <data name="Xaml_EnableTpm" xml:space="preserve">
+    <value>Enable TPM</value>
+  </data>
+  <data name="Xaml_ConfidentialCompute" xml:space="preserve">
+    <value>Confidential Computing</value>
+  </data>
+  <data name="Xaml_ConfidentialNotSupported" xml:space="preserve">
+    <value>Current host does not support confidential computing</value>
+  </data>
+  <data name="Xaml_StorageRes" xml:space="preserve">
+    <value>Storage Resources</value>
+  </data>
+  <data name="Xaml_VirtualDisk" xml:space="preserve">
+    <value>Virtual Hard Disk</value>
+  </data>
+  <data name="Xaml_NewDisk" xml:space="preserve">
+    <value>New Disk</value>
+  </data>
+  <data name="Xaml_ExistDisk" xml:space="preserve">
+    <value>Existing Disk</value>
+  </data>
+  <data name="Xaml_AttachLater" xml:space="preserve">
+    <value>Attach Later</value>
+  </data>
+  <data name="Xaml_CapacityGb" xml:space="preserve">
+    <value>Capacity (GB)</value>
+  </data>
+  <data name="Xaml_SaveLoc" xml:space="preserve">
+    <value>Save Location</value>
+  </data>
+  <data name="Xaml_ExistDiskPath" xml:space="preserve">
+    <value>Existing Disk Path</value>
+  </data>
+  <data name="Xaml_CreateWithoutDisk" xml:space="preserve">
+    <value>The virtual machine will be created without a virtual hard disk. You can add one manually later.</value>
+  </data>
+  <data name="Xaml_InstallMedia" xml:space="preserve">
+    <value>Installation Media</value>
+  </data>
+  <data name="Xaml_NetworkRes" xml:space="preserve">
+    <value>Network Resources</value>
+  </data>
+  <data name="Xaml_VirtualSwitch" xml:space="preserve">
+    <value>Virtual Switch</value>
+  </data>
+  <data name="Xaml_StartAfterCreate" xml:space="preserve">
+    <value>Start after creation</value>
+  </data>
 </root>

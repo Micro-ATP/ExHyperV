@@ -322,12 +322,12 @@ namespace ExHyperV.ViewModels
                 }
                 else
                 {
-                    ShowSnackbar("重命名失败", result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                    ShowSnackbar(Properties.Resources.VmPage_RenameFail, result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                 }
             }
             catch (Exception ex)
             {
-                ShowSnackbar("系统异常", ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Properties.Resources.VmPage_SysExp, ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
             finally
             {
@@ -474,7 +474,7 @@ namespace ExHyperV.ViewModels
                 // 优先找“Default”，如果没有，则默认选中“未连接”（即列表第一项）
                 var defaultSwitch = AvailableSwitchNames.FirstOrDefault(s =>
                     s.Contains("Default", StringComparison.OrdinalIgnoreCase) ||
-                    s.Contains("默认", StringComparison.OrdinalIgnoreCase));
+                    s.Contains(Properties.Resources.VmPage_Default, StringComparison.OrdinalIgnoreCase));
 
                 NewVmSelectedSwitch = defaultSwitch ?? AvailableSwitchNames.FirstOrDefault();
             }
@@ -510,7 +510,7 @@ namespace ExHyperV.ViewModels
         [RelayCommand]
         private void BrowseNewVmPath()
         {
-            var dialog = new Microsoft.Win32.OpenFolderDialog { Title = "选择虚拟机配置文件存放目录" };
+            var dialog = new Microsoft.Win32.OpenFolderDialog { Title = Properties.Resources.VmPage_SelectConfigDir };
             if (dialog.ShowDialog() == true)
             {
                 _isManualPath = true; // 用户手动干预了
@@ -524,8 +524,8 @@ namespace ExHyperV.ViewModels
         {
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
-                Title = "选择新虚拟硬盘保存位置",
-                Filter = "虚拟硬盘文件|*.vhdx",
+                Title = Properties.Resources.VmPage_SelectNewVhdPath,
+                Filter = Properties.Resources.VmPage_VhdFilter,
                 FileName = $"{NewVmName}.vhdx"
             };
             if (dialog.ShowDialog() == true) NewVmNewDiskPath = dialog.FileName;
@@ -536,8 +536,8 @@ namespace ExHyperV.ViewModels
         {
             var dialog = new Microsoft.Win32.OpenFileDialog
             {
-                Title = "选择现有虚拟硬盘",
-                Filter = "虚拟硬盘文件|*.vhdx;*.avhdx"
+                Title = Properties.Resources.VmPage_SelectExistVhd,
+                Filter = Properties.Resources.VmPage_VhdFilterBoth
             };
             if (dialog.ShowDialog() == true) NewVmExistingDiskPath = dialog.FileName;
         }
@@ -547,8 +547,8 @@ namespace ExHyperV.ViewModels
         {
             var dialog = new Microsoft.Win32.OpenFileDialog
             {
-                Title = "选择操作系统 ISO 镜像",
-                Filter = "ISO 镜像文件|*.iso"
+                Title = Properties.Resources.VmPage_SelectIso,
+                Filter = Properties.Resources.VmPage_IsoFilter
             };
             if (dialog.ShowDialog() == true) NewVmIsoPath = dialog.FileName;
         }
@@ -560,7 +560,7 @@ namespace ExHyperV.ViewModels
             // --- 1. 基础验证：名称 ---
             if (string.IsNullOrWhiteSpace(NewVmName))
             {
-                ShowSnackbar("创建失败", "虚拟机名称不能为空", ControlAppearance.Caution, SymbolRegular.Warning24);
+                ShowSnackbar(Properties.Resources.VmPage_CreateFail, Properties.Resources.VmPage_NameEmpty, ControlAppearance.Caution, SymbolRegular.Warning24);
                 return;
             }
 
@@ -574,7 +574,7 @@ namespace ExHyperV.ViewModels
                 if (Directory.EnumerateFileSystemEntries(targetVmDir).Any())
                 {
                     // 这里可以根据需求决定是阻断还是仅提示。通常建议阻断以防止文件冲突。
-                    ShowSnackbar("创建警告", "目标存储文件夹已存在且不为空，请更换名称或清理目录。", ControlAppearance.Caution, SymbolRegular.Warning24);
+                    ShowSnackbar(Properties.Resources.VmPage_CreateWarn, Properties.Resources.VmPage_TargetExist, ControlAppearance.Caution, SymbolRegular.Warning24);
                     return;
                 }
             }
@@ -584,7 +584,7 @@ namespace ExHyperV.ViewModels
             {
                 if (string.IsNullOrWhiteSpace(NewVmNewDiskPath))
                 {
-                    ShowSnackbar("创建失败", "请选择新硬盘的保存位置", ControlAppearance.Caution, SymbolRegular.Warning24);
+                    ShowSnackbar(Properties.Resources.VmPage_CreateFail, Properties.Resources.VmPage_SelectVhdSave, ControlAppearance.Caution, SymbolRegular.Warning24);
                     return;
                 }
             }
@@ -592,13 +592,13 @@ namespace ExHyperV.ViewModels
             {
                 if (string.IsNullOrWhiteSpace(NewVmExistingDiskPath))
                 {
-                    ShowSnackbar("创建失败", "请选择现有的虚拟硬盘文件 (.vhdx)", ControlAppearance.Caution, SymbolRegular.Warning24);
+                    ShowSnackbar(Properties.Resources.VmPage_CreateFail, Properties.Resources.VmPage_SelectExistVhdPath, ControlAppearance.Caution, SymbolRegular.Warning24);
                     return;
                 }
 
                 if (!File.Exists(NewVmExistingDiskPath))
                 {
-                    ShowSnackbar("创建失败", "指定的现有虚拟硬盘文件不存在，请检查路径。", ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                    ShowSnackbar(Properties.Resources.VmPage_CreateFail, Properties.Resources.VmPage_ExistVhdNotFound, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                     return;
                 }
             }
@@ -606,7 +606,7 @@ namespace ExHyperV.ViewModels
             // --- 4. ISO 镜像验证 (如果有输入) ---
             if (!string.IsNullOrWhiteSpace(NewVmIsoPath) && !File.Exists(NewVmIsoPath))
             {
-                ShowSnackbar("创建失败", "指定的 ISO 镜像文件不存在", ControlAppearance.Caution, SymbolRegular.Warning24);
+                ShowSnackbar(Properties.Resources.VmPage_CreateFail, Properties.Resources.VmPage_IsoNotFound, ControlAppearance.Caution, SymbolRegular.Warning24);
                 return;
             }
             // --- 2. 组装专用 Model ---
@@ -649,7 +649,7 @@ namespace ExHyperV.ViewModels
                 {
                     string actualCreatedName = result.Message;
                     ShowSnackbar(
-                         "创建成功",
+                         Properties.Resources.VmPage_CreateSuccess,
                          $"虚拟机 {actualCreatedName} 已成功创建并配置。", // 使用真实名称
                          ControlAppearance.Success,
                          SymbolRegular.CheckmarkCircle24);
@@ -665,12 +665,12 @@ namespace ExHyperV.ViewModels
                 }
                 else
                 {
-                    ShowSnackbar("创建失败", result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                    ShowSnackbar(Properties.Resources.VmPage_CreateFail, result.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
                 }
             }
             catch (Exception ex)
             {
-                ShowSnackbar("系统异常", ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Properties.Resources.VmPage_SysExp, ex.Message, ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
             finally
             {
@@ -720,7 +720,7 @@ namespace ExHyperV.ViewModels
             }
             catch (Exception ex)
             {
-                ShowSnackbar("删除失败", Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
+                ShowSnackbar(Properties.Resources.VmPage_DeleteFail, Utils.GetFriendlyErrorMessages(ex.Message), ControlAppearance.Danger, SymbolRegular.ErrorCircle24);
             }
             finally { IsLoading = false; }
         }

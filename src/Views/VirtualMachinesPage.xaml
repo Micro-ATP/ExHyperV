@@ -59,7 +59,7 @@
                 <Border.ContextMenu>
                     <ContextMenu>
                         <!-- 重命名选项 -->
-                        <ui:MenuItem Header="重命名" 
+                        <ui:MenuItem Header="{x:Static properties:Resources.Xaml_Rename}" 
                              Command="{Binding PlacementTarget.Tag.RenameVmCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                              CommandParameter="{Binding}">
                             <ui:MenuItem.Icon>
@@ -68,7 +68,7 @@
                         </ui:MenuItem>
 
                         <!-- 删除选项 (重新添加) -->
-                        <ui:MenuItem Header="删除" 
+                        <ui:MenuItem Header="{x:Static properties:Resources.Xaml_Delete}" 
                              Command="{Binding PlacementTarget.Tag.DeleteVmCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                              CommandParameter="{Binding}"
                              Foreground="{ui:ThemeResource SystemFillColorCriticalBrush}">
@@ -560,7 +560,7 @@
                Height="24"
                Icon="{ui:SymbolIcon Symbol=Add24}"
                Appearance="Secondary"
-               ToolTip="创建虚拟机"
+               ToolTip="{x:Static properties:Resources.Xaml_CreateVm}"
                Command="{Binding CreateVmCommand}"/>
                     <!-- 请确保 ViewModel 中有对应的 Command -->
                 </Grid>

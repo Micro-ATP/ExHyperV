@@ -3552,6 +3552,24 @@ namespace ExHyperV.Properties {
         }
         
         /// <summary>
+        ///   查找类似 Failed to apply CPU group. Error code: {0} 的本地化字符串。
+        /// </summary>
+        public static string Hcs_CpuGroupFailedCode {
+            get {
+                return ResourceManager.GetString("Hcs_CpuGroupFailedCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Unable to find processor configuration for virtual machine (ID: {0}). 的本地化字符串。
+        /// </summary>
+        public static string Hcs_ProcessorNotFound {
+            get {
+                return ResourceManager.GetString("Hcs_ProcessorNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Host 的本地化字符串。
         /// </summary>
         public static string Host {
@@ -6087,6 +6105,15 @@ namespace ExHyperV.Properties {
         }
         
         /// <summary>
+        ///   查找类似 Success 的本地化字符串。
+        /// </summary>
+        public static string Msg_Success {
+            get {
+                return ResourceManager.GetString("Msg_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 NAT 的本地化字符串。
         /// </summary>
         public static string NAT {
@@ -7518,6 +7545,42 @@ namespace ExHyperV.Properties {
         }
         
         /// <summary>
+        ///   查找类似 Failed to export Hive: {0} (Check if blocked by antivirus) 的本地化字符串。
+        /// </summary>
+        public static string SysSwitch_HiveExportFail {
+            get {
+                return ResourceManager.GetString("SysSwitch_HiveExportFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Cannot open SYSTEM key, error code: {0} 的本地化字符串。
+        /// </summary>
+        public static string SysSwitch_KeyOpenFail {
+            get {
+                return ResourceManager.GetString("SysSwitch_KeyOpenFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Replacement failed: Error code {0} 的本地化字符串。
+        /// </summary>
+        public static string SysSwitch_ReplaceFailCode {
+            get {
+                return ResourceManager.GetString("SysSwitch_ReplaceFailCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Replacement failed: Access denied (Build 28000 kernel locked SYSTEM hive. Try replacing C:\temp\sys_mod_exec.hiv exported in PE) 的本地化字符串。
+        /// </summary>
+        public static string SysSwitch_ReplaceFailLocked {
+            get {
+                return ResourceManager.GetString("SysSwitch_ReplaceFailLocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Automatically scheduled by system. 的本地化字符串。
         /// </summary>
         public static string SystemAutomaticallyScheduled {
@@ -7761,6 +7824,15 @@ namespace ExHyperV.Properties {
         }
         
         /// <summary>
+        ///   查找类似 Error: Unknown network mode &apos;{0}&apos; 的本地化字符串。
+        /// </summary>
+        public static string Utils_UnknownNetMode {
+            get {
+                return ResourceManager.GetString("Utils_UnknownNetMode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 , recommend the virtual machine version not be less than 19041. 的本地化字符串。
         /// </summary>
         public static string v19041 {
@@ -7878,6 +7950,24 @@ namespace ExHyperV.Properties {
         }
         
         /// <summary>
+        ///   查找类似 Unable to get configuration data. 的本地化字符串。
+        /// </summary>
+        public static string VmEdit_ConfigDataError {
+            get {
+                return ResourceManager.GetString("VmEdit_ConfigDataError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Specified virtual machine instance not found. 的本地化字符串。
+        /// </summary>
+        public static string VmEdit_InstanceNotFound {
+            get {
+                return ResourceManager.GetString("VmEdit_InstanceNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Virtual Machine List 的本地化字符串。
         /// </summary>
         public static string vmlist {
@@ -7892,6 +7982,24 @@ namespace ExHyperV.Properties {
         public static string VMMemory {
             get {
                 return ResourceManager.GetString("VMMemory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Advanced settings application exception: {0} 的本地化字符串。
+        /// </summary>
+        public static string VmMemory_AdvSetException {
+            get {
+                return ResourceManager.GetString("VmMemory_AdvSetException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Modification failed: {0} 的本地化字符串。
+        /// </summary>
+        public static string VmMemory_ModFailed {
+            get {
+                return ResourceManager.GetString("VmMemory_ModFailed", resourceCulture);
             }
         }
         
@@ -7914,11 +8022,353 @@ namespace ExHyperV.Properties {
         }
         
         /// <summary>
+        ///   查找类似 Network adapter added successfully 的本地化字符串。
+        /// </summary>
+        public static string VmNet_AddSuccess {
+            get {
+                return ResourceManager.GetString("VmNet_AddSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似     [Advanced Settings] Read exception: {0} 的本地化字符串。
+        /// </summary>
+        public static string VmNet_AdvSetReadExp {
+            get {
+                return ResourceManager.GetString("VmNet_AdvSetReadExp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [Exception] {0}\n{1} 的本地化字符串。
+        /// </summary>
+        public static string VmNet_Exception {
+            get {
+                return ResourceManager.GetString("VmNet_Exception", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [Normalized Execution] Gateway mode: Force secondary ID {0} -&gt; primary ID {1} 的本地化字符串。
+        /// </summary>
+        public static string VmNet_GatewayModeLog {
+            get {
+                return ResourceManager.GetString("VmNet_GatewayModeLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [Success] Obtained VM GUID: {0} 的本地化字符串。
+        /// </summary>
+        public static string VmNet_GotGuid {
+            get {
+                return ResourceManager.GetString("VmNet_GotGuid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 IP acquisition failed: {0} 的本地化字符串。
+        /// </summary>
+        public static string VmNet_IpFail {
+            get {
+                return ResourceManager.GetString("VmNet_IpFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [PS Business Logic Error] {0} 的本地化字符串。
+        /// </summary>
+        public static string VmNet_PsError {
+            get {
+                return ResourceManager.GetString("VmNet_PsError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [Success] Query complete: Found {0} network ports, {1} allocation settings. 的本地化字符串。
+        /// </summary>
+        public static string VmNet_QueryComplete {
+            get {
+                return ResourceManager.GetString("VmNet_QueryComplete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [1/4] Querying GUID for virtual machine &apos;{0}&apos;... 的本地化字符串。
+        /// </summary>
+        public static string VmNet_QueryGuid {
+            get {
+                return ResourceManager.GetString("VmNet_QueryGuid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [2/4] Concurrently querying network adapter ports and allocation settings for GUID &apos;{0}&apos;... 的本地化字符串。
+        /// </summary>
+        public static string VmNet_QueryPorts {
+            get {
+                return ResourceManager.GetString("VmNet_QueryPorts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Starting to get network adapter info for virtual machine &apos;{0}&apos;... 的本地化字符串。
+        /// </summary>
+        public static string VmNet_StartGetInfo {
+            get {
+                return ResourceManager.GetString("VmNet_StartGetInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Submitting {0} settings... 的本地化字符串。
+        /// </summary>
+        public static string VmNet_SubmitSet {
+            get {
+                return ResourceManager.GetString("VmNet_SubmitSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [System Level Error] {0} 的本地化字符串。
+        /// </summary>
+        public static string VmNet_SysError {
+            get {
+                return ResourceManager.GetString("VmNet_SysError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [Error] Virtual machine named &apos;{0}&apos; not found. Please check if the name is correct. 的本地化字符串。
+        /// </summary>
+        public static string VmNet_VmNotFound {
+            get {
+                return ResourceManager.GetString("VmNet_VmNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [WMI Correction] Gateway mode underlying alignment: SecondaryVlanId set to 0, Array filled with {0} 的本地化字符串。
+        /// </summary>
+        public static string VmNet_WmiAlignmentLog {
+            get {
+                return ResourceManager.GetString("VmNet_WmiAlignmentLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 [WMI Error] Method: {0}, Return info: {1} 的本地化字符串。
+        /// </summary>
+        public static string VmNet_WmiError {
+            get {
+                return ResourceManager.GetString("VmNet_WmiError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Creation Failed 的本地化字符串。
+        /// </summary>
+        public static string VmPage_CreateFail {
+            get {
+                return ResourceManager.GetString("VmPage_CreateFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Creation Successful 的本地化字符串。
+        /// </summary>
+        public static string VmPage_CreateSuccess {
+            get {
+                return ResourceManager.GetString("VmPage_CreateSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Creation Warning 的本地化字符串。
+        /// </summary>
+        public static string VmPage_CreateWarn {
+            get {
+                return ResourceManager.GetString("VmPage_CreateWarn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Default 的本地化字符串。
+        /// </summary>
+        public static string VmPage_Default {
+            get {
+                return ResourceManager.GetString("VmPage_Default", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Deletion failed 的本地化字符串。
+        /// </summary>
+        public static string VmPage_DeleteFail {
+            get {
+                return ResourceManager.GetString("VmPage_DeleteFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The specified existing virtual hard disk file does not exist. Please check the path. 的本地化字符串。
+        /// </summary>
+        public static string VmPage_ExistVhdNotFound {
+            get {
+                return ResourceManager.GetString("VmPage_ExistVhdNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 ISO Image File|*.iso 的本地化字符串。
+        /// </summary>
+        public static string VmPage_IsoFilter {
+            get {
+                return ResourceManager.GetString("VmPage_IsoFilter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The specified ISO image file does not exist 的本地化字符串。
+        /// </summary>
+        public static string VmPage_IsoNotFound {
+            get {
+                return ResourceManager.GetString("VmPage_IsoNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Virtual machine name cannot be empty 的本地化字符串。
+        /// </summary>
+        public static string VmPage_NameEmpty {
+            get {
+                return ResourceManager.GetString("VmPage_NameEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Rename failed 的本地化字符串。
+        /// </summary>
+        public static string VmPage_RenameFail {
+            get {
+                return ResourceManager.GetString("VmPage_RenameFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Select Virtual Machine Configuration File Directory 的本地化字符串。
+        /// </summary>
+        public static string VmPage_SelectConfigDir {
+            get {
+                return ResourceManager.GetString("VmPage_SelectConfigDir", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Select Existing Virtual Hard Disk 的本地化字符串。
+        /// </summary>
+        public static string VmPage_SelectExistVhd {
+            get {
+                return ResourceManager.GetString("VmPage_SelectExistVhd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Please select an existing virtual hard disk file (.vhdx) 的本地化字符串。
+        /// </summary>
+        public static string VmPage_SelectExistVhdPath {
+            get {
+                return ResourceManager.GetString("VmPage_SelectExistVhdPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Select OS ISO Image 的本地化字符串。
+        /// </summary>
+        public static string VmPage_SelectIso {
+            get {
+                return ResourceManager.GetString("VmPage_SelectIso", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Select Location to Save New Virtual Hard Disk 的本地化字符串。
+        /// </summary>
+        public static string VmPage_SelectNewVhdPath {
+            get {
+                return ResourceManager.GetString("VmPage_SelectNewVhdPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Please select a save location for the new hard disk 的本地化字符串。
+        /// </summary>
+        public static string VmPage_SelectVhdSave {
+            get {
+                return ResourceManager.GetString("VmPage_SelectVhdSave", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 System exception 的本地化字符串。
+        /// </summary>
+        public static string VmPage_SysExp {
+            get {
+                return ResourceManager.GetString("VmPage_SysExp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Target storage folder already exists and is not empty. Please change the name or clean the directory. 的本地化字符串。
+        /// </summary>
+        public static string VmPage_TargetExist {
+            get {
+                return ResourceManager.GetString("VmPage_TargetExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Virtual Hard Disk File|*.vhdx 的本地化字符串。
+        /// </summary>
+        public static string VmPage_VhdFilter {
+            get {
+                return ResourceManager.GetString("VmPage_VhdFilter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Virtual Hard Disk File|*.vhdx;*.avhdx 的本地化字符串。
+        /// </summary>
+        public static string VmPage_VhdFilterBoth {
+            get {
+                return ResourceManager.GetString("VmPage_VhdFilterBoth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Virtual machine {0} has been successfully created and configured. 的本地化字符串。
+        /// </summary>
+        public static string VmPage_VmCreated {
+            get {
+                return ResourceManager.GetString("VmPage_VmCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 The virtual machine process could not be found. Please ensure the virtual machine is running. 的本地化字符串。
         /// </summary>
         public static string VmProcessNotFound {
             get {
                 return ResourceManager.GetString("VmProcessNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Exception: {0} 的本地化字符串。
+        /// </summary>
+        public static string VmProcessor_Exception {
+            get {
+                return ResourceManager.GetString("VmProcessor_Exception", resourceCulture);
             }
         }
         
@@ -8078,6 +8528,348 @@ namespace ExHyperV.Properties {
         public static string Weight {
             get {
                 return ResourceManager.GetString("Weight", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 WMI Error Code: {0} 的本地化字符串。
+        /// </summary>
+        public static string Wmi_ErrorCode {
+            get {
+                return ResourceManager.GetString("Wmi_ErrorCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Task execution failed (Status code: {0}) 的本地化字符串。
+        /// </summary>
+        public static string Wmi_TaskFail {
+            get {
+                return ResourceManager.GetString("Wmi_TaskFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Exception while waiting for task: {0} 的本地化字符串。
+        /// </summary>
+        public static string Wmi_WaitExp {
+            get {
+                return ResourceManager.GetString("Wmi_WaitExp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Attach Later 的本地化字符串。
+        /// </summary>
+        public static string Xaml_AttachLater {
+            get {
+                return ResourceManager.GetString("Xaml_AttachLater", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Browse 的本地化字符串。
+        /// </summary>
+        public static string Xaml_Browse {
+            get {
+                return ResourceManager.GetString("Xaml_Browse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Capacity (GB) 的本地化字符串。
+        /// </summary>
+        public static string Xaml_CapacityGb {
+            get {
+                return ResourceManager.GetString("Xaml_CapacityGb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Compute Resources 的本地化字符串。
+        /// </summary>
+        public static string Xaml_ComputeRes {
+            get {
+                return ResourceManager.GetString("Xaml_ComputeRes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Confidential Computing 的本地化字符串。
+        /// </summary>
+        public static string Xaml_ConfidentialCompute {
+            get {
+                return ResourceManager.GetString("Xaml_ConfidentialCompute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Current host does not support confidential computing 的本地化字符串。
+        /// </summary>
+        public static string Xaml_ConfidentialNotSupported {
+            get {
+                return ResourceManager.GetString("Xaml_ConfidentialNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Configuration File Location 的本地化字符串。
+        /// </summary>
+        public static string Xaml_ConfigLoc {
+            get {
+                return ResourceManager.GetString("Xaml_ConfigLoc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Cores 的本地化字符串。
+        /// </summary>
+        public static string Xaml_Core {
+            get {
+                return ResourceManager.GetString("Xaml_Core", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Create Virtual Machine 的本地化字符串。
+        /// </summary>
+        public static string Xaml_CreateVm {
+            get {
+                return ResourceManager.GetString("Xaml_CreateVm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The virtual machine will be created without a virtual hard disk. You can add one manually later. 的本地化字符串。
+        /// </summary>
+        public static string Xaml_CreateWithoutDisk {
+            get {
+                return ResourceManager.GetString("Xaml_CreateWithoutDisk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Delete 的本地化字符串。
+        /// </summary>
+        public static string Xaml_Delete {
+            get {
+                return ResourceManager.GetString("Xaml_Delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Dynamic Memory 的本地化字符串。
+        /// </summary>
+        public static string Xaml_DynamicMem {
+            get {
+                return ResourceManager.GetString("Xaml_DynamicMem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Enable Secure Boot 的本地化字符串。
+        /// </summary>
+        public static string Xaml_EnableSecureBoot {
+            get {
+                return ResourceManager.GetString("Xaml_EnableSecureBoot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Enable TPM 的本地化字符串。
+        /// </summary>
+        public static string Xaml_EnableTpm {
+            get {
+                return ResourceManager.GetString("Xaml_EnableTpm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Existing Disk 的本地化字符串。
+        /// </summary>
+        public static string Xaml_ExistDisk {
+            get {
+                return ResourceManager.GetString("Xaml_ExistDisk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Existing Disk Path 的本地化字符串。
+        /// </summary>
+        public static string Xaml_ExistDiskPath {
+            get {
+                return ResourceManager.GetString("Xaml_ExistDiskPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Generation 1 (BIOS + MBR) 的本地化字符串。
+        /// </summary>
+        public static string Xaml_Gen1 {
+            get {
+                return ResourceManager.GetString("Xaml_Gen1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Generation 2 (UEFI + GPT) 的本地化字符串。
+        /// </summary>
+        public static string Xaml_Gen2 {
+            get {
+                return ResourceManager.GetString("Xaml_Gen2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 General 的本地化字符串。
+        /// </summary>
+        public static string Xaml_General {
+            get {
+                return ResourceManager.GetString("Xaml_General", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Generation 的本地化字符串。
+        /// </summary>
+        public static string Xaml_Generation {
+            get {
+                return ResourceManager.GetString("Xaml_Generation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Installation Media 的本地化字符串。
+        /// </summary>
+        public static string Xaml_InstallMedia {
+            get {
+                return ResourceManager.GetString("Xaml_InstallMedia", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Name 的本地化字符串。
+        /// </summary>
+        public static string Xaml_Name {
+            get {
+                return ResourceManager.GetString("Xaml_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Network Resources 的本地化字符串。
+        /// </summary>
+        public static string Xaml_NetworkRes {
+            get {
+                return ResourceManager.GetString("Xaml_NetworkRes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 New Disk 的本地化字符串。
+        /// </summary>
+        public static string Xaml_NewDisk {
+            get {
+                return ResourceManager.GetString("Xaml_NewDisk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 New Virtual Machine 的本地化字符串。
+        /// </summary>
+        public static string Xaml_NewVm {
+            get {
+                return ResourceManager.GetString("Xaml_NewVm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Processor Cores 的本地化字符串。
+        /// </summary>
+        public static string Xaml_ProcessorCores {
+            get {
+                return ResourceManager.GetString("Xaml_ProcessorCores", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Rename 的本地化字符串。
+        /// </summary>
+        public static string Xaml_Rename {
+            get {
+                return ResourceManager.GetString("Xaml_Rename", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Save Location 的本地化字符串。
+        /// </summary>
+        public static string Xaml_SaveLoc {
+            get {
+                return ResourceManager.GetString("Xaml_SaveLoc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Security Features 的本地化字符串。
+        /// </summary>
+        public static string Xaml_SecurityFeat {
+            get {
+                return ResourceManager.GetString("Xaml_SecurityFeat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Start after creation 的本地化字符串。
+        /// </summary>
+        public static string Xaml_StartAfterCreate {
+            get {
+                return ResourceManager.GetString("Xaml_StartAfterCreate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Startup Memory 的本地化字符串。
+        /// </summary>
+        public static string Xaml_StartupMem {
+            get {
+                return ResourceManager.GetString("Xaml_StartupMem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Storage Resources 的本地化字符串。
+        /// </summary>
+        public static string Xaml_StorageRes {
+            get {
+                return ResourceManager.GetString("Xaml_StorageRes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Virtual Hard Disk 的本地化字符串。
+        /// </summary>
+        public static string Xaml_VirtualDisk {
+            get {
+                return ResourceManager.GetString("Xaml_VirtualDisk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Virtual Switch 的本地化字符串。
+        /// </summary>
+        public static string Xaml_VirtualSwitch {
+            get {
+                return ResourceManager.GetString("Xaml_VirtualSwitch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Virtual Machine Version 的本地化字符串。
+        /// </summary>
+        public static string Xaml_VmVersion {
+            get {
+                return ResourceManager.GetString("Xaml_VmVersion", resourceCulture);
             }
         }
     }

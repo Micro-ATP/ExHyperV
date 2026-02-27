@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Management;
 using System.Threading.Tasks;
 using System.Linq;
@@ -30,10 +30,10 @@ namespace ExHyperV.Services
 
                     // --- 核心修复：使用 Name (即 GUID) 而不是 ElementName 查询 ---
                     using var vm = GetComputerSystemByGuid(vmGuid);
-                    if (vm == null) return (false, "找不到指定的虚拟机实例。");
+                    if (vm == null) return (false, Properties.Resources.VmEdit_InstanceNotFound);
 
                     using var settings = GetVmSettings(vm);
-                    if (settings == null) return (false, "无法获取配置数据。");
+                    if (settings == null) return (false, Properties.Resources.VmEdit_ConfigDataError);
 
                     settings["ElementName"] = newName;
 
@@ -44,7 +44,7 @@ namespace ExHyperV.Services
 
                     uint errorCode = (uint)outParams["ReturnValue"];
                     return errorCode == 0 || errorCode == 4096
-                        ? (true, "成功")
+                        ? (true, Properties.Resources.Msg_Success)
                         : (false, $"WMI 错误代码: {errorCode}");
                 }
                 catch (Exception ex) { return (false, ex.Message); }

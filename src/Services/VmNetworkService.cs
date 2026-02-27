@@ -218,7 +218,7 @@ namespace ExHyperV.Services
                 // 2. 使用 Run2 (异步且带错误流检测)
                 await Utils.Run2(script);
 
-                return (true, "添加网卡成功");
+                return (true, Properties.Resources.VmNet_AddSuccess);
             }
             catch (PowerShellScriptException psEx)
             {

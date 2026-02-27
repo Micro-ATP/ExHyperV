@@ -2811,4 +2811,268 @@
   <data name="Global_Restart_Duplicate" xml:space="preserve">
     <value>立即重启</value>
   </data>
+  <data name="VmEdit_InstanceNotFound" xml:space="preserve">
+    <value>找不到指定的虚拟机实例。</value>
+  </data>
+  <data name="VmEdit_ConfigDataError" xml:space="preserve">
+    <value>无法获取配置数据。</value>
+  </data>
+  <data name="Msg_Success" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="Wmi_ErrorCode" xml:space="preserve">
+    <value>WMI 错误代码: {0}</value>
+  </data>
+  <data name="VmMemory_ModFailed" xml:space="preserve">
+    <value>修改失败: {0}</value>
+  </data>
+  <data name="VmMemory_AdvSetException" xml:space="preserve">
+    <value>高级设置应用异常: {0}</value>
+  </data>
+  <data name="VmNet_StartGetInfo" xml:space="preserve">
+    <value>开始为虚拟机 &apos;{0}&apos; 获取网卡信息...</value>
+  </data>
+  <data name="VmNet_QueryGuid" xml:space="preserve">
+    <value>[1/4] 正在查询虚拟机 &apos;{0}&apos; 的 GUID...</value>
+  </data>
+  <data name="VmNet_VmNotFound" xml:space="preserve">
+    <value>[错误] 找不到名为 &apos;{0}&apos; 的虚拟机。请检查虚拟机名称是否正确。</value>
+  </data>
+  <data name="VmNet_GotGuid" xml:space="preserve">
+    <value>[成功] 获取到 VM GUID: {0}</value>
+  </data>
+  <data name="VmNet_QueryPorts" xml:space="preserve">
+    <value>[2/4] 正在并发查询属于 GUID &apos;{0}&apos; 的网卡端口和分配设置...</value>
+  </data>
+  <data name="VmNet_QueryComplete" xml:space="preserve">
+    <value>[成功] 查询完成: 找到 {0} 个网卡端口, {1} 个分配设置。</value>
+  </data>
+  <data name="VmNet_AdvSetReadExp" xml:space="preserve">
+    <value>    [高级设置] 读取异常: {0}</value>
+  </data>
+  <data name="VmNet_IpFail" xml:space="preserve">
+    <value>IP获取失败: {0}</value>
+  </data>
+  <data name="VmNet_AddSuccess" xml:space="preserve">
+    <value>添加网卡成功</value>
+  </data>
+  <data name="VmNet_PsError" xml:space="preserve">
+    <value>[PS 业务逻辑错误] {0}</value>
+  </data>
+  <data name="VmNet_SysError" xml:space="preserve">
+    <value>[系统级别错误] {0}</value>
+  </data>
+  <data name="VmNet_GatewayModeLog" xml:space="preserve">
+    <value>[归一执行] 网关模式：强制辅ID {0} -&gt; 主ID {1}</value>
+  </data>
+  <data name="VmNet_WmiAlignmentLog" xml:space="preserve">
+    <value>[WMI修正] 网关模式底层对齐：SecondaryVlanId 已设为 0，Array 已填入 {0}</value>
+  </data>
+  <data name="VmNet_SubmitSet" xml:space="preserve">
+    <value>正在提交 {0} 设置...</value>
+  </data>
+  <data name="VmNet_WmiError" xml:space="preserve">
+    <value>[WMI 错误] 方法: {0}, 返回信息: {1}</value>
+  </data>
+  <data name="VmNet_Exception" xml:space="preserve">
+    <value>[异常] {0}\n{1}</value>
+  </data>
+  <data name="VmProcessor_Exception" xml:space="preserve">
+    <value>异常: {0}</value>
+  </data>
+  <data name="Hcs_ProcessorNotFound" xml:space="preserve">
+    <value>无法找到虚拟机 (ID: {0}) 的处理器配置。</value>
+  </data>
+  <data name="Hcs_CpuGroupFailedCode" xml:space="preserve">
+    <value>应用CPU组失败。错误码: {0}</value>
+  </data>
+  <data name="SysSwitch_KeyOpenFail" xml:space="preserve">
+    <value>打不开 SYSTEM 键, 错误码: {0}</value>
+  </data>
+  <data name="SysSwitch_HiveExportFail" xml:space="preserve">
+    <value>导出 Hive 失败: {0} (检查是否有杀毒软件拦截)</value>
+  </data>
+  <data name="SysSwitch_ReplaceFailLocked" xml:space="preserve">
+    <value>替换失败: 拒绝访问 (Build 28000 内核已锁定 SYSTEM 蜂巢。请尝试在 PE 环境下替换程序导出的 C:\temp\sys_mod_exec.hiv)</value>
+  </data>
+  <data name="SysSwitch_ReplaceFailCode" xml:space="preserve">
+    <value>替换失败: 错误码 {0}</value>
+  </data>
+  <data name="Utils_UnknownNetMode" xml:space="preserve">
+    <value>错误：未知的网络模式 &apos;{0}&apos;</value>
+  </data>
+  <data name="Wmi_TaskFail" xml:space="preserve">
+    <value>任务执行失败 (状态码: {0})</value>
+  </data>
+  <data name="Wmi_WaitExp" xml:space="preserve">
+    <value>等待任务时异常: {0}</value>
+  </data>
+  <data name="VmPage_RenameFail" xml:space="preserve">
+    <value>重命名失败</value>
+  </data>
+  <data name="VmPage_SysExp" xml:space="preserve">
+    <value>系统异常</value>
+  </data>
+  <data name="VmPage_Default" xml:space="preserve">
+    <value>默认</value>
+  </data>
+  <data name="VmPage_SelectConfigDir" xml:space="preserve">
+    <value>选择虚拟机配置文件存放目录</value>
+  </data>
+  <data name="VmPage_SelectNewVhdPath" xml:space="preserve">
+    <value>选择新虚拟硬盘保存位置</value>
+  </data>
+  <data name="VmPage_VhdFilter" xml:space="preserve">
+    <value>虚拟硬盘文件|*.vhdx</value>
+  </data>
+  <data name="VmPage_SelectExistVhd" xml:space="preserve">
+    <value>选择现有虚拟硬盘</value>
+  </data>
+  <data name="VmPage_VhdFilterBoth" xml:space="preserve">
+    <value>虚拟硬盘文件|*.vhdx;*.avhdx</value>
+  </data>
+  <data name="VmPage_SelectIso" xml:space="preserve">
+    <value>选择操作系统 ISO 镜像</value>
+  </data>
+  <data name="VmPage_IsoFilter" xml:space="preserve">
+    <value>ISO 镜像文件|*.iso</value>
+  </data>
+  <data name="VmPage_CreateFail" xml:space="preserve">
+    <value>创建失败</value>
+  </data>
+  <data name="VmPage_NameEmpty" xml:space="preserve">
+    <value>虚拟机名称不能为空</value>
+  </data>
+  <data name="VmPage_CreateWarn" xml:space="preserve">
+    <value>创建警告</value>
+  </data>
+  <data name="VmPage_TargetExist" xml:space="preserve">
+    <value>目标存储文件夹已存在且不为空，请更换名称或清理目录。</value>
+  </data>
+  <data name="VmPage_SelectVhdSave" xml:space="preserve">
+    <value>请选择新硬盘的保存位置</value>
+  </data>
+  <data name="VmPage_SelectExistVhdPath" xml:space="preserve">
+    <value>请选择现有的虚拟硬盘文件 (.vhdx)</value>
+  </data>
+  <data name="VmPage_ExistVhdNotFound" xml:space="preserve">
+    <value>指定的现有虚拟硬盘文件不存在，请检查路径。</value>
+  </data>
+  <data name="VmPage_IsoNotFound" xml:space="preserve">
+    <value>指定的 ISO 镜像文件不存在</value>
+  </data>
+  <data name="VmPage_CreateSuccess" xml:space="preserve">
+    <value>创建成功</value>
+  </data>
+  <data name="VmPage_VmCreated" xml:space="preserve">
+    <value>虚拟机 {0} 已成功创建并配置。</value>
+  </data>
+  <data name="VmPage_DeleteFail" xml:space="preserve">
+    <value>删除失败</value>
+  </data>
+  <data name="Xaml_Rename" xml:space="preserve">
+    <value>重命名</value>
+  </data>
+  <data name="Xaml_Delete" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="Xaml_CreateVm" xml:space="preserve">
+    <value>创建虚拟机</value>
+  </data>
+  <data name="Xaml_NewVm" xml:space="preserve">
+    <value>新建虚拟机</value>
+  </data>
+  <data name="Xaml_General" xml:space="preserve">
+    <value>常规</value>
+  </data>
+  <data name="Xaml_Name" xml:space="preserve">
+    <value>名称</value>
+  </data>
+  <data name="Xaml_ConfigLoc" xml:space="preserve">
+    <value>配置文件位置</value>
+  </data>
+  <data name="Xaml_Browse" xml:space="preserve">
+    <value>浏览</value>
+  </data>
+  <data name="Xaml_VmVersion" xml:space="preserve">
+    <value>虚拟机版本</value>
+  </data>
+  <data name="Xaml_Generation" xml:space="preserve">
+    <value>代际</value>
+  </data>
+  <data name="Xaml_Gen1" xml:space="preserve">
+    <value>第 1 代 ( BIOS + MBR )</value>
+  </data>
+  <data name="Xaml_Gen2" xml:space="preserve">
+    <value>第 2 代 ( UEFI + GPT )</value>
+  </data>
+  <data name="Xaml_ComputeRes" xml:space="preserve">
+    <value>计算资源</value>
+  </data>
+  <data name="Xaml_ProcessorCores" xml:space="preserve">
+    <value>处理器核心数</value>
+  </data>
+  <data name="Xaml_Core" xml:space="preserve">
+    <value>核心</value>
+  </data>
+  <data name="Xaml_StartupMem" xml:space="preserve">
+    <value>启动内存</value>
+  </data>
+  <data name="Xaml_DynamicMem" xml:space="preserve">
+    <value>动态内存</value>
+  </data>
+  <data name="Xaml_SecurityFeat" xml:space="preserve">
+    <value>安全特性</value>
+  </data>
+  <data name="Xaml_EnableSecureBoot" xml:space="preserve">
+    <value>启用安全启动</value>
+  </data>
+  <data name="Xaml_EnableTpm" xml:space="preserve">
+    <value>启用 TPM</value>
+  </data>
+  <data name="Xaml_ConfidentialCompute" xml:space="preserve">
+    <value>机密计算</value>
+  </data>
+  <data name="Xaml_ConfidentialNotSupported" xml:space="preserve">
+    <value>当前宿主机不支持机密计算</value>
+  </data>
+  <data name="Xaml_StorageRes" xml:space="preserve">
+    <value>存储资源</value>
+  </data>
+  <data name="Xaml_VirtualDisk" xml:space="preserve">
+    <value>虚拟硬盘</value>
+  </data>
+  <data name="Xaml_NewDisk" xml:space="preserve">
+    <value>新建磁盘</value>
+  </data>
+  <data name="Xaml_ExistDisk" xml:space="preserve">
+    <value>现有磁盘</value>
+  </data>
+  <data name="Xaml_AttachLater" xml:space="preserve">
+    <value>稍后附加</value>
+  </data>
+  <data name="Xaml_CapacityGb" xml:space="preserve">
+    <value>容量 (GB)</value>
+  </data>
+  <data name="Xaml_SaveLoc" xml:space="preserve">
+    <value>保存位置</value>
+  </data>
+  <data name="Xaml_ExistDiskPath" xml:space="preserve">
+    <value>现有磁盘路径</value>
+  </data>
+  <data name="Xaml_CreateWithoutDisk" xml:space="preserve">
+    <value>虚拟机将在没有虚拟硬盘的情况下创建。您可以稍后手动添加。</value>
+  </data>
+  <data name="Xaml_InstallMedia" xml:space="preserve">
+    <value>安装介质</value>
+  </data>
+  <data name="Xaml_NetworkRes" xml:space="preserve">
+    <value>网络资源</value>
+  </data>
+  <data name="Xaml_VirtualSwitch" xml:space="preserve">
+    <value>虚拟交换机</value>
+  </data>
+  <data name="Xaml_StartAfterCreate" xml:space="preserve">
+    <value>创建后启动</value>
+  </data>
 </root>
