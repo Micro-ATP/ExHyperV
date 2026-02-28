@@ -9,57 +9,85 @@ namespace ExHyperV.ViewModels
     public partial class USBPageViewModel : ObservableObject
     {
         private readonly UsbVmbusService _srv;
-        private CancellationTokenSource _cts;
+        private readonly CancellationTokenSource _viewCts = new();
 
         [ObservableProperty] private bool _isLoading;
         [ObservableProperty] private bool _isUiEnabled = true;
 
-        public ObservableCollection<UsbDeviceViewModel> Devices { get; }
+        public ObservableCollection<UsbDeviceViewModel> Devices { get; } = new();
         public IAsyncRelayCommand LoadDataCommand { get; }
         public IAsyncRelayCommand<object> ChangeAssignmentCommand { get; }
 
         public USBPageViewModel()
         {
             _srv = new UsbVmbusService();
-            Devices = new ObservableCollection<UsbDeviceViewModel>();
             LoadDataCommand = new AsyncRelayCommand(LoadDataAsync);
             ChangeAssignmentCommand = new AsyncRelayCommand<object>(ChangeAssignmentAsync);
+
             LoadDataCommand.Execute(null);
+
+            // 启动后台监控循环 (维持手机连接)
+            _ = Task.Run(() => _srv.WatchdogLoopAsync(_viewCts.Token));
+            // 启动设备同步循环 (刷新手机变身后的 Description)
+            _ = Task.Run(() => SyncDevicesLoopAsync(_viewCts.Token));
         }
 
         private async Task LoadDataAsync()
         {
-            IsUiEnabled = false;
             IsLoading = true;
             try
             {
                 _srv.EnsureServiceRegistered();
+                await RefreshListInternal();
+            }
+            finally { IsLoading = false; }
+        }
 
-                var vmsTask = _srv.GetRunningVMsAsync();
-                var usbTask = _srv.GetUsbIpDevicesAsync();
-                await Task.WhenAll(vmsTask, usbTask);
+        private async Task SyncDevicesLoopAsync(CancellationToken ct)
+        {
+            while (!ct.IsCancellationRequested)
+            {
+                await Task.Delay(3000, ct);
+                await App.Current.Dispatcher.InvokeAsync(RefreshListInternal);
+            }
+        }
 
-                var vmNames = vmsTask.Result.Select(v => v.Name).ToList();
-                var usbDevices = usbTask.Result;
+        private async Task RefreshListInternal()
+        {
+            var vms = await _srv.GetRunningVMsAsync();
+            var usbDevices = await _srv.GetUsbIpDevicesAsync();
+            var vmNames = vms.Select(v => v.Name).ToList();
 
-                Devices.Clear();
-                foreach (var device in usbDevices)
+            // 增量更新 UI 列表
+            var currentBusIds = Devices.Select(d => d.BusId).ToList();
+            var newBusIds = usbDevices.Select(d => d.BusId).ToList();
+
+            for (int i = Devices.Count - 1; i >= 0; i--)
+            {
+                if (!newBusIds.Contains(Devices[i].BusId)) Devices.RemoveAt(i);
+            }
+
+            foreach (var dev in usbDevices)
+            {
+                var existing = Devices.FirstOrDefault(d => d.BusId == dev.BusId);
+                if (existing != null)
                 {
-                    var deviceVM = new UsbDeviceViewModel(device, vmNames);
-
-                    // 从活动记录中恢复连接状态
-                    if (UsbVmbusService.ActiveTunnels.TryGetValue(device.BusId, out string connectedVmName))
-                    {
-                        deviceVM.CurrentAssignment = connectedVmName;
-                    }
-
-                    Devices.Add(deviceVM);
+                    // 更新描述和 VID/PID (处理手机变身)
+                    existing.Description = dev.Description;
+                    existing.VidPid = dev.VidPid;
+                    existing.UpdateOptions(vmNames);
+                }
+                else
+                {
+                    Devices.Add(new UsbDeviceViewModel(dev, vmNames));
                 }
             }
-            finally
+
+            // 同步连接状态显示
+            foreach (var d in Devices)
             {
-                IsLoading = false;
-                IsUiEnabled = true;
+                if (UsbVmbusService.ActiveTunnels.TryGetValue(d.BusId, out string vm)) d.CurrentAssignment = vm;
+                else if (d.CurrentAssignment != "正在连接...") d.CurrentAssignment = "主机";
             }
         }
 
@@ -76,55 +104,19 @@ namespace ExHyperV.ViewModels
             {
                 if (selectedTarget == "主机")
                 {
-                    _cts?.Cancel();
-                    deviceVM.CurrentAssignment = "主机";
-
-                    // 从活动记录中移除
                     UsbVmbusService.ActiveTunnels.TryRemove(deviceVM.BusId, out _);
+                    _srv.StopTunnel(deviceVM.BusId);
+                    deviceVM.CurrentAssignment = "主机";
                 }
                 else
                 {
-                    var vms = await _srv.GetRunningVMsAsync();
-                    var targetVm = vms.FirstOrDefault(v => v.Name == selectedTarget);
-
-                    if (targetVm != null)
-                    {
-                        deviceVM.CurrentAssignment = "正在连接...";
-
-                        bool shared = await _srv.EnsureDeviceSharedAsync(deviceVM.BusId);
-                        if (!shared) throw new Exception("usbipd bind failed");
-
-                        _cts?.Cancel();
-                        _cts = new CancellationTokenSource();
-
-                        try
-                        {
-                            await _srv.StartTunnelAsync(targetVm.Id, deviceVM.BusId, _cts.Token);
-
-                            deviceVM.CurrentAssignment = selectedTarget;
-
-                            // 更新活动记录
-                            UsbVmbusService.ActiveTunnels[deviceVM.BusId] = selectedTarget;
-                        }
-                        catch (Exception)
-                        {
-                            deviceVM.CurrentAssignment = "连接失败";
-                            _cts?.Cancel();
-
-                            // 失败时清理记录
-                            UsbVmbusService.ActiveTunnels.TryRemove(deviceVM.BusId, out _);
-                        }
-                    }
+                    UsbVmbusService.ActiveTunnels[deviceVM.BusId] = selectedTarget;
+                    deviceVM.CurrentAssignment = selectedTarget;
+                    // 立即触发连接
+                    _ = Task.Run(() => _srv.AutoRecoverTunnel(deviceVM.BusId, selectedTarget));
                 }
             }
-            catch (Exception)
-            {
-                deviceVM.CurrentAssignment = "错误";
-            }
-            finally
-            {
-                IsUiEnabled = true;
-            }
+            finally { IsUiEnabled = true; }
         }
     }
 }
